@@ -7,6 +7,7 @@ const en = {
     startOver: "Start Over"
   },
   landing: {
+    hello: "HELLO!",
     juliana: {
       name: "I'm Juliana",
       title: "Fashion Stylist »»",
@@ -142,6 +143,7 @@ const ar = {
     startOver: "ابدأ من جديد"
   },
   landing: {
+    hello: "مرحباً!",
     juliana: {
       name: "أنا جوليانا",
       title: "مصممة أزياء »»",
@@ -277,6 +279,7 @@ const fr = {
     startOver: "Recommencer"
   },
   landing: {
+    hello: "SALUT!",
     juliana: {
       name: "Je suis Juliana",
       title: "Styliste de mode »»",
@@ -412,6 +415,7 @@ const ru = {
     startOver: "Начать сначала"
   },
   landing: {
+    hello: "ПРИВЕТ!",
     juliana: {
       name: "Я Джулиана",
       title: "Модный стилист »»",
@@ -547,6 +551,7 @@ const nl = {
     startOver: "Opnieuw beginnen"
   },
   landing: {
+    hello: "HALLO!",
     juliana: {
       name: "Ik ben Juliana",
       title: "Mode Stylist »»",

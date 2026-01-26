@@ -21,6 +21,9 @@ import { GlobeIcon } from './components/icons/GlobeIcon';
 import { OutfitCardSkeleton } from './components/OutfitCardSkeleton';
 import { ThemeToggle } from './components/ThemeToggle';
 import { PlusMinusIcon } from './components/icons/PlusMinusIcon';
+import { StyleSelector } from './components/StyleSelector';
+import { BodyShapeSelector } from './components/BodyShapeSelector';
+import { StyleProfileDisplay } from './components/StyleProfileDisplay';
 
 // Helper to convert a Base64 data URL into a File object
 const dataURLtoFile = (dataurl: string, filename: string): File => {
@@ -72,6 +75,8 @@ const App: React.FC = () => {
   const [storeLocations, setStoreLocations] = useState<StoreLocation[]>([]);
   const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
   const [activeSearchAccessory, setActiveSearchAccessory] = useState<string | null>(null);
+
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(['Casual', 'Business', 'Night Out']);
 
 
   useEffect(() => {
@@ -417,9 +422,12 @@ const App: React.FC = () => {
 
                 {viewMode === 'single' && selectedItem && (
                   <div className="space-y-4">
+                    <StyleProfileDisplay profile={styleProfile} onClear={handleClearProfile} />
+                    <BodyShapeSelector selectedShape={bodyShape} onShapeChange={setBodyShape} />
+                    <StyleSelector selectedStyles={selectedStyles} onStylesChange={setSelectedStyles} />
                     <button
-                      onClick={() => handleGenerateOutfits(selectedItem.file, ['Casual', 'Business', 'Night Out'])}
-                      disabled={isLoading}
+                      onClick={() => handleGenerateOutfits(selectedItem.file, selectedStyles)}
+                      disabled={isLoading || selectedStyles.length === 0}
                       className="w-full flex items-center justify-between p-6 bg-pink-500 text-white font-semibold rounded-2xl shadow-md hover:bg-pink-600 transition-all duration-300 disabled:bg-pink-300 disabled:cursor-not-allowed transform hover:scale-105"
                     >
                       <span className="text-xl">{isLoading ? t('main.styling') : t('main.generate')}</span>
@@ -470,7 +478,7 @@ const App: React.FC = () => {
                 {isLoading && viewMode === 'single' && (
                     <div className="space-y-8">
                         <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300">{t('main.aiSuggestions')}</h2>
-                        {['Casual', 'Business', 'Night Out'].map((_, index) => (
+                        {selectedStyles.map((_, index) => (
                             <OutfitCardSkeleton key={index} index={index} />
                         ))}
                     </div>

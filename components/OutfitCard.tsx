@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import type { ValidOutfit } from '../types';
 import { EditIcon } from './icons/EditIcon';
@@ -89,8 +88,8 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl dark:border dark:border-gray-700 animate-fade-in-stagger" style={{ animationDelay }}>
       <div className="md:flex">
-        <div className="md:flex-shrink-0 md:w-1/2">
-          <img className="h-64 w-full object-cover md:h-full" src={outfit.imageUrl} alt={outfit.title} />
+        <div className="md:flex-shrink-0 md:w-1/2 overflow-hidden">
+          <img className="h-64 w-full object-cover md:h-full animate-image-scale origin-center" src={outfit.imageUrl} alt={outfit.title} />
         </div>
         <div className="p-6 md:w-1/2 flex flex-col justify-between">
           <div>
