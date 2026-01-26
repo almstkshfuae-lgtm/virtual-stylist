@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Part, Content } from "@google/genai";
-import type { Outfit, StyleProfile, TrendAnalysisResult, BodyShape, ChatMessage } from '../types';
+import type { Outfit, StyleProfile, TrendAnalysisResult, BodyShape, ChatMessage, Coordinates, StoreLocation, GroundingChunk } from '../types';
 import type { CombinationResult } from '../types';
 
 if (!process.env.API_KEY) {
@@ -361,4 +361,53 @@ export const sendMessageToChat = async (history: ChatMessage[], language: string
         throw new Error("Received an empty response from the chat API.");
     }
     return result.text;
+};
+
+export const findNearbyStores = async (accessory: string, coordinates: Coordinates, language: string): Promise<StoreLocation[]> => {
+    if (!coordinates) {
+        throw new Error("Location not available.");
+    }
+
+    const model = "gemini-2.5-flash";
+    const targetLanguage = languageMap[language] || 'English';
+
+    const prompt = `Find stores near my location that sell "${accessory}". I'm looking for actual, physical stores.`;
+
+    const result = await ai.models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+            tools: [{ googleMaps: {} }],
+            toolConfig: {
+                retrievalConfig: {
+                    latLng: {
+                        latitude: coordinates.latitude,
+                        longitude: coordinates.longitude,
+                    },
+                },
+            },
+        },
+    });
+
+    const groundingChunks = result.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    
+    const stores: StoreLocation[] = groundingChunks
+        .map((chunk: GroundingChunk) => chunk.maps)
+        .filter((maps): maps is { uri: string; title: string } => !!(maps && maps.uri && maps.title))
+        .map(maps => ({ title: maps.title, uri: maps.uri }));
+
+    if (stores.length === 0) {
+        const fallbackText = result.text;
+        if(fallbackText && fallbackText.length > 0) {
+             // This is a bit of a hack if no structured data is returned.
+             // We can use a regex or simple string matching to find store names in the text.
+             // For this case, we just show the raw text as a single "result".
+             return [{ title: fallbackText, uri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`stores that sell ${accessory}`)}` }]
+        }
+    }
+    
+    // Remove duplicate stores based on title
+    const uniqueStores = Array.from(new Map(stores.map(store => [store.title, store])).values());
+
+    return uniqueStores;
 };

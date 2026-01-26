@@ -10,23 +10,32 @@ interface LandingPageProps {
 }
 
 const LANDING_BG_COLOR = '#6b1a3c';
+const JULIANA_IMAGE_URL = 'data:image/webp;base64,UklGRqgMAABXRUJQVlA4TJwMAAAv/8F/EOsJ27ZtI/f5j+w8k20/M6wT/39vJ6iJJIWb4U+yE+9kCBzTtu3uTm3btt2m/o9t22iF4H84T7btfrN/f/f69QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgP+/H4AE+K8W8O+/t/8BAAAAgA==';
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   const { t } = useTranslation();
-  const backgroundLetter = 'HELLO!';
+  const backgroundText = 'HELLO!';
 
   return (
-    // Corrected column order and added overflow-hidden to contain the large text
     <div className="min-h-screen w-full bg-white dark:bg-gray-900 flex flex-col md:flex-row font-sans overflow-hidden">
       
       {/* Decorative Column */}
       <div
-        className="w-full md:w-5/12 min-h-[50vh] md:min-h-screen relative flex items-center justify-center p-4 order-1 md:order-1"
-        style={{ backgroundColor: LANDING_BG_COLOR }}
+        className="w-full md:w-5/12 min-h-[50vh] md:min-h-screen relative flex items-center justify-center p-4 order-1 md:order-1 bg-cover bg-center"
+        style={{ backgroundImage: `url(${JULIANA_IMAGE_URL})` }}
       >
-        <div className="text-center">
+        <div className="absolute inset-0 bg-black/30"></div>
+        <div className="text-center relative z-10">
             <h1 className="text-white font-extrabold text-[18vw] sm:text-[15vw] md:text-[10vw] lg:text-[10rem] leading-none tracking-[-0.05em] select-none">
-              {backgroundLetter}
+              {backgroundText.split('').map((char, index) => (
+                <span 
+                  key={index} 
+                  className="animate-letter-reveal" 
+                  style={{ animationDelay: `${index * 100}ms`}}
+                >
+                  {char}
+                </span>
+              ))}
             </h1>
         </div>
       </div>

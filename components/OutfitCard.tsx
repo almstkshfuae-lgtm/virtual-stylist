@@ -9,6 +9,7 @@ import { TranslationKey } from '../i18n/translations';
 import { ThumbsUpIcon } from './icons/ThumbsUpIcon';
 import { ThumbsDownIcon } from './icons/ThumbsDownIcon';
 import { BodyIcon } from './icons/BodyIcon';
+import { MapPinIcon } from './icons/MapPinIcon';
 
 interface OutfitCardProps {
   outfit: ValidOutfit;
@@ -17,9 +18,11 @@ interface OutfitCardProps {
   total: number;
   rating: 'liked' | 'disliked' | null;
   onRate: (outfit: ValidOutfit, rating: 'liked' | 'disliked') => void;
+  onFindNearby: (accessory: string) => void;
+  isFindingNearby: boolean;
 }
 
-export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, index, rating, onRate }) => {
+export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, index, rating, onRate, onFindNearby, isFindingNearby }) => {
   const [editPrompt, setEditPrompt] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +71,6 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
     }
   };
 
-  // Fix: Add handleEdit function and return JSX to complete the component
   const handleEdit = async () => {
     if (!editPrompt.trim()) return;
     setIsEditing(true);
@@ -104,12 +106,22 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
                 </div>
             )}
             {outfit.iconUrl && outfit.keyAccessory && (
-              <div className="mt-3 pt-3 border-t dark:border-gray-700 flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-                <img src={outfit.iconUrl} alt={outfit.keyAccessory} className="w-8 h-8 object-contain bg-gray-50 dark:bg-gray-700 rounded-full p-1" />
-                <div>
-                  <p className="font-semibold text-gray-500 dark:text-gray-400">{t('main.suggestedAccessory')}:</p>
-                  <p>{outfit.keyAccessory}</p>
+              <div className="mt-3 pt-3 border-t dark:border-gray-700 flex items-center justify-between gap-3 text-sm text-gray-700 dark:text-gray-300">
+                <div className="flex items-center gap-3">
+                    <img src={outfit.iconUrl} alt={outfit.keyAccessory} className="w-8 h-8 object-contain bg-gray-50 dark:bg-gray-700 rounded-full p-1" />
+                    <div>
+                    <p className="font-semibold text-gray-500 dark:text-gray-400">{t('main.suggestedAccessory')}:</p>
+                    <p>{outfit.keyAccessory}</p>
+                    </div>
                 </div>
+                <button 
+                  onClick={() => onFindNearby(outfit.keyAccessory)}
+                  disabled={isFindingNearby}
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 rounded-full hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                >
+                  <MapPinIcon className="w-3 h-3"/>
+                  {isFindingNearby ? t('outfitCard.finding') : t('outfitCard.findNearby')}
+                </button>
               </div>
             )}
           </div>

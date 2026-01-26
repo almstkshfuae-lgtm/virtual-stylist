@@ -43,6 +43,10 @@ export interface GroundingChunk {
         uri?: string;
         title?: string;
     };
+    maps?: {
+        uri?: string;
+        title?: string;
+    }
 }
 
 export interface TrendAnalysisResult {
@@ -56,3 +60,13 @@ export interface ChatMessage {
 }
 
 export type BodyShape = 'apple' | 'pear' | 'hourglass' | 'rectangle' | 'inverted_triangle' | null;
+
+export type Coordinates = {
+    latitude: number;
+    longitude: number;
+} | null;
+
+export interface StoreLocation {
+    title: string;
+    uri: string;
+}

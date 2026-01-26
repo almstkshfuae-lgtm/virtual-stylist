@@ -4,8 +4,8 @@ import { ImageUploader } from './components/ImageUploader';
 import { OutfitCard } from './components/OutfitCard';
 import { Loader } from './components/Loader';
 import { SparklesIcon } from './components/icons/SparklesIcon';
-import { generateOutfits, editImage, combineItems, analyzeTrends, sendMessageToChat } from './services/geminiService';
-import type { Outfit, ClothingItem, CombinationResult, ValidOutfit, StyleProfile, TrendAnalysisResult, ChatMessage, BodyShape } from './types';
+import { generateOutfits, editImage, combineItems, analyzeTrends, sendMessageToChat, findNearbyStores } from './services/geminiService';
+import type { Outfit, ClothingItem, CombinationResult, ValidOutfit, StyleProfile, TrendAnalysisResult, ChatMessage, BodyShape, Coordinates, StoreLocation } from './types';
 import { useTranslation } from './i18n/LanguageContext';
 import { LanguageSelector } from './components/LanguageSelector';
 import { ItemCollection } from './components/ItemCollection';
@@ -16,6 +16,7 @@ import { RestartIcon } from './components/icons/RestartIcon';
 import { Chatbot } from './components/Chatbot';
 import { ChatBubbleIcon } from './components/icons/ChatBubbleIcon';
 import { TrendAnalysisModal } from './components/TrendAnalysisModal';
+import { StoreLocatorModal } from './components/StoreLocatorModal';
 import { GlobeIcon } from './components/icons/GlobeIcon';
 import { OutfitCardSkeleton } from './components/OutfitCardSkeleton';
 import { ThemeToggle } from './components/ThemeToggle';
@@ -64,6 +65,14 @@ const App: React.FC = () => {
   const [isTrendLoading, setIsTrendLoading] = useState(false);
   const [trendAnalysisResult, setTrendAnalysisResult] = useState<TrendAnalysisResult | null>(null);
   const [bodyShape, setBodyShape] = useState<BodyShape>(null);
+
+  const [userLocation, setUserLocation] = useState<Coordinates>(null);
+  const [isFindingStores, setIsFindingStores] = useState(false);
+  const [storeFinderError, setStoreFinderError] = useState<string | null>(null);
+  const [storeLocations, setStoreLocations] = useState<StoreLocation[]>([]);
+  const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
+  const [activeSearchAccessory, setActiveSearchAccessory] = useState<string | null>(null);
+
 
   useEffect(() => {
     try {
@@ -282,6 +291,45 @@ const App: React.FC = () => {
         setIsChatLoading(false);
     }
   };
+
+  const handleFindNearbyStores = useCallback(async (accessory: string) => {
+      const search = async (coords: Coordinates) => {
+          setIsFindingStores(true);
+          setStoreFinderError(null);
+          setStoreLocations([]);
+          setActiveSearchAccessory(accessory);
+          setIsStoreModalOpen(true);
+          try {
+              const stores = await findNearbyStores(accessory, coords, language);
+              setStoreLocations(stores);
+          } catch (e) {
+              console.error(e);
+              setStoreFinderError(t('storeLocator.error'));
+          } finally {
+              setIsFindingStores(false);
+          }
+      };
+
+      if (userLocation) {
+          search(userLocation);
+      } else {
+          navigator.geolocation.getCurrentPosition(
+              (position) => {
+                  const coords = {
+                      latitude: position.coords.latitude,
+                      longitude: position.coords.longitude,
+                  };
+                  setUserLocation(coords);
+                  search(coords);
+              },
+              (error) => {
+                  console.error("Geolocation error:", error);
+                  setStoreFinderError(t('storeLocator.error'));
+                  setIsStoreModalOpen(true);
+              }
+          );
+      }
+  }, [userLocation, language, t]);
   
   const resetApp = () => {
     collection.forEach(item => URL.revokeObjectURL(item.url));
@@ -456,6 +504,8 @@ const App: React.FC = () => {
                                         index={index} total={outfits.length} 
                                         rating={ratedOutfits[outfit.imageUrl] || null}
                                         onRate={handleRateOutfit}
+                                        onFindNearby={handleFindNearbyStores}
+                                        isFindingNearby={isFindingStores && activeSearchAccessory === outfit.keyAccessory}
                                         />
                                     }
                                 })}
@@ -501,6 +551,17 @@ const App: React.FC = () => {
             result={trendAnalysisResult}
             onClose={() => setTrendAnalysisResult(null)}
         />
+      )}
+
+      {isStoreModalOpen && (
+          <StoreLocatorModal
+            isOpen={isStoreModalOpen}
+            onClose={() => setIsStoreModalOpen(false)}
+            stores={storeLocations}
+            isLoading={isFindingStores}
+            error={storeFinderError}
+            accessory={activeSearchAccessory}
+          />
       )}
     </div>
   );

@@ -100,7 +100,15 @@ const en = {
     copied: "Copied!",
     failed: "Failed",
     editError: "Editing failed. Please try a different prompt.",
-    bodyShapeTipTitle: "Why this works for you:"
+    bodyShapeTipTitle: "Why this works for you:",
+    findNearby: "Find Nearby",
+    finding: "Finding..."
+  },
+  storeLocator: {
+    title: "Stores Near You",
+    subtitle: "Showing results for '{{accessory}}'",
+    empty: "Sorry, we couldn't find any specific stores nearby. Try a broader search on Google Maps.",
+    error: "Could not fetch store locations. Please ensure you've granted location permissions and try again."
   },
   rejectedCard: {
     title: "Style Rejected",
@@ -227,7 +235,15 @@ const ar = {
     copied: "تم النسخ!",
     failed: "فشل",
     editError: "فشل التعديل. يرجى تجربة طلب مختلف.",
-    bodyShapeTipTitle: "لماذا يناسبك هذا؟"
+    bodyShapeTipTitle: "لماذا يناسبك هذا؟",
+    findNearby: "البحث بالقرب",
+    finding: "جارٍ البحث..."
+  },
+  storeLocator: {
+    title: "المتاجر القريبة منك",
+    subtitle: "عرض النتائج لـ '{{accessory}}'",
+    empty: "عذرًا، لم نتمكن من العثور على متاجر محددة بالقرب منك. جرب بحثًا أوسع على خرائط Google.",
+    error: "تعذر جلب مواقع المتاجر. يرجى التأكد من منح أذونات الموقع والمحاولة مرة أخرى."
   },
   rejectedCard: {
     title: "تم رفض التنسيق",
@@ -354,7 +370,15 @@ const fr = {
     copied: "Copié !",
     failed: "Échec",
     editError: "La modification a échoué. Veuillez essayer une autre instruction.",
-    bodyShapeTipTitle: "Pourquoi ça vous va :"
+    bodyShapeTipTitle: "Pourquoi ça vous va :",
+    findNearby: "Trouver à proximité",
+    finding: "Recherche..."
+  },
+  storeLocator: {
+    title: "Magasins près de chez vous",
+    subtitle: "Affichage des résultats pour '{{accessory}}'",
+    empty: "Désolé, nous n'avons pas pu trouver de magasins spécifiques à proximité. Essayez une recherche plus large sur Google Maps.",
+    error: "Impossible de récupérer les emplacements des magasins. Veuillez vous assurer que vous avez accordé les autorisations de localisation et réessayez."
   },
   rejectedCard: {
     title: "Style rejeté",
@@ -481,7 +505,15 @@ const ru = {
     copied: "Скопировано!",
     failed: "Ошибка",
     editError: "Не удалось редактировать. Попробуйте другой запрос.",
-    bodyShapeTipTitle: "Почему это вам подходит:"
+    bodyShapeTipTitle: "Почему это вам подходит:",
+    findNearby: "Найти рядом",
+    finding: "Поиск..."
+  },
+  storeLocator: {
+    title: "Магазины рядом с вами",
+    subtitle: "Результаты для '{{accessory}}'",
+    empty: "К сожалению, мы не смогли найти конкретные магазины поблизости. Попробуйте более широкий поиск на Google Картах.",
+    error: "Не удалось загрузить расположение магазинов. Убедитесь, что вы предоставили доступ к местоположению, и попробуйте снова."
   },
   rejectedCard: {
     title: "Стиль отклонен",
@@ -608,7 +640,15 @@ const nl = {
     copied: "Gekopieerd!",
     failed: "Mislukt",
     editError: "Bewerken mislukt. Probeer een andere prompt.",
-    bodyShapeTipTitle: "Waarom dit voor jou werkt:"
+    bodyShapeTipTitle: "Waarom dit voor jou werkt:",
+    findNearby: "Vind in de buurt",
+    finding: "Zoeken..."
+  },
+  storeLocator: {
+    title: "Winkels bij jou in de buurt",
+    subtitle: "Resultaten voor '{{accessory}}'",
+    empty: "Sorry, we konden geen specifieke winkels in de buurt vinden. Probeer een bredere zoekopdracht op Google Maps.",
+    error: "Kon winkellocaties niet ophalen. Zorg ervoor dat je locatietoestemming hebt gegeven en probeer het opnieuw."
   },
   rejectedCard: {
     title: "Stijl afgewezen",

@@ -1,5 +1,7 @@
 {
   "name": "Virtual Stylist AI",
   "description": "Upload a photo of a clothing item and get AI-generated outfit ideas, complete with 'flat-lay' style visualizations that you can edit with text prompts.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }
