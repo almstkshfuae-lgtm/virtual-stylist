@@ -36,7 +36,7 @@ export const LanguageSelector: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-32 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
+        className="flex items-center justify-between w-32 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-600 dark:hover:bg-slate-700"
       >
         <span>{languages[language]}</span>
         <svg className={`w-5 h-5 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -44,13 +44,13 @@ export const LanguageSelector: React.FC = () => {
         </svg>
       </button>
       {isOpen && (
-        <div className="absolute z-10 w-32 mt-1 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 end-0">
+        <div className="absolute z-10 w-32 mt-1 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 end-0 dark:bg-slate-800 dark:ring-slate-700">
           <div className="py-1">
             {Object.entries(languages).map(([code, name]) => (
               <button
                 key={code}
                 onClick={() => handleLanguageChange(code as 'en' | 'ar' | 'fr' | 'ru' | 'nl')}
-                className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-start"
+                className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-start dark:text-gray-300 dark:hover:bg-slate-700"
               >
                 {name}
               </button>
