@@ -3,7 +3,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { ImageUploader } from './components/ImageUploader';
 import { OutfitCard } from './components/OutfitCard';
 import { Loader } from './components/Loader';
-import { StyleSelector } from './components/StyleSelector';
 import { SparklesIcon } from './components/icons/SparklesIcon';
 import { generateOutfits, editImage, combineItems, analyzeTrends, sendMessageToChat } from './services/geminiService';
 import type { Outfit, ClothingItem, CombinationResult, ValidOutfit, StyleProfile, TrendAnalysisResult, ChatMessage, BodyShape } from './types';
@@ -14,12 +13,10 @@ import { CombinationCard } from './components/CombinationCard';
 import { LandingPage } from './components/LandingPage';
 import { RejectedStyleCard } from './components/RejectedStyleCard';
 import { RestartIcon } from './components/icons/RestartIcon';
-import { StyleProfileDisplay } from './components/StyleProfileDisplay';
 import { Chatbot } from './components/Chatbot';
 import { ChatBubbleIcon } from './components/icons/ChatBubbleIcon';
 import { TrendAnalysisModal } from './components/TrendAnalysisModal';
 import { GlobeIcon } from './components/icons/GlobeIcon';
-import { BodyShapeSelector } from './components/BodyShapeSelector';
 import { OutfitCardSkeleton } from './components/OutfitCardSkeleton';
 
 // Helper to convert a Base64 data URL into a File object
@@ -50,7 +47,6 @@ const App: React.FC = () => {
   const [combinationSelection, setCombinationSelection] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedStyles, setSelectedStyles] = useState<string[]>(['Casual', 'Business', 'Night Out']);
   const [viewMode, setViewMode] = useState<'single' | 'combine'>('single');
   const [hasStarted, setHasStarted] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -291,7 +287,6 @@ const App: React.FC = () => {
     setOutfits([]);
     setError(null);
     setIsLoading(false);
-    setSelectedStyles(['Casual', 'Business', 'Night Out']);
     setViewMode('single');
     setCombinationSelection([]);
     setCombinationResults([]);
@@ -367,32 +362,24 @@ const App: React.FC = () => {
                     viewMode={viewMode}
                     onViewModeChange={setViewMode}
                 />
-                
-                {viewMode === 'single' && (
-                  <>
-                    <StyleProfileDisplay profile={styleProfile} onClear={handleClearProfile} />
-                    <BodyShapeSelector selectedShape={bodyShape} onShapeChange={setBodyShape} />
-                  </>
-                )}
 
                 {viewMode === 'single' && selectedItem && (
-                  <div className="space-y-2">
-                    <StyleSelector selectedStyles={selectedStyles} onStylesChange={setSelectedStyles} />
+                  <div className="space-y-4">
                     <button
-                      onClick={() => handleGenerateOutfits(selectedItem.file, selectedStyles)}
-                      disabled={isLoading || selectedStyles.length === 0}
-                      className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600 transition-all duration-300 disabled:bg-pink-300 disabled:cursor-not-allowed transform hover:scale-105"
+                      onClick={() => handleGenerateOutfits(selectedItem.file, ['Casual', 'Business', 'Night Out'])}
+                      disabled={isLoading}
+                      className="w-full flex items-center justify-between p-6 bg-pink-500 text-white font-semibold rounded-2xl shadow-md hover:bg-pink-600 transition-all duration-300 disabled:bg-pink-300 disabled:cursor-not-allowed transform hover:scale-105"
                     >
-                      <SparklesIcon />
-                      {isLoading ? t('main.styling') : t('main.generate')}
+                      <span className="text-xl">{isLoading ? t('main.styling') : t('main.generate')}</span>
+                      <SparklesIcon className="w-10 h-10" />
                     </button>
                     <button
                         onClick={handleAnalyzeTrends}
                         disabled={isTrendLoading}
-                        className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white text-cyan-600 font-semibold rounded-lg shadow-md border border-cyan-200 hover:bg-cyan-50 transition-all duration-300 disabled:bg-gray-100 disabled:cursor-not-allowed transform hover:scale-105"
+                        className="w-full flex items-center justify-between p-6 bg-white text-cyan-600 font-semibold rounded-2xl shadow-md border-2 border-gray-200 hover:bg-cyan-50 transition-all duration-300 disabled:bg-gray-100 disabled:cursor-not-allowed transform hover:scale-105"
                     >
-                        <GlobeIcon />
-                        {isTrendLoading ? t('trends.loading') : t('trends.button')}
+                        <span className="text-xl">{isTrendLoading ? t('trends.loading') : t('trends.button')}</span>
+                        <GlobeIcon className="w-10 h-10" />
                     </button>
                   </div>
                 )}
@@ -429,7 +416,7 @@ const App: React.FC = () => {
                 {isLoading && viewMode === 'single' && (
                     <div className="space-y-8">
                         <h2 className="text-xl font-semibold text-gray-700">{t('main.aiSuggestions')}</h2>
-                        {selectedStyles.map((_, index) => (
+                        {['Casual', 'Business', 'Night Out'].map((_, index) => (
                             <OutfitCardSkeleton key={index} index={index} />
                         ))}
                     </div>
