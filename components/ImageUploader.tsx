@@ -2,6 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from '../i18n/LanguageContext';
 import { UploadIcon } from './icons/UploadIcon';
+import { Loader } from './Loader';
 
 interface ImageUploaderProps {
   onImageUpload: (files: File[]) => void;
@@ -9,12 +10,16 @@ interface ImageUploaderProps {
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { t } = useTranslation();
 
-  const handleFileChange = (files: FileList | null) => {
+  const handleFileChange = async (files: FileList | null) => {
     if (files && files.length > 0) {
       const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
       if (imageFiles.length > 0) {
+        setIsProcessing(true);
+        // Simulate processing delay for better UX
+        await new Promise(resolve => setTimeout(resolve, 800));
         onImageUpload(imageFiles);
       } else {
         alert('Please upload valid image files.');
@@ -25,8 +30,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) =
   const handleDragEnter = useCallback((e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
-  }, []);
+    if (!isProcessing) setIsDragging(true);
+  }, [isProcessing]);
 
   const handleDragLeave = useCallback((e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
@@ -43,8 +48,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) =
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    handleFileChange(e.dataTransfer.files);
-  }, [onImageUpload]);
+    if (!isProcessing) {
+        handleFileChange(e.dataTransfer.files);
+    }
+  }, [onImageUpload, isProcessing]);
 
   return (
     <div className="text-center p-8">
@@ -55,16 +62,25 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) =
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            className={`relative group flex flex-col items-center justify-center w-full max-w-2xl mx-auto h-64 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 overflow-hidden bg-white/50 dark:bg-gray-800/50 ${isDragging ? 'border-pink-500 scale-105' : 'border-gray-300 dark:border-gray-600 hover:border-pink-400 dark:hover:border-pink-500'}`}
+            className={`relative group flex flex-col items-center justify-center w-full max-w-2xl mx-auto h-64 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 overflow-hidden bg-white/50 dark:bg-gray-800/50 ${isDragging ? 'border-pink-500 scale-105' : 'border-gray-300 dark:border-gray-600 hover:border-pink-400 dark:hover:border-pink-500'} ${isProcessing ? 'cursor-wait opacity-80' : ''}`}
         >
             <div className={`absolute inset-0 bg-gradient-to-r from-pink-100 via-purple-100 to-indigo-100 opacity-0 transition-opacity duration-500 ${isDragging ? 'opacity-50' : 'group-hover:opacity-30'}`}></div>
-            <div className="relative z-10 flex flex-col items-center justify-center pt-5 pb-6">
-                <UploadIcon className={`w-10 h-10 mb-3 transition-colors ${isDragging ? 'text-pink-600' : 'text-gray-500 dark:text-gray-400'}`} />
-                <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
-                    <span className="font-semibold">{t('uploader.cta')}</span> {t('uploader.drop')}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-500">{t('uploader.info')}</p>
-            </div>
+            
+            {isProcessing ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 dark:bg-gray-800/90 z-20 backdrop-blur-sm animate-fade-in-up">
+                    <Loader />
+                    <p className="mt-4 text-sm font-semibold text-gray-600 dark:text-gray-300 animate-pulse">{t('main.loading.analyzing')}</p>
+                </div>
+            ) : (
+                <div className="relative z-10 flex flex-col items-center justify-center pt-5 pb-6">
+                    <UploadIcon className={`w-10 h-10 mb-3 transition-colors ${isDragging ? 'text-pink-600' : 'text-gray-500 dark:text-gray-400'}`} />
+                    <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+                        <span className="font-semibold">{t('uploader.cta')}</span> {t('uploader.drop')}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500">{t('uploader.info')}</p>
+                </div>
+            )}
+            
             <input 
                 id="dropzone-file" 
                 type="file" 
@@ -72,6 +88,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) =
                 accept="image/*"
                 multiple
                 onChange={(e) => handleFileChange(e.target.files)}
+                disabled={isProcessing}
             />
         </label>
     </div>

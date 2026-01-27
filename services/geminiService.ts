@@ -207,7 +207,7 @@ For each valid, high-quality combination you find, provide:
 2. A 'description' (in ${targetLanguage}) that provides a sophisticated explanation of **why** the combination works, referencing fashion principles.
 3. An 'itemIndices' array containing the zero-based indexes of the items from the input collection that make up this outfit.
 4. A 'keyAccessory' string (in ${targetLanguage}) describing one important accessory that would complete this look.
-5. An 'iconPrompt' string (in English), a simple phrase for that accessory to generate an icon (e.g., "black boots").
+5. An 'iconPrompt' string (in English), a simple phrase for the accessory to generate an icon (e.g., "black boots").
 
 Format the output as a JSON array of objects. The values for 'title', 'description' and 'keyAccessory' MUST be in ${targetLanguage}. The value for 'iconPrompt' MUST be in English.`;
 
@@ -363,30 +363,37 @@ export const sendMessageToChat = async (history: ChatMessage[], language: string
     return result.text;
 };
 
-export const findNearbyStores = async (accessory: string, coordinates: Coordinates, language: string): Promise<StoreLocation[]> => {
-    if (!coordinates) {
+export const findNearbyStores = async (accessory: string, location: Coordinates | string, language: string): Promise<StoreLocation[]> => {
+    if (!location) {
         throw new Error("Location not available.");
     }
 
     const model = "gemini-2.5-flash";
     const targetLanguage = languageMap[language] || 'English';
 
-    const prompt = `Find stores near my location that sell "${accessory}". I'm looking for actual, physical stores.`;
+    let prompt = "";
+    let requestConfig: any = {
+        tools: [{ googleMaps: {} }]
+    };
+
+    if (typeof location === 'string') {
+        prompt = `As a personal stylist assistant, please find 3-5 top-rated fashion retailers, clothing boutiques, or shoe stores in or near "${location}" that are likely to sell "${accessory}". Prioritize physical stores with high ratings. The response should rely on Google Maps data.`;
+    } else {
+        prompt = `As a personal stylist assistant, please find 3-5 top-rated fashion retailers, clothing boutiques, or shoe stores near the user's current location that are likely to sell "${accessory}". Prioritize physical stores with high ratings. The response should rely on Google Maps data.`;
+        requestConfig.toolConfig = {
+            retrievalConfig: {
+                latLng: {
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                },
+            },
+        };
+    }
 
     const result = await ai.models.generateContent({
         model,
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-            tools: [{ googleMaps: {} }],
-            toolConfig: {
-                retrievalConfig: {
-                    latLng: {
-                        latitude: coordinates.latitude,
-                        longitude: coordinates.longitude,
-                    },
-                },
-            },
-        },
+        config: requestConfig,
     });
 
     const groundingChunks = result.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
@@ -399,10 +406,9 @@ export const findNearbyStores = async (accessory: string, coordinates: Coordinat
     if (stores.length === 0) {
         const fallbackText = result.text;
         if(fallbackText && fallbackText.length > 0) {
-             // This is a bit of a hack if no structured data is returned.
-             // We can use a regex or simple string matching to find store names in the text.
-             // For this case, we just show the raw text as a single "result".
-             return [{ title: fallbackText, uri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`stores that sell ${accessory}`)}` }]
+             const queryLocation = typeof location === 'string' ? location : '';
+             // If no structured map data, return a generic Google Maps search link as fallback
+             return [{ title: "Search on Google Maps", uri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`clothing stores selling ${accessory} ${queryLocation}`)}` }]
         }
     }
     

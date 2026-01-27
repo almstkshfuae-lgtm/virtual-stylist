@@ -9,6 +9,7 @@ import { ThumbsUpIcon } from './icons/ThumbsUpIcon';
 import { ThumbsDownIcon } from './icons/ThumbsDownIcon';
 import { BodyIcon } from './icons/BodyIcon';
 import { MapPinIcon } from './icons/MapPinIcon';
+import { BookmarkIcon } from './icons/BookmarkIcon';
 
 interface OutfitCardProps {
   outfit: ValidOutfit;
@@ -19,9 +20,11 @@ interface OutfitCardProps {
   onRate: (outfit: ValidOutfit, rating: 'liked' | 'disliked') => void;
   onFindNearby: (accessory: string) => void;
   isFindingNearby: boolean;
+  isSaved: boolean;
+  onToggleSave: () => void;
 }
 
-export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, index, rating, onRate, onFindNearby, isFindingNearby }) => {
+export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, index, rating, onRate, onFindNearby, isFindingNearby, isSaved, onToggleSave }) => {
   const [editPrompt, setEditPrompt] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +148,19 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-4 items-center gap-2">
+              <div className="grid grid-cols-5 items-center gap-2">
+                 <button
+                  onClick={onToggleSave}
+                  className={`flex items-center justify-center gap-1 p-2 rounded-md transition-colors ${
+                      isSaved 
+                      ? 'bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-300' 
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                  }`}
+                  aria-label={isSaved ? t('outfitCard.unsave') : t('outfitCard.save')}
+                  title={isSaved ? t('outfitCard.unsave') : t('outfitCard.save')}
+                >
+                  <BookmarkIcon className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
+                </button>
                 <button
                   onClick={() => onRate(outfit, 'liked')}
                   className={`flex items-center justify-center p-2 rounded-md transition-colors ${rating === 'liked' ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-300' : 'bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-500 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-green-500/20 dark:hover:text-green-400'}`}

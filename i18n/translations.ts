@@ -13,6 +13,16 @@ const en = {
       title: "Fashion Stylist »»",
       bio: "I'm a fashion stylist who believes that everyone has a unique style that can be expressed through fashion.",
       cta: "Find Your Style"
+    },
+    features: {
+      title: "Elevate Your Style",
+      subtitle: "Everything you need to look your best, powered by advanced AI.",
+      ai: { title: "AI Personal Stylist", desc: "Get instant outfit recommendations based on your uploaded items." },
+      mix: { title: "Mix & Match", desc: "Create stunning combinations from your existing wardrobe." },
+      trends: { title: "Trend Analysis", desc: "Stay ahead of the curve with real-time fashion trend insights." },
+      chat: { title: "Expert Advice", desc: "Chat with our AI fashion expert for personalized tips." },
+      local: { title: "Shop Local", desc: "Find nearby stores carrying the items you love." },
+      closet: { title: "Digital Closet", desc: "Organize and visualize your wardrobe digitally." }
     }
   },
   uploader: {
@@ -103,13 +113,16 @@ const en = {
     editError: "Editing failed. Please try a different prompt.",
     bodyShapeTipTitle: "Why this works for you:",
     findNearby: "Find Nearby",
-    finding: "Finding..."
+    finding: "Finding...",
+    save: "Save",
+    unsave: "Unsave"
   },
   storeLocator: {
     title: "Stores Near You",
     subtitle: "Showing results for '{{accessory}}'",
     empty: "Sorry, we couldn't find any specific stores nearby. Try a broader search on Google Maps.",
-    error: "Could not fetch store locations. Please ensure you've granted location permissions and try again."
+    error: "Could not fetch store locations. Please ensure you've granted location permissions and try again.",
+    manualLocationPlaceholder: "Enter city or zip code"
   },
   rejectedCard: {
     title: "Style Rejected",
@@ -132,142 +145,165 @@ const en = {
   },
   footer: {
     poweredBy: "Powered by Google Gemini"
+  },
+  theme: {
+    light: "Light",
+    dark: "Dark",
+    system: "System"
   }
 };
 
 const ar = {
   header: {
-    titlePart1: "مصمم أزياء",
-    titlePart2: "افتراضي",
-    subtitle: "ماذا أرتدي؟ تم حلها.",
+    titlePart1: "منسق الأزياء",
+    titlePart2: "الافتراضي",
+    subtitle: "وداعاً لحيرة اختيار الملابس.",
     startOver: "ابدأ من جديد"
   },
   landing: {
     hello: "مرحباً!",
     juliana: {
       name: "أنا جوليانا",
-      title: "مصممة أزياء »»",
-      bio: "أنا مصممة أزياء أؤمن بأن لكل شخص أسلوبه الفريد الذي يمكن التعبير عنه من خلال الموضة.",
-      cta: "ابحث عن أسلوبك"
+      title: "خبيرة مظهر وأناقة »»",
+      bio: "بصفتي خبيرة مظهر، أؤمن أن لكل شخص بصمته الفريدة التي يعكسها أسلوبه في الملابس.",
+      cta: "اكتشف أسلوبك"
+    },
+    features: {
+      title: "ارتقِ بأسلوبك",
+      subtitle: "كل ما تحتاجه لتظهر بأفضل مظهر، بدعم من الذكاء الاصطناعي.",
+      ai: { title: "مصفف شخصي ذكي", desc: "احصل على توصيات فورية للأزياء بناءً على قطعك." },
+      mix: { title: "تنسيق ومطابقة", desc: "ابتكر تشكيلات مذهلة من خزانتك الحالية." },
+      trends: { title: "تحليل الصيحات", desc: "ابقَ في الطليعة مع رؤى فورية لاتجاهات الموضة." },
+      chat: { title: "نصيحة الخبراء", desc: "دردش مع خبير الأزياء الذكي للحصول على نصائح مخصصة." },
+      local: { title: "تسوق محلياً", desc: "اعثر على متاجر قريبة تبيع القطع التي تحبها." },
+      closet: { title: "خزانة رقمية", desc: "نظم وتخيل خزانتك رقمياً." }
     }
   },
   uploader: {
     title: "قم بتحميل قطع ملابسك",
-    subtitle: "هل لديك قطع لا تعرف كيف تنسقها؟ قم بتحميل صورها، وسيقوم مصمم الأزياء الذكاء الاصطناعي لدينا بإنشاء إطلالات كاملة لك.",
-    cta: "انقر للتحميل",
-    drop: "أو اسحب وأفلت",
-    info: "PNG, JPG, WEBP (يمكنك تحديد ملفات متعددة)"
+    subtitle: "هل لديك قطع ملابس تحتار في تنسيقها؟ ارفع صورها هنا، وسأقوم بابتكار إطلالات كاملة ومتناسقة لك.",
+    cta: "اضغط للتحميل",
+    drop: "أو اسحب الملفات هنا",
+    info: "PNG, JPG, WEBP (يمكنك اختيار عدة صور)"
   },
   main: {
-    yourItem: "قطعتك",
-    yourCollection: "مجموعتك",
+    yourItem: "القطعة المختارة",
+    yourCollection: "خزانتك",
     addItem: "إضافة قطعة",
-    removeItem: "إزالة قطعة",
-    selectItemPrompt: "يرجى تحديد قطعة من مجموعتك لبدء التنسيق.",
-    combinePrompt: "حدد قطعتين أو أكثر من مجموعتك للعثور على إطلالات متطابقة.",
-    uploadNew: "تحميل قطعة جديدة",
-    generate: "إنشاء إطلالات",
-    combine: "إيجاد تطابقات",
-    styling: "جاري التنسيق...",
-    combining: "جاري البحث عن تطابقات...",
-    aiSuggestions: "اقتراحات إطلالات الذكاء الاصطناعي",
-    combinationSuggestions: "اقتراحات التنسيق بالذكاء الاصطناعي",
-    suggestedAccessory: "إكسسوار مقترح",
+    removeItem: "حذف",
+    selectItemPrompt: "اختر قطعة من خزانتك لتبدأ رحلة التنسيق.",
+    combinePrompt: "حدد قطعتين أو أكثر لنجد لك التنسيق الأمثل بينهم.",
+    uploadNew: "تحميل المزيد",
+    generate: "ابتكار إطلالات",
+    combine: "تنسيق المجموعة",
+    styling: "جاري التصميم...",
+    combining: "جاري التنسيق...",
+    aiSuggestions: "اقتراحات الذكاء الاصطناعي",
+    combinationSuggestions: "تنسيقات مقترحة من مجموعتك",
+    suggestedAccessory: "إكسسوار يكمل إطلالتك",
     mode: {
       single: "تنسيق قطعة واحدة",
       combine: "تنسيق المجموعة"
     },
     loading: {
-      analyzing: "جاري تحليل قطعك...",
+      analyzing: "جاري تحليل القطع...",
       messages: [
-        "ندرس تنسيقات الألوان...",
-        "نطابق النقوش والأقمشة...",
-        "نصمم الإطلالة المثالية...",
-        "نبحث عن الإكسسوار المناسب...",
+        "نحلل تناغم الألوان...",
+        "نطابق الخامات والنقوش...",
+        "نبحث عن أفضل القصات...",
+        "نختار الإكسسوار الأمثل...",
         "نراجع أحدث صيحات الموضة...",
-        "نطلق العنان لإبداعنا في الموضة..."
+        "نضع لمسات الأناقة الأخيرة..."
       ]
     },
     error: {
-      title: "أوه لا!",
-      editFailed: "فشل تعديل الصورة لـ {{title}}. يرجى المحاولة مرة أخرى.",
-      minTwoItems: "يرجى تحديد قطعتين على الأقل لتنسيقهما."
+      title: "عذراً!",
+      editFailed: "تعذر تعديل صورة {{title}}. يرجى المحاولة مجدداً.",
+      minTwoItems: "يجب اختيار قطعتين على الأقل للتنسيق."
     }
   },
   trends: {
     button: "تحليل الصيحات",
-    loading: "جاري تحليل الصيحات...",
-    modalTitle: "الصيحات الحالية",
+    loading: "نبحث في الصيحات...",
+    modalTitle: "أحدث صيحات الموضة",
     sources: "المصادر"
   },
   chat: {
-    title: "دردشة الموضة",
-    welcome: "أهلاً بك! أنا مساعد الموضة الذكي الخاص بك. اسألني أي شيء عن التنسيق أو الصيحات!",
-    placeholder: "اطرح سؤالاً عن الموضة...",
-    askingAbout: "تسأل عن:"
+    title: "مستشارك للأزياء",
+    welcome: "أهلاً بك! أنا مساعدك الشخصي للأناقة. اسألني عن أي نصيحة أو صيحة تهمك.",
+    placeholder: "اكتب سؤالك هنا...",
+    askingAbout: "بخصوص:"
   },
   bodyShape: {
-    title: "شكل جسمك",
-    'apple': { name: "التفاحة", description: "جذع أعرض، أكتاف عريضة، وصدر وخصر ممتلئان." },
-    'pear': { name: "الكمثرى", description: "وركان وفخذان أعرض مع خصر محدد وأكتاف أضيق." },
-    'hourglass': { name: "الساعة الرملية", description: "صدر ووركان متوازنان مع خصر محدد وواضح." },
-    'rectangle': { name: "المستطيل", description: "قياسات متساوية تقريبًا للأكتاف والصدر والخصر والوركين." },
-    'inverted_triangle': { name: "المثلث المقلوب", description: "أكتاف وصدر عريضان يضيقان نزولاً إلى الوركين." }
+    title: "شكل الجسم",
+    'apple': { name: "التفاحة", description: "جذع ممتلئ، أكتاف عريضة، مع وسط غير محدد." },
+    'pear': { name: "الكمثرى", description: "أرداف وفخذين أعرض من الأكتاف، مع خصر محدد." },
+    'hourglass': { name: "الساعة الرملية", description: "توازن بين الأكتاف والأرداف، مع خصر محدد جداً." },
+    'rectangle': { name: "المستطيل", description: "قياسات متقاربة للأكتاف والخصر والأرداف." },
+    'inverted_triangle': { name: "المثلث المقلوب", description: "أكتاف عريضة تضيق تدريجياً نحو الأرداف." }
   },
   styleSelector: {
     label: "اختر من 1 إلى 4 أنماط",
     selectionCount: "تم اختيار {{selected}}/{{max}}"
   },
   styleProfile: {
-    title: "ملف تعريف أناقتك",
-    description: "أعجب أو لا تعجب بالإطلالات لتعليم الذكاء الاصطناعي ذوقك. سيتم استخدام ملفك الشخصي لإنشاء نتائج أكثر تخصيصًا.",
-    clear: "مسح الملف الشخصي",
+    title: "تفضيلاتك الشخصية",
+    description: "تفاعل مع الإطلالات (إعجاب/عدم إعجاب) ليتعلم الذكاء الاصطناعي ذوقك ويقدم لك نتائج أدق مستقبلاً.",
+    clear: "مسح التفضيلات",
     empty: "ابدأ بتقييم الإطلالات لبناء ملفك الشخصي!"
   },
   outfitCard: {
-    editLabel: "عدّل هذه الإطلالة:",
-    editPlaceholder: "مثال: أضف وشاحًا أزرق",
-    apply: "تطبيق",
-    applying: "جاري التطبيق...",
+    editLabel: "تعديل هذه الإطلالة:",
+    editPlaceholder: "مثال: أضيفي وشاحاً حريرياً",
+    apply: "نفذ",
+    applying: "جاري التنفيذ...",
     cancel: "إلغاء",
     edit: "تعديل",
-    like: "إعجاب",
-    dislike: "عدم إعجاب",
+    like: "أعجبني",
+    dislike: "لم يعجبني",
     share: "مشاركة",
     copied: "تم النسخ!",
     failed: "فشل",
-    editError: "فشل التعديل. يرجى تجربة طلب مختلف.",
-    bodyShapeTipTitle: "لماذا يناسبك هذا؟",
-    findNearby: "البحث بالقرب",
-    finding: "جارٍ البحث..."
+    editError: "لم نتمكن من التعديل. جرب صياغة أخرى.",
+    bodyShapeTipTitle: "لماذا تناسبك هذه الإطلالة:",
+    findNearby: "متاجر قريبة",
+    finding: "بحث...",
+    save: "حفظ",
+    unsave: "إلغاء الحفظ"
   },
   storeLocator: {
-    title: "المتاجر القريبة منك",
-    subtitle: "عرض النتائج لـ '{{accessory}}'",
-    empty: "عذرًا، لم نتمكن من العثور على متاجر محددة بالقرب منك. جرب بحثًا أوسع على خرائط Google.",
-    error: "تعذر جلب مواقع المتاجر. يرجى التأكد من منح أذونات الموقع والمحاولة مرة أخرى."
+    title: "متاجر قريبة توفر هذا",
+    subtitle: "نتائج البحث عن: '{{accessory}}'",
+    empty: "عذراً، لم نجد متاجر محددة بالقرب منك. جرب البحث العام في خرائط جوجل.",
+    error: "تعذر تحديد الموقع. تأكد من تفعيل خدمة الموقع وحاول مرة أخرى.",
+    manualLocationPlaceholder: "أدخل اسم المدينة أو الحي"
   },
   rejectedCard: {
-    title: "تم رفض التنسيق",
-    subtitle: "لهذا السبب لا يعتبر هذا التنسيق مناسبًا:"
+    title: "تنسيق غير مناسب",
+    subtitle: "لماذا لا نوصي بهذا الخيار:"
   },
   styles: {
-    'Casual': { name: 'كاجوال', description: 'ملابس مريحة للاستخدام اليومي. فكر في الجينز والقمصان والأحذية الرياضية.' },
-    'Business': { name: 'عمل', description: 'احترافية ومناسبة للمكتب. تشمل البدلات والبلوزات والسراويل الرسمية.' },
-    'Night Out': { name: 'سهرة', description: 'أنيقة وعصرية للأمسيات. تتميز بفساتين الكوكتيل والكعب العالي والقطع المميزة.' },
-    'Athleisure': { name: 'رياضي', description: 'رياضي يلتقي بالكاجوال. يجمع بين الملابس الرياضية مثل اللباس الضيق والسترات مع الموضة اليومية.' },
-    'Bohemian': { name: 'بوهيمي', description: 'روح حرة وفنية. يتميز بأقمشة انسيابية وألوان ترابية وأنماط انتقائية.' },
-    'Formal': { name: 'رسمي', description: 'ملابس أنيقة للمناسبات الخاصة. فكر في الفساتين والبدلات الرسمية والمجوهرات الفاخرة.' },
-    'Streetwear': { name: 'ملابس الشارع', description: 'أزياء حضرية وعصرية. متجذرة في ثقافة التزلج والهيب هوب، مع قمصان جرافيك وأحذية رياضية.' },
-    'Minimalist': { name: 'بسيط', description: 'خطوط بسيطة ونظيفة ولوحة ألوان محايدة. يركز على الجودة والأشكال الخالدة.' },
-    'Vintage': { name: 'عتيق', description: 'مستوحاة من أزياء العصور الماضية. تتميز بطبعات ريترو وصور ظلية كلاسيكية وإكسسوارات حنينية.' }
+    'Casual': { name: 'كاجوال', description: 'مريح وعملي للاستخدام اليومي. جينز، تيشيرت، أحذية رياضية.' },
+    'Business': { name: 'رسمي للعمل', description: 'احترافي ومناسب لبيئة العمل. بدلات، قمصان، بناطيل قماشية.' },
+    'Night Out': { name: 'سهرة', description: 'أنيق وجذاب للمناسبات المسائية. فساتين، كعب عالي، إكسسوارات لامعة.' },
+    'Athleisure': { name: 'رياضي أنيق', description: 'الراحة الرياضية بلمسة عصرية. ليقنز، هوديز منسقة بشكل أنيق.' },
+    'Bohemian': { name: 'بوهيمي', description: 'حر وفني. أقمشة انسيابية، ألوان ترابية، نقوش مميزة.' },
+    'Formal': { name: 'رسمي جداً', description: 'فخامة للمناسبات الكبرى. فساتين سهرة، مجوهرات راقية.' },
+    'Streetwear': { name: 'ستريت وير', description: 'عصري وشبابي. مستوحى من ثقافة الشارع، ملابس واسعة وأحذية مميزة.' },
+    'Minimalist': { name: 'مينيمال (بسيط)', description: 'أناقة البساطة. ألوان محايدة، قصات نظيفة، جودة عالية.' },
+    'Vintage': { name: 'فينتج (كلاسيكي)', description: 'سحر الماضي. قطع مستوحاة من حقب زمنية سابقة بلمسة حنين.' }
   },
   share: {
-    title: "إطلالتي من مصمم الأزياء الافتراضي",
-    text: "تم تنسيقها بواسطة مصمم الأزياء الذكاء الاصطناعي."
+    title: "إطلالتي من المنسق الافتراضي",
+    text: "تم تنسيقها بواسطة الذكاء الاصطناعي."
   },
   footer: {
     poweredBy: "مدعوم بواسطة Google Gemini"
+  },
+  theme: {
+    light: "فاتح",
+    dark: "داكن",
+    system: "النظام"
   }
 };
 
@@ -285,6 +321,16 @@ const fr = {
       title: "Styliste de mode »»",
       bio: "Je suis une styliste de mode qui croit que chacun a un style unique qui peut être exprimé à travers la mode.",
       cta: "Trouvez votre style"
+    },
+    features: {
+      title: "Élevez votre style",
+      subtitle: "Tout ce dont vous avez besoin pour être au top, propulsé par l'IA.",
+      ai: { title: "Styliste personnel IA", desc: "Obtenez des recommandations de tenues instantanées." },
+      mix: { title: "Mix & Match", desc: "Créez des combinaisons étonnantes à partir de votre garde-robe." },
+      trends: { title: "Analyse des tendances", desc: "Restez à la pointe avec des aperçus de la mode en temps réel." },
+      chat: { title: "Conseils d'experts", desc: "Discutez avec notre expert mode IA pour des conseils personnalisés." },
+      local: { title: "Achetez local", desc: "Trouvez des magasins à proximité vendant les articles que vous aimez." },
+      closet: { title: "Garde-robe numérique", desc: "Organisez et visualisez votre garde-robe numériquement." }
     }
   },
   uploader: {
@@ -375,13 +421,16 @@ const fr = {
     editError: "La modification a échoué. Veuillez essayer une autre instruction.",
     bodyShapeTipTitle: "Pourquoi ça vous va :",
     findNearby: "Trouver à proximité",
-    finding: "Recherche..."
+    finding: "Recherche...",
+    save: "Enregistrer",
+    unsave: "Retirer"
   },
   storeLocator: {
     title: "Magasins près de chez vous",
     subtitle: "Affichage des résultats pour '{{accessory}}'",
     empty: "Désolé, nous n'avons pas pu trouver de magasins spécifiques à proximité. Essayez une recherche plus large sur Google Maps.",
-    error: "Impossible de récupérer les emplacements des magasins. Veuillez vous assurer que vous avez accordé les autorisations de localisation et réessayez."
+    error: "Impossible de récupérer les emplacements des magasins. Veuillez vous assurer que vous avez accordé les autorisations de localisation et réessayez.",
+    manualLocationPlaceholder: "Entrez la ville ou le code postal"
   },
   rejectedCard: {
     title: "Style rejeté",
@@ -404,6 +453,11 @@ const fr = {
   },
   footer: {
     poweredBy: "Propulsé par Google Gemini"
+  },
+  theme: {
+    light: "Clair",
+    dark: "Sombre",
+    system: "Système"
   }
 };
 
@@ -421,6 +475,16 @@ const ru = {
       title: "Модный стилист »»",
       bio: "Я модный стилист, который верит, что у каждого есть уникальный стиль, который можно выразить через моду.",
       cta: "Найди свой стиль"
+    },
+    features: {
+      title: "Поднимите свой стиль",
+      subtitle: "Всё, что нужно для идеального образа, на базе передового ИИ.",
+      ai: { title: "ИИ Персональный стилист", desc: "Мгновенные рекомендации образов на основе ваших вещей." },
+      mix: { title: "Сочетай и комбинируй", desc: "Создавайте потрясающие комбинации из вашего гардероба." },
+      trends: { title: "Анализ трендов", desc: "Будьте в курсе моды с анализом трендов в реальном времени." },
+      chat: { title: "Советы эксперта", desc: "Общайтесь с нашим ИИ-экспертом для получения персональных советов." },
+      local: { title: "Покупайте рядом", desc: "Находите ближайшие магазины с вещами, которые вам нравятся." },
+      closet: { title: "Цифровой гардероб", desc: "Организуйте и визуализируйте свой гардероб в цифровом виде." }
     }
   },
   uploader: {
@@ -511,13 +575,16 @@ const ru = {
     editError: "Не удалось редактировать. Попробуйте другой запрос.",
     bodyShapeTipTitle: "Почему это вам подходит:",
     findNearby: "Найти рядом",
-    finding: "Поиск..."
+    finding: "Поиск...",
+    save: "Сохранить",
+    unsave: "Удалить"
   },
   storeLocator: {
     title: "Магазины рядом с вами",
     subtitle: "Результаты для '{{accessory}}'",
     empty: "К сожалению, мы не смогли найти конкретные магазины поблизости. Попробуйте более широкий поиск на Google Картах.",
-    error: "Не удалось загрузить расположение магазинов. Убедитесь, что вы предоставили доступ к местоположению, и попробуйте снова."
+    error: "Не удалось загрузить расположение магазинов. Убедитесь, что вы предоставили доступ к местоположению, и попробуйте снова.",
+    manualLocationPlaceholder: "Введите город или индекс"
   },
   rejectedCard: {
     title: "Стиль отклонен",
@@ -540,6 +607,11 @@ const ru = {
   },
   footer: {
     poweredBy: "На базе Google Gemini"
+  },
+  theme: {
+    light: "Светлая",
+    dark: "Темная",
+    system: "Системная"
   }
 };
 
@@ -557,6 +629,16 @@ const nl = {
       title: "Mode Stylist »»",
       bio: "Ik ben een modestylist die gelooft dat iedereen een unieke stijl heeft die via mode kan worden uitgedrukt.",
       cta: "Vind Jouw Stijl"
+    },
+    features: {
+      title: "Verbeter uw stijl",
+      subtitle: "Alles wat u nodig heeft om er op uw best uit te zien, aangedreven door AI.",
+      ai: { title: "AI Persoonlijke Stylist", desc: "Krijg directe outfit-aanbevelingen op basis van uw items." },
+      mix: { title: "Mix & Match", desc: "Creëer prachtige combinaties uit uw bestaande garderobe." },
+      trends: { title: "Trendanalyse", desc: "Blijf voorop lopen met realtime mode-inzichten." },
+      chat: { title: "Expertadvies", desc: "Chat met onze AI-mode-expert voor gepersonaliseerde tips." },
+      local: { title: "Winkel Lokaal", desc: "Vind winkels in de buurt die de items verkopen waar u van houdt." },
+      closet: { title: "Digitale Garderobe", desc: "Organiseer en visualiseer uw garderobe digitaal." }
     }
   },
   uploader: {
@@ -647,21 +729,24 @@ const nl = {
     editError: "Bewerken mislukt. Probeer een andere prompt.",
     bodyShapeTipTitle: "Waarom dit voor jou werkt:",
     findNearby: "Vind in de buurt",
-    finding: "Zoeken..."
+    finding: "Zoeken...",
+    save: "Opslaan",
+    unsave: "Verwijderen"
   },
   storeLocator: {
     title: "Winkels bij jou in de buurt",
     subtitle: "Resultaten voor '{{accessory}}'",
     empty: "Sorry, we konden geen specifieke winkels in de buurt vinden. Probeer een bredere zoekopdracht op Google Maps.",
-    error: "Kon winkellocaties niet ophalen. Zorg ervoor dat je locatietoestemming hebt gegeven en probeer het opnieuw."
+    error: "Kon winkellocaties niet ophalen. Zorg ervoor dat je locatietoestemming hebt gegeven en probeer het opnieuw.",
+    manualLocationPlaceholder: "Voer stad of postcode in"
   },
   rejectedCard: {
     title: "Stijl afgewezen",
     subtitle: "Hier is waarom dit geen goede match is:"
   },
   styles: {
-    'Casual': { name: 'Casual', description: 'Comfortabele, alledaagse kleding. Denk aan jeans, t-shirts en sneakers.' },
-    'Business': { name: 'Zakelijk', description: 'Professioneel en kantoorgeschikt. Inclusief pakken, blouses en formele broeken.' },
+    'Casual': { name: 'Casual', description: 'Comfortabele, alledaagse kleding. Denk aan jeans, t-shirts, and sneakers.' },
+    'Business': { name: 'Zakelijk', description: 'Professionnel en kantoorgeschikt. Inclusief pakken, blouses en formele broeken.' },
     'Night Out': { name: 'Avondje uit', description: 'Netjes en stijlvol voor \'s avonds. Met cocktailjurken, hakken en opvallende stukken.' },
     'Athleisure': { name: 'Athleisure', description: 'Sportief ontmoet casual. Combineert sportkleding zoals leggings en hoodies met alledaagse mode.' },
     'Bohemian': { name: 'Bohemien', description: 'Vrijgevochten en artistiek. Gekenmerkt door zwierige stoffen, aardetinten en eclectische patronen.' },
@@ -676,6 +761,11 @@ const nl = {
   },
   footer: {
     poweredBy: "Aangedreven door Google Gemini"
+  },
+  theme: {
+    light: "Licht",
+    dark: "Donker",
+    system: "Systeem"
   }
 };
 

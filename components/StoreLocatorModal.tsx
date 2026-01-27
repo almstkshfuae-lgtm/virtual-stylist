@@ -1,9 +1,9 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from '../i18n/LanguageContext';
 import type { StoreLocation } from '../types';
 import { Loader } from './Loader';
 import { MapPinIcon } from './icons/MapPinIcon';
+import { SendIcon } from './icons/SendIcon';
 
 interface StoreLocatorModalProps {
   isOpen: boolean;
@@ -12,10 +12,19 @@ interface StoreLocatorModalProps {
   isLoading: boolean;
   error: string | null;
   accessory: string | null;
+  onSearchManualLocation: (location: string) => void;
 }
 
-export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, onClose, stores, isLoading, error, accessory }) => {
+export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, onClose, stores, isLoading, error, accessory, onSearchManualLocation }) => {
   const { t } = useTranslation();
+  const [manualLocation, setManualLocation] = useState('');
+
+  const handleManualSearch = (e: React.FormEvent) => {
+      e.preventDefault();
+      if(manualLocation.trim()) {
+          onSearchManualLocation(manualLocation);
+      }
+  };
 
   if (!isOpen) {
     return null;
@@ -42,13 +51,31 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
         </div>
         
         <div className="p-6 overflow-y-auto">
+            {/* Manual Search Form - Always shown at top to allow change of location */}
+            <form onSubmit={handleManualSearch} className="mb-4 flex gap-2">
+                <input 
+                    type="text" 
+                    value={manualLocation}
+                    onChange={(e) => setManualLocation(e.target.value)}
+                    placeholder={t('storeLocator.manualLocationPlaceholder')}
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                />
+                <button 
+                    type="submit"
+                    disabled={isLoading || !manualLocation.trim()}
+                    className="px-3 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <SendIcon className="w-4 h-4" />
+                </button>
+            </form>
+
             {isLoading && (
                 <div className="flex flex-col items-center justify-center h-48">
                     <Loader />
                 </div>
             )}
-            {error && (
-                <div className="text-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+            {error && !isLoading && (
+                <div className="text-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg mb-4 text-sm">
                     {error}
                 </div>
             )}

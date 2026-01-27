@@ -16,6 +16,60 @@ interface ItemCollectionProps {
     onViewModeChange: (mode: 'single' | 'combine') => void;
 }
 
+const CollectionItem: React.FC<{
+    item: ClothingItem;
+    index: number;
+    isSelected: boolean;
+    isRemoving: boolean;
+    viewMode: 'single' | 'combine';
+    onSelectItem: (index: number) => void;
+    onRemoveItem: (index: number, url: string) => void;
+    t: any;
+}> = ({ item, index, isSelected, isRemoving, viewMode, onSelectItem, onRemoveItem, t }) => {
+    const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+    return (
+        <div
+            className={`relative group aspect-square ${isRemoving ? 'animate-item-remove' : 'animate-item-add'}`}
+        >
+            <button 
+                onClick={() => onSelectItem(index)}
+                className={`w-full h-full rounded-md overflow-hidden focus:outline-none ring-2 ring-offset-2 dark:ring-offset-slate-800 transition-all duration-200 ${
+                    viewMode === 'single' && isSelected ? 'ring-pink-500' : 'ring-transparent'
+                } relative`}
+            >
+                {!isImageLoaded && (
+                    <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />
+                )}
+                <img 
+                    src={item.url} 
+                    alt={`Clothing item ${index + 1}`} 
+                    className={`w-full h-full object-cover rounded-md border-2 border-gray-200 dark:border-gray-500 transition-opacity duration-500 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`} 
+                    onLoad={() => setIsImageLoaded(true)}
+                />
+                {viewMode === 'combine' && (
+                    <div className={`absolute inset-0 bg-black transition-opacity duration-200 rounded-md ${isSelected ? 'opacity-40' : 'opacity-0 group-hover:opacity-20'}`}></div>
+                )}
+            </button>
+            {viewMode === 'combine' && (
+                <div className={`absolute top-1 left-1 rtl:left-auto rtl:right-1 w-5 h-5 rounded-sm border-2 bg-white/50 flex items-center justify-center pointer-events-none transition-all duration-200 ${isSelected ? 'border-white bg-white' : 'border-gray-400 dark:border-gray-500'}`}>
+                    {isSelected && <svg className="w-3 h-3 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+                </div>
+            )}
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveItem(index, item.url);
+                }}
+                aria-label={t('main.removeItem')}
+                className="absolute top-1 right-1 rtl:right-auto rtl:left-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+                <TrashIcon className="w-4 h-4" />
+            </button>
+        </div>
+    );
+};
+
 export const ItemCollection: React.FC<ItemCollectionProps> = ({
     items,
     selection,
@@ -55,43 +109,19 @@ export const ItemCollection: React.FC<ItemCollectionProps> = ({
                 <ModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto p-1">
-                {items.map((item, index) => {
-                    const isSelected = selection.includes(index);
-                    const isRemoving = removingItems.includes(item.url);
-                    return (
-                        <div
-                            key={item.url}
-                            className={`relative group aspect-square ${isRemoving ? 'animate-item-remove' : 'animate-item-add'}`}
-                        >
-                            <button 
-                                onClick={() => onSelectItem(index)}
-                                className={`w-full h-full rounded-md overflow-hidden focus:outline-none ring-2 ring-offset-2 dark:ring-offset-slate-800 transition-all duration-200 ${
-                                    viewMode === 'single' && isSelected ? 'ring-pink-500' : 'ring-transparent'
-                                }`}
-                            >
-                                <img src={item.url} alt={`Clothing item ${index + 1}`} className="w-full h-full object-cover rounded-md border-2 border-gray-200 dark:border-gray-500" />
-                                {viewMode === 'combine' && (
-                                    <div className={`absolute inset-0 bg-black transition-opacity duration-200 rounded-md ${isSelected ? 'opacity-40' : 'opacity-0 group-hover:opacity-20'}`}></div>
-                                )}
-                            </button>
-                            {viewMode === 'combine' && (
-                                <div className={`absolute top-1 left-1 rtl:left-auto rtl:right-1 w-5 h-5 rounded-sm border-2 bg-white/50 flex items-center justify-center pointer-events-none transition-all duration-200 ${isSelected ? 'border-white bg-white' : 'border-gray-400 dark:border-gray-500'}`}>
-                                    {isSelected && <svg className="w-3 h-3 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
-                                </div>
-                            )}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleRemoveClick(index, item.url);
-                                }}
-                                aria-label={t('main.removeItem')}
-                                className="absolute top-1 right-1 rtl:right-auto rtl:left-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                                <TrashIcon className="w-4 h-4" />
-                            </button>
-                        </div>
-                    )
-                })}
+                {items.map((item, index) => (
+                    <CollectionItem
+                        key={item.url}
+                        item={item}
+                        index={index}
+                        isSelected={selection.includes(index)}
+                        isRemoving={removingItems.includes(item.url)}
+                        viewMode={viewMode}
+                        onSelectItem={onSelectItem}
+                        onRemoveItem={handleRemoveClick}
+                        t={t}
+                    />
+                ))}
                  <button
                     onClick={handleAddClick}
                     className="flex flex-col items-center justify-center aspect-square bg-gray-50 dark:bg-slate-700/50 rounded-md border-2 border-dashed border-gray-300 dark:border-slate-600 text-gray-400 hover:bg-gray-100 hover:border-pink-400 hover:text-pink-500 dark:hover:bg-slate-700 dark:hover:border-pink-500 dark:hover:text-pink-400 transition-colors"
