@@ -8,13 +8,19 @@
  * @module
  */
 
+import type * as loyalty from "../loyalty.js";
+import type * as outfits from "../outfits.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  loyalty: typeof loyalty;
+  outfits: typeof outfits;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.

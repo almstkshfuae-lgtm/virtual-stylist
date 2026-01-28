@@ -24,6 +24,7 @@ import { StyleSelector } from './components/StyleSelector';
 import { BodyShapeSelector } from './components/BodyShapeSelector';
 import { StyleProfileDisplay } from './components/StyleProfileDisplay';
 import { ConvexProviderWrapper } from './components/ConvexProviderWrapper';
+import { LoyaltyPanel } from './components/LoyaltyPanel';
 
 // Lazy-load the demo image from the public assets folder.
 const DEMO_IMAGE_FILENAME = 'demo-skirt.png';
@@ -47,6 +48,27 @@ const loadDemoImageFile = (): Promise<File> => {
     });
   }
   return demoImagePromise;
+};
+
+const LOCAL_CUSTOMER_ID_KEY = 'virtual-stylist-customer-id';
+
+const getLocalCustomerId = () => {
+  if (typeof window === 'undefined') {
+    return 'virtual-stylist-visitor';
+  }
+  const stored = window.localStorage.getItem(LOCAL_CUSTOMER_ID_KEY);
+  if (stored) {
+    return stored;
+  }
+
+  const browserCrypto = window.crypto;
+  const randomId =
+    typeof browserCrypto?.randomUUID === 'function'
+      ? browserCrypto.randomUUID()
+      : `visitor-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
+
+  window.localStorage.setItem(LOCAL_CUSTOMER_ID_KEY, randomId);
+  return randomId;
 };
 
 const App: React.FC = () => {
@@ -83,6 +105,7 @@ const App: React.FC = () => {
   const [selectedStyles, setSelectedStyles] = useState<string[]>(['Casual', 'Business', 'Night Out']);
 
   const [savedOutfits, setSavedOutfits] = useState<ValidOutfit[]>([]);
+  const [customerId] = useState<string>(() => getLocalCustomerId());
 
 
   useEffect(() => {
@@ -595,11 +618,12 @@ const App: React.FC = () => {
                 )}
             </div>
           </div>
-        )}
-      </main>
-      <footer className="text-center p-4 mt-8 text-sm text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-slate-800">
-        <p>{t('footer.poweredBy')}</p>
-      </footer>
+      )}
+    </main>
+    {hasStarted && <LoyaltyPanel userId={customerId} />}
+    <footer className="text-center p-4 mt-8 text-sm text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-slate-800">
+      <p>{t('footer.poweredBy')}</p>
+    </footer>
        <button 
         onClick={() => setIsChatOpen(true)} 
         className="fixed bottom-6 right-6 bg-pink-500 text-white p-4 rounded-full shadow-lg hover:bg-pink-600 transition-transform transform hover:scale-110 z-20"
