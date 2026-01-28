@@ -144,6 +144,44 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   animation: gentle-bounce 0.5s ease-in-out;
 }
 
+@keyframes smooth-scroll {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+.animate-smooth-scroll {
+  animation: smooth-scroll 2s ease-in-out infinite;
+}
+
+/* Responsive text sizing utility */
+@media (max-width: 640px) {
+  .text-responsive-hero {
+    font-size: clamp(1.875rem, 8vw, 2.25rem);
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .text-responsive-hero {
+    font-size: clamp(2.25rem, 6vw, 3rem);
+  }
+}
+
+@media (min-width: 769px) {
+  .text-responsive-hero {
+    font-size: clamp(2.25rem, 5vw, 4rem);
+  }
+}
+
+/* Focus visible for accessibility */
+.focus-visible-ring:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 @keyframes item-pop-in {
   from {
     transform: scale(0.8);

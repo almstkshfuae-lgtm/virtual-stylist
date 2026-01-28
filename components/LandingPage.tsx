@@ -49,17 +49,21 @@ interface FeatureCardProps {
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, index }) => (
     <motion.div
-        className="bg-white dark:bg-gray-700/50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-600 flex flex-col items-center text-center hover:-translate-y-2"
-        initial={{ opacity: 0, y: 16 }}
+        className="group bg-white dark:bg-gray-700/50 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-600 flex flex-col items-center text-center h-full"
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
-        transition={{ delay: index * 0.08, duration: 0.4 }}
+        transition={{ delay: index * 0.1, duration: 0.5 }}
+        whileHover={{ y: -8 }}
     >
-        <div className="w-14 h-14 bg-pink-50 dark:bg-pink-900/30 rounded-full flex items-center justify-center mb-4 text-pink-600 dark:text-pink-400">
+        <motion.div 
+            className="w-14 h-14 sm:w-16 sm:h-16 bg-pink-50 dark:bg-pink-900/30 rounded-full flex items-center justify-center mb-5 sm:mb-6 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform duration-300"
+            whileHover={{ rotate: 10, scale: 1.15 }}
+        >
             {icon}
-        </div>
-        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">{title}</h3>
-        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{description}</p>
+        </motion.div>
+        <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 sm:mb-4 leading-tight">{title}</h3>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed flex-grow">{description}</p>
     </motion.div>
 );
 
@@ -73,24 +77,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   };
   
   // Reduced font size slightly on mobile to prevent visual crowding
-  const commonTextStyle = "font-black text-[15vw] md:text-[10vw] lg:text-[10rem] leading-none tracking-[-0.05em] select-none whitespace-nowrap transition-all duration-500";
+  const commonTextStyle = "font-black text-[12vw] sm:text-[14vw] md:text-[8vw] lg:text-[9rem] leading-none tracking-[-0.05em] select-none whitespace-nowrap transition-all duration-500";
 
   return (
-    <div className="min-h-screen w-full font-sans bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
+    <div className="min-h-screen w-full font-sans bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-x-hidden">
         {/* Header Actions */}
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-4">
+        <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex items-center gap-2 sm:gap-4">
           <ThemeToggle />
           <LanguageSelector />
         </div>
         
         {/* Hero Section */}
         <section
-            className="relative min-h-screen flex items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image"
+            className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image pt-20 sm:pt-24"
         >
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" aria-hidden="true" />
-            {/* BACKGROUND TEXT LAYER */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <div className="relative w-full max-w-7xl mx-auto h-[70vh] md:h-[80vh]">
+            
+            {/* BACKGROUND TEXT LAYER - Hidden on very small screens */}
+            <div className="hidden sm:flex absolute inset-0 pointer-events-none z-10">
+                <div className="relative w-full h-full flex items-center justify-center">
                      {/* Dark text part */}
                     <AnimatedText 
                         text={backgroundText}
@@ -106,92 +111,112 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 </div>
             </div>
 
-            {/* Main Content Card */}
-            <div className="relative w-full max-w-7xl mx-auto h-[70vh] md:h-[80vh] flex items-stretch z-30 shadow-2xl rounded-lg overflow-hidden my-auto px-4 md:px-0 backdrop-blur-sm">
-                {/* Left Panel (Empty/Grey) - Becomes Right in RTL */}
-                <div className={`hidden md:block md:w-5/12 ${isRtl ? 'order-2' : 'order-1'} relative bg-gray-200 dark:bg-gray-800 transition-colors duration-300`}>
-                </div>
+            {/* Main Hero Content - Simplified and Responsive */}
+            <div className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center flex-grow">
+                <div className="w-full max-w-2xl">
+                    {/* Decorative Dots */}
+                    <motion.div 
+                        className="flex justify-center gap-1.5 mb-6 sm:mb-8"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        {Array.from({ length: 9 }).map((_, i) => (
+                            <div 
+                                key={i} 
+                                className="w-2 h-2 rounded-full bg-brand"
+                                style={{ 
+                                    opacity: 0.6 + (i % 3) * 0.15,
+                                    animation: `pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                                    animationDelay: `${i * 0.1}s`
+                                }}
+                            />
+                        ))}
+                    </motion.div>
 
-                {/* Right Panel (Content) - Becomes Left in RTL */}
-                <div className={`w-full md:w-7/12 ${isRtl ? 'order-1' : 'order-2'} bg-white dark:bg-gray-900 flex flex-col items-center justify-center text-center p-6 md:p-12 transition-colors duration-300 rounded-lg md:rounded-none`}>
-                    <div className="max-w-md w-full">
-                        {/* Decorative Dots */}
-                        <div className="grid grid-cols-3 gap-1.5 w-6 mb-8 mx-auto animate-text-fade-in opacity-60" style={{ animationDelay: '0ms' }}>
-                            {Array.from({ length: 9 }).map((_, i) => (
-                            <div key={i} className="w-1.5 h-1.5 rounded-full bg-brand"></div>
-                            ))}
-                        </div>
+                    <motion.h1
+                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 sm:mb-4 leading-tight"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1, duration: 0.6 }}
+                    >
+                        <span className="text-brand">{t('landing.juliana.name')}</span>
+                    </motion.h1>
 
-                        <motion.h2
-                            className="text-4xl lg:text-5xl font-bold mb-2"
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1, duration: 0.5 }}
-                        >
-                            <span className="text-brand">{t('landing.juliana.name')}</span>
-                        </motion.h2>
-                        <motion.p
-                            className="text-lg lg:text-xl italic opacity-80 text-brand"
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.25, duration: 0.5 }}
-                        >
-                            {t('landing.juliana.title')}
-                        </motion.p>
-                        <motion.p
-                            className="mt-6 text-gray-600 dark:text-gray-300 leading-relaxed text-base md:text-lg"
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4, duration: 0.5 }}
-                        >
-                            {t('landing.juliana.bio')}
-                        </motion.p>
+                    <motion.p
+                        className="text-lg sm:text-xl md:text-2xl italic text-brand/80 mb-4 sm:mb-6 font-semibold"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.6 }}
+                    >
+                        {t('landing.juliana.title')}
+                    </motion.p>
 
-                        <motion.div
-                            className="mt-10"
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.55, duration: 0.5 }}
-                        >
-                            <button
-                            onClick={onGetStarted}
-                            className="inline-flex items-center gap-3 px-8 py-4 text-white font-bold rounded-xl shadow-lg transition-transform duration-300 hover:animate-gentle-bounce hover:shadow-xl hover:scale-105 active:scale-95 bg-brand"
-                            >
-                            {t('landing.juliana.cta')}
-                            <ArrowRight className={`w-5 h-5 ${isRtl ? 'transform rotate-180' : ''}`} />
-                            </button>
-                        </motion.div>
-                    </div>
+                    <motion.p
+                        className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-8 sm:mb-10 max-w-xl mx-auto"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
+                    >
+                        {t('landing.juliana.bio')}
+                    </motion.p>
+
+                    <motion.button
+                        onClick={onGetStarted}
+                        className="inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-white font-bold text-base sm:text-lg rounded-full sm:rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95 bg-brand hover:bg-brand/90 w-full sm:w-auto max-w-sm sm:max-w-none"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4, duration: 0.6 }}
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        {t('landing.juliana.cta')}
+                        <ArrowRight className={`w-5 h-5 sm:w-6 sm:h-6 ${isRtl ? 'transform rotate-180' : ''}`} />
+                    </motion.button>
                 </div>
             </div>
 
             {/* Scroll Indicator */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 animate-bounce">
+            <motion.div 
+                className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-30"
+                animate={{ y: [0, 8, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+            >
                 <button 
                     onClick={scrollToFeatures}
-                    className="p-2 rounded-full hover:bg-white/20 dark:hover:bg-black/20 transition-colors focus:outline-none"
-                    aria-label="Scroll down"
+                    className="p-2 sm:p-3 rounded-full hover:bg-white/20 dark:hover:bg-black/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+                    aria-label="Scroll down to features"
                 >
-                    <ArrowDown className="w-8 h-8 text-gray-200 opacity-70" />
+                    <ArrowDown className="w-6 h-6 sm:w-8 sm:h-8 text-gray-200 opacity-70" />
                 </button>
-            </div>
+            </motion.div>
         </section>
 
         {/* Features Section */}
-        <section id="landing-features" className="relative py-24 px-4 md:px-8 bg-white dark:bg-gray-800 transition-colors duration-300 scroll-mt-10">
-            <div className="max-w-7xl mx-auto">
+        <section 
+            id="landing-features" 
+            className="relative w-full py-16 sm:py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800 transition-colors duration-300 scroll-mt-10"
+        >
+            <div className="max-w-6xl mx-auto">
+                {/* Section Header */}
                 <motion.div
-                    className="text-center mb-16"
-                    initial={{ opacity: 0, y: 16 }}
+                    className="text-center mb-12 sm:mb-16 md:mb-20"
+                    initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 0.5 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.6 }}
                 >
-                    <h2 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">{t('landing.features.title')}</h2>
-                    <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">{t('landing.features.subtitle')}</p>
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 leading-tight">
+                        {t('landing.features.title')}
+                    </h2>
+                    <div className="w-16 h-1 bg-brand rounded-full mx-auto mb-6 sm:mb-8" />
+                    <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                        {t('landing.features.subtitle')}
+                    </p>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Features Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     {[
                         { icon: Sparkles, title: 'landing.features.ai.title', desc: 'landing.features.ai.desc' },
                         { icon: Shuffle, title: 'landing.features.mix.title', desc: 'landing.features.mix.desc' },
@@ -204,7 +229,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                         return (
                             <FeatureCard
                                 key={feature.title}
-                                icon={<Icon className="w-8 h-8" />}
+                                icon={<Icon className="w-7 h-7 sm:w-8 sm:h-8" />}
                                 title={t(feature.title as TranslationKey)}
                                 description={t(feature.desc as TranslationKey)}
                                 index={index}
@@ -212,6 +237,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                         );
                     })}
                 </div>
+
+                {/* CTA at bottom */}
+                <motion.div
+                    className="text-center mt-12 sm:mt-16 md:mt-20"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                    <button
+                        onClick={onGetStarted}
+                        className="inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-white font-bold text-base sm:text-lg rounded-full sm:rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95 bg-brand hover:bg-brand/90"
+                        aria-label="Get started with Virtual Stylist"
+                    >
+                        {t('landing.juliana.cta')}
+                        <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </button>
+                </motion.div>
             </div>
         </section>
     </div>
