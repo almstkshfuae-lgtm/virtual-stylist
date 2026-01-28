@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Share2, Copy } from 'lucide-react';
 import { useLoyalty } from '../hooks/useConvex';
+import CustomerProfileForm from './CustomerProfileForm';
 
 const ENTRY_LABELS: Record<string, string> = {
   monthly: 'Monthly allotment',
@@ -29,7 +31,9 @@ interface LoyaltyPanelProps {
 export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
   const { account, settings, ledger, ensureCustomer, issueMonthly } = useLoyalty(userId);
   const [copyStatus, setCopyStatus] = useState<CopyStatus>('idle');
+  const [copyLinkStatus, setCopyLinkStatus] = useState<CopyStatus>('idle');
   const [isIssuing, setIsIssuing] = useState(false);
+  const [origin, setOrigin] = useState('');
 
   useEffect(() => {
     if (!userId) return;
@@ -37,6 +41,12 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
       console.debug('Loyalty customer initialization skipped', error.message);
     });
   }, [ensureCustomer, userId]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
 
   const handleIssueMonthly = async () => {
     if (!userId || !issueMonthly) return;
@@ -66,6 +76,44 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
     }
   };
 
+  const referralLink = useMemo(() => {
+    if (!account?.referralCode) return null;
+    const base = origin || 'https://virtual-stylist.ai';
+    return `${base}/?ref=${account.referralCode}`;
+  }, [account?.referralCode, origin]);
+
+  const copyReferralLink = async () => {
+    if (!referralLink || typeof navigator === 'undefined' || !navigator.clipboard) {
+      setCopyLinkStatus('error');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      setCopyLinkStatus('copied');
+      setTimeout(() => setCopyLinkStatus('idle'), 1500);
+    } catch (error) {
+      console.error('Failed to copy referral link', error);
+      setCopyLinkStatus('error');
+    }
+  };
+
+  const shareReferral = async () => {
+    if (!referralLink || typeof navigator === 'undefined') return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'اكتشف منسق الأزياء الافتراضي',
+          text: 'جرّب منسق الأزياء الافتراضي واحصل على نقاط مكافأة معي.',
+          url: referralLink,
+        });
+      } catch (error) {
+        console.debug('Share cancelled or failed', error);
+      }
+    } else {
+      await copyReferralLink();
+    }
+  };
+
   const monthlyPoints = settings?.monthlyPoints ?? 300;
   const signupPoints = settings?.signupBonusPoints ?? 500;
   const welcomePoints = settings?.welcomePackagePoints ?? 1300;
@@ -79,7 +127,10 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
   if (!userId) return null;
 
   return (
-    <section className="mx-auto mt-10 max-w-6xl rounded-3xl border border-gray-200 bg-white/90 p-6 shadow-lg shadow-pink-500/10 dark:border-slate-800 dark:bg-slate-900/70">
+    <section className="mx-auto mt-10 max-w-6xl space-y-6">
+      <CustomerProfileForm userId={userId} />
+
+      <div className="rounded-3xl border border-gray-200 bg-white/90 p-6 shadow-lg shadow-pink-500/10 dark:border-slate-800 dark:bg-slate-900/70">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400">
@@ -138,13 +189,31 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
         <div className="rounded-2xl border border-pink-200/60 bg-pink-50/60 p-4 dark:border-pink-700/40 dark:bg-pink-900/30">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase text-pink-700 dark:text-pink-200">Referral code</p>
-            <button
-              type="button"
-              onClick={copyReferralCode}
-              className="text-xs font-semibold uppercase text-pink-600 hover:text-pink-400"
-            >
-              {copyStatus === 'copied' ? 'Copied' : 'Copy'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={copyReferralCode}
+                className="inline-flex items-center gap-1 text-xs font-semibold uppercase text-pink-600 hover:text-pink-400"
+              >
+                <Copy className="h-3.5 w-3.5" />{copyStatus === 'copied' ? 'Copied' : 'Copy'}
+              </button>
+              <button
+                type="button"
+                onClick={copyReferralLink}
+                disabled={!referralLink}
+                className="inline-flex items-center gap-1 text-xs font-semibold uppercase text-pink-600 hover:text-pink-400 disabled:text-pink-300"
+              >
+                <Copy className="h-3.5 w-3.5" />{copyLinkStatus === 'copied' ? 'Link copied' : 'Link'}
+              </button>
+              <button
+                type="button"
+                onClick={shareReferral}
+                disabled={!referralLink}
+                className="inline-flex items-center gap-1 text-xs font-semibold uppercase text-pink-600 hover:text-pink-400 disabled:text-pink-300"
+              >
+                <Share2 className="h-3.5 w-3.5" />شارك
+              </button>
+            </div>
           </div>
           <p className="mt-2 text-2xl font-bold text-pink-700 dark:text-pink-200">
             {hasData && account?.referralCode ? account.referralCode : '—'}
@@ -152,6 +221,16 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
           <p className="text-xs text-pink-600/80 dark:text-pink-100">
             {`Both referrer and referee earn ${referralPoints} pts when a new account joins.`}
           </p>
+          {referralLink && (
+            <a
+              href={`mailto:?subject=انضم%20إلي%20منسق%20الأزياء%20الافتراضي&body=${encodeURIComponent(
+                `استخدم هذا الرابط لتحصل على نقاط مكافأة:\n${referralLink}`,
+              )}`}
+              className="mt-3 inline-flex text-xs font-semibold text-pink-700 underline hover:text-pink-900"
+            >
+              أرسل الرابط عبر البريد
+            </a>
+          )}
         </div>
         <div className="rounded-2xl border border-gray-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/40">
           <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Referred by</p>
@@ -222,6 +301,7 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
             ))}
           </div>
         )}
+      </div>
       </div>
     </section>
   );

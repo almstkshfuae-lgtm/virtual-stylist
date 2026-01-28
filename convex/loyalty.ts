@@ -56,7 +56,39 @@ export const getOrCreateCustomer = mutation({
       .first();
 
     if (existing) {
-      return existing;
+      const patch: any = { updatedAt: Date.now() };
+      let shouldPatch = false;
+
+      if (args.name && args.name !== existing.name) {
+        patch.name = args.name;
+        shouldPatch = true;
+      }
+
+      if (args.email && args.email !== existing.email) {
+        patch.email = args.email;
+        shouldPatch = true;
+      }
+
+      const needsReferral =
+        args.referredByCode &&
+        !existing.referredByCode &&
+        args.referredByCode !== existing.referralCode;
+
+      if (needsReferral) {
+        patch.referredByCode = args.referredByCode;
+        shouldPatch = true;
+      }
+
+      if (shouldPatch) {
+        await ctx.db.patch(existing._id, patch);
+      }
+
+      // If the user just entered a referral code after signup, reward it once.
+      if (needsReferral) {
+        await rewardReferral(ctx, { ...existing, ...patch }, args.referredByCode!, settings);
+      }
+
+      return await ctx.db.get(existing._id);
     }
 
     const referralCode = generateReferralCode();
