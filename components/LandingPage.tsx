@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from '../i18n/LanguageContext';
 import { LanguageSelector } from './LanguageSelector';
 import { ThemeToggle } from './ThemeToggle';
 import { TranslationKey } from '../i18n/translations';
 import { motion } from 'framer-motion';
-import { ArrowRight, ArrowDown, Sparkles, Shuffle, Globe, MessageCircle, MapPin, Upload } from 'lucide-react';
+import { ArrowRight, ArrowDown, Sparkles, Shuffle, Globe, MessageCircle, MapPin, Upload, Gift, User } from 'lucide-react';
+import { useLoyalty } from '../hooks/useConvex';
 
 import { LoyaltyHero } from './LoyaltyHero';
 import { isConvexEnabled } from '../lib/convexConfig';
@@ -79,22 +80,101 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
       document.getElementById('landing-features')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const profileLabel = t('landing.header.profile');
+  const referralLabel = t('landing.header.referral');
+  const referralUnavailableLabel = t('landing.header.referralUnavailable');
+
+  const { account } = useLoyalty(userId);
+  const userName = account?.name ?? t('landing.header.guest');
+  const userPoints = account ? `${account.pointsBalance.toLocaleString()} pts` : t('landing.header.pointsUnknown');
+  const referralStatus = account?.referralCode
+    ? t('landing.header.referralActive')
+    : t('landing.header.referralPending');
+  const userInitial = userName ? userName.trim().charAt(0).toUpperCase() || 'V' : 'V';
+
+  const scrollToSection = useCallback((id: string) => {
+    if (typeof document === 'undefined') return;
+    const target = document.getElementById(id);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, []);
+
+  const handleProfileClick = useCallback(() => {
+    scrollToSection('landing-profile-target');
+  }, [scrollToSection]);
+
+  const handleReferralClick = useCallback(() => {
+    scrollToSection('landing-referral-target');
+  }, [scrollToSection]);
+
+  const navButtonClass = (isDisabled = false) =>
+    [
+      'inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold shadow-sm transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500',
+      isDisabled
+        ? 'border-white/40 bg-white/60 text-gray-500 cursor-not-allowed dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-400'
+        : 'border-white/70 bg-white/90 text-gray-900 hover:border-white dark:border-gray-700 dark:bg-gray-900/70 dark:text-white dark:hover:bg-gray-800',
+    ].join(' ');
+
   return (
     <div className="min-h-screen w-full font-sans bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-x-hidden">
         {/* Header Actions */}
-        <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex items-center gap-2 sm:gap-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-2 sm:p-3 rounded-full shadow-lg">
-          <ThemeToggle />
-          <LanguageSelector />
+        <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex flex-col gap-2 rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-2 sm:p-3 shadow-lg">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleProfileClick}
+              className={navButtonClass(false)}
+            >
+              <User className="h-4 w-4" aria-hidden="true" />
+              <span>{profileLabel}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleReferralClick}
+              disabled={!isConvexEnabled}
+              aria-disabled={!isConvexEnabled}
+              title={isConvexEnabled ? referralLabel : referralUnavailableLabel}
+              className={navButtonClass(!isConvexEnabled)}
+            >
+              <Gift className="h-4 w-4" aria-hidden="true" />
+              <span>{referralLabel}</span>
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/90 px-2 py-1 text-[0.65rem] font-semibold text-gray-900 shadow-sm dark:border-white/20 dark:bg-gray-900/70 dark:text-white">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-pink-500 text-[0.65rem] font-bold text-white">
+                {userInitial}
+              </span>
+              <div className="flex flex-col leading-tight">
+                <span className="text-[0.65rem] font-semibold text-gray-900 dark:text-white">
+                  {userName}
+                </span>
+                <span className="text-[0.55rem] text-gray-500 dark:text-gray-300">
+                  {userPoints}
+                </span>
+              </div>
+            </div>
+            <span className="text-[0.65rem] text-gray-500 dark:text-gray-300">
+              {referralStatus}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LanguageSelector />
+          </div>
         </div>
         
         {/* Hero Section */}
         <section
-        className="relative w-full flex flex-col items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image pt-28 sm:pt-44 md:pt-64 pb-16 sm:pb-20 md:pb-24 min-h-[70vh] sm:min-h-[75vh]"
+        className="relative hero-hello w-full flex flex-col items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image pt-28 sm:pt-44 md:pt-64 pb-16 sm:pb-20 md:pb-24 min-h-[70vh] sm:min-h-[75vh]"
         >
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" aria-hidden="true" />
+            <div className="absolute inset-0 z-20 bg-gradient-to-b from-black/20 via-black/40 to-black/60" aria-hidden="true" />
             
             {/* Main Hero Content - Simplified and Responsive */}
-            <div className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
+            <div
+              id="landing-profile-target"
+              className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center"
+            >
                 <div className="w-full max-w-2xl">
                     <motion.h1
                         className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 sm:mb-4 leading-tight text-responsive-hero"
@@ -139,7 +219,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
             </div>
 
             {isConvexEnabled && (
-              <div className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8">
+              <div
+                id="landing-referral-target"
+                className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8"
+              >
                 <LoyaltyHero userId={userId} />
               </div>
             )}

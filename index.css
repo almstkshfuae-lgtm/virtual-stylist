@@ -32,6 +32,45 @@ body {
 
 .bg-hero-image {
   background-image: url('/hero_section_background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: saturate(0.35) brightness(0.55);
+}
+
+.hero-hello {
+  isolation: isolate;
+}
+
+.hero-hello::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% -10%, rgba(255, 255, 255, 0.08), transparent 45%),
+    linear-gradient(180deg, rgba(6, 9, 19, 0.55), rgba(3, 5, 12, 0.85));
+  z-index: 10;
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.gemini3-logo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #5c6ef8, #7c3aed, #ec4899);
+  -webkit-background-clip: text;
+  color: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.gemini3-logo-number {
+  font-size: 0.9rem;
+  color: inherit;
+  opacity: 0.95;
 }
 
 .clip-dark-ltr {

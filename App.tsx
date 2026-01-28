@@ -624,8 +624,15 @@ const App: React.FC = () => {
       )}
     </main>
     {hasStarted && isConvexEnabled && <LoyaltyPanel userId={customerId} />}
-    <footer className="text-center p-4 mt-8 text-sm text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-slate-800">
-      <p>{t('footer.poweredBy')}</p>
+    <footer className="text-center p-4 mt-8 text-sm text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-slate-800 space-y-2">
+      <p>{t('footer.copyright')}</p>
+      <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+        <span className="gemini3-logo" aria-hidden="true">
+          Gemini
+          <span className="gemini3-logo-number">3</span>
+        </span>
+        <span>{t('footer.poweredBy')}</span>
+      </div>
     </footer>
        <button 
         onClick={() => setIsChatOpen(true)} 

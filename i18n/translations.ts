@@ -8,6 +8,15 @@ const en = {
   },
   landing: {
     hello: "HELLO!",
+    header: {
+      profile: "Profile",
+      referral: "Referral",
+      referralUnavailable: "Referral program coming soon",
+      guest: "Guest",
+      pointsUnknown: "Points pending",
+      referralActive: "Referral active",
+      referralPending: "Referral pending"
+    },
     juliana: {
       name: "I'm Juliana",
       title: "Fashion Stylist »»",
@@ -145,7 +154,8 @@ const en = {
     text: "Styled by Virtual Stylist AI."
   },
   footer: {
-    poweredBy: "Powered by Google Gemini"
+    poweredBy: "Powered by Google Gemini",
+    copyright: "Application copyrights by ALMSTKSHF Co 2026"
   },
   theme: {
     light: "Light",
@@ -163,6 +173,15 @@ const ar = {
   },
   landing: {
     hello: "مرحباً!",
+    header: {
+      profile: "الملف الشخصي",
+      referral: "إحالة",
+      referralUnavailable: "برنامج الإحالة قيد الإعداد",
+      guest: "زائر",
+      pointsUnknown: "النقاط قيد الانتظار",
+      referralActive: "برنامج الإحالة جاهز",
+      referralPending: "برنامج الإحالة قيد الانتظار"
+    },
     juliana: {
       name: "أنا جوليانا",
       title: "خبيرة مظهر وأناقة »»",
@@ -300,7 +319,8 @@ const ar = {
     text: "تم تنسيقها بواسطة الذكاء الاصطناعي."
   },
   footer: {
-    poweredBy: "مدعوم بواسطة Google Gemini"
+    poweredBy: "مدعوم بواسطة Google Gemini",
+    copyright: "حقوق تطبيق ALMSTKSHF Co 2026"
   },
   theme: {
     light: "فاتح",
@@ -318,6 +338,15 @@ const fr = {
   },
   landing: {
     hello: "SALUT!",
+    header: {
+      profile: "Profil",
+      referral: "Parrainage",
+      referralUnavailable: "Programme de parrainage bientôt disponible",
+      guest: "Invité",
+      pointsUnknown: "Points en attente",
+      referralActive: "Parrainage actif",
+      referralPending: "Parrainage en attente"
+    },
     juliana: {
       name: "Je suis Juliana",
       title: "Styliste de mode »»",
@@ -455,7 +484,8 @@ const fr = {
     text: "Stylisée par l'IA Styliste Virtuel."
   },
   footer: {
-    poweredBy: "Propulsé par Google Gemini"
+    poweredBy: "Propulsé par Google Gemini",
+    copyright: "Droits d'application par ALMSTKSHF Co 2026"
   },
   theme: {
     light: "Clair",
@@ -473,6 +503,15 @@ const ru = {
   },
   landing: {
     hello: "ПРИВЕТ!",
+    header: {
+      profile: "Профиль",
+      referral: "Реферальная программа",
+      referralUnavailable: "Реферальная программа скоро появится",
+      guest: "Гость",
+      pointsUnknown: "Баллы ожидают начисления",
+      referralActive: "Реферал активен",
+      referralPending: "Реферал в ожидании"
+    },
     juliana: {
       name: "Я Джулиана",
       title: "Модный стилист »»",
@@ -610,7 +649,8 @@ const ru = {
     text: "Стилизовано ИИ Виртуальным Стилистом."
   },
   footer: {
-    poweredBy: "На базе Google Gemini"
+    poweredBy: "На базе Google Gemini",
+    copyright: "Авторские права приложения ALMSTKSHF Co 2026"
   },
   theme: {
     light: "Светлая",
@@ -628,6 +668,15 @@ const nl = {
   },
   landing: {
     hello: "HALLO!",
+    header: {
+      profile: "Profiel",
+      referral: "Doorverwijzing",
+      referralUnavailable: "Doorverwijzingsprogramma binnenkort beschikbaar",
+      guest: "Gast",
+      pointsUnknown: "Punten in afwachting",
+      referralActive: "Doorverwijzing actief",
+      referralPending: "Doorverwijzing in afwachting"
+    },
     juliana: {
       name: "Ik ben Juliana",
       title: "Mode Stylist »»",
@@ -765,7 +814,8 @@ const nl = {
     text: "Gestyled door Virtuele Stylist AI."
   },
   footer: {
-    poweredBy: "Aangedreven door Google Gemini"
+    poweredBy: "Aangedreven door Google Gemini",
+    copyright: "Applicatie-auteursrechten door ALMSTKSHF Co 2026"
   },
   theme: {
     light: "Licht",
