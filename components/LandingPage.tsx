@@ -1,25 +1,17 @@
 
-import React, { useRef, useState, useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from '../i18n/LanguageContext';
 import { LanguageSelector } from './LanguageSelector';
-import { ArrowRightIcon } from './icons/ArrowRightIcon';
 import { ThemeToggle } from './ThemeToggle';
-import { SparklesIcon } from './icons/SparklesIcon';
-import { PlusMinusIcon } from './icons/PlusMinusIcon';
-import { GlobeIcon } from './icons/GlobeIcon';
-import { ChatBubbleIcon } from './icons/ChatBubbleIcon';
-import { MapPinIcon } from './icons/MapPinIcon';
-import { UploadIcon } from './icons/UploadIcon';
-import { ArrowDownIcon } from './icons/ArrowDownIcon';
 import { TranslationKey } from '../i18n/translations';
+import { motion } from 'framer-motion';
+import { ArrowRight, ArrowDown, Sparkles, Shuffle, Globe, MessageCircle, MapPin, Upload } from 'lucide-react';
 
 interface LandingPageProps {
   onGetStarted: () => void;
 }
 
-const BURGUNDY_COLOR = '#6b1a3c';
-
-const AnimatedText: React.FC<{ text: string; isRtl: boolean, className: string, style: React.CSSProperties }> = ({ text, isRtl, className, style }) => {
+const AnimatedText: React.FC<{ text: string; isRtl: boolean; className: string; style?: React.CSSProperties }> = ({ text, isRtl, className, style }) => {
   // For RTL languages (like Arabic), splitting text by character breaks ligatures (shaping).
   // We must render the text as a continuous block.
   if (isRtl) {
@@ -53,51 +45,31 @@ interface FeatureCardProps {
     title: string;
     description: string;
     index: number;
-    isVisible: boolean;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, index, isVisible }) => (
-    <div 
-        className={`bg-white dark:bg-gray-700/50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-700 transform border border-gray-100 dark:border-gray-600 flex flex-col items-center text-center hover:-translate-y-2
-        ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-        style={{ transitionDelay: `${index * 100}ms` }}
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, index }) => (
+    <motion.div
+        className="bg-white dark:bg-gray-700/50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-600 flex flex-col items-center text-center hover:-translate-y-2"
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ delay: index * 0.08, duration: 0.4 }}
     >
         <div className="w-14 h-14 bg-pink-50 dark:bg-pink-900/30 rounded-full flex items-center justify-center mb-4 text-pink-600 dark:text-pink-400">
             {icon}
         </div>
         <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">{title}</h3>
         <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{description}</p>
-    </div>
+    </motion.div>
 );
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   const { t, language } = useTranslation();
   const isRtl = language === 'ar';
   const backgroundText = t('landing.hello');
-  
-  const featuresRef = useRef<HTMLDivElement>(null);
-  const [areFeaturesVisible, setAreFeaturesVisible] = useState(false);
-
-  useEffect(() => {
-      const observer = new IntersectionObserver(
-          ([entry]) => {
-              if (entry.isIntersecting) {
-                  setAreFeaturesVisible(true);
-                  observer.disconnect();
-              }
-          },
-          { threshold: 0.1 }
-      );
-
-      if (featuresRef.current) {
-          observer.observe(featuresRef.current);
-      }
-
-      return () => observer.disconnect();
-  }, []);
 
   const scrollToFeatures = () => {
-      featuresRef.current?.scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('landing-features')?.scrollIntoView({ behavior: 'smooth' });
   };
   
   // Reduced font size slightly on mobile to prevent visual crowding
@@ -112,7 +84,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         </div>
         
         {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <section
+            className="relative min-h-screen flex items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image"
+        >
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" aria-hidden="true" />
             {/* BACKGROUND TEXT LAYER */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                 <div className="relative w-full max-w-7xl mx-auto h-[70vh] md:h-[80vh]">
@@ -120,26 +95,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                     <AnimatedText 
                         text={backgroundText}
                         isRtl={isRtl}
-                        className={`${commonTextStyle} absolute inset-0 flex items-center justify-center opacity-10 dark:opacity-20`}
-                        style={{ 
-                            color: BURGUNDY_COLOR, 
-                            clipPath: isRtl ? 'inset(0 0 0 58.333%)' : 'inset(0 58.333% 0 0)'
-                        }}
+                        className={`${commonTextStyle} absolute inset-0 flex items-center justify-center opacity-10 dark:opacity-20 text-brand ${isRtl ? 'clip-dark-rtl' : 'clip-dark-ltr'}`}
                     />
                      {/* Light text part */}
                      <AnimatedText 
                         text={backgroundText}
                         isRtl={isRtl}
-                        className={`${commonTextStyle} text-gray-200 dark:text-gray-700 absolute inset-0 flex items-center justify-center opacity-30 dark:opacity-10`}
-                        style={{ 
-                            clipPath: isRtl ? 'inset(0 41.667% 0 0)' : 'inset(0 0 0 41.667%)' 
-                        }}
+                        className={`${commonTextStyle} text-gray-200 dark:text-gray-700 absolute inset-0 flex items-center justify-center opacity-30 dark:opacity-10 ${isRtl ? 'clip-light-rtl' : 'clip-light-ltr'}`}
                     />
                 </div>
             </div>
 
             {/* Main Content Card */}
-            <div className="relative w-full max-w-7xl mx-auto h-[70vh] md:h-[80vh] flex items-stretch z-30 shadow-2xl rounded-lg overflow-hidden my-auto px-4 md:px-0">
+            <div className="relative w-full max-w-7xl mx-auto h-[70vh] md:h-[80vh] flex items-stretch z-30 shadow-2xl rounded-lg overflow-hidden my-auto px-4 md:px-0 backdrop-blur-sm">
                 {/* Left Panel (Empty/Grey) - Becomes Right in RTL */}
                 <div className={`hidden md:block md:w-5/12 ${isRtl ? 'order-2' : 'order-1'} relative bg-gray-200 dark:bg-gray-800 transition-colors duration-300`}>
                 </div>
@@ -150,30 +118,49 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                         {/* Decorative Dots */}
                         <div className="grid grid-cols-3 gap-1.5 w-6 mb-8 mx-auto animate-text-fade-in opacity-60" style={{ animationDelay: '0ms' }}>
                             {Array.from({ length: 9 }).map((_, i) => (
-                            <div key={i} className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: BURGUNDY_COLOR}}></div>
+                            <div key={i} className="w-1.5 h-1.5 rounded-full bg-brand"></div>
                             ))}
                         </div>
 
-                        <h2 className="text-4xl lg:text-5xl font-bold animate-text-fade-in mb-2" style={{color: BURGUNDY_COLOR, animationDelay: '100ms'}}>
-                            {t('landing.juliana.name')}
-                        </h2>
-                        <p className="text-lg lg:text-xl italic animate-text-fade-in opacity-80" style={{color: BURGUNDY_COLOR, animationDelay: '300ms'}}>
+                        <motion.h2
+                            className="text-4xl lg:text-5xl font-bold mb-2"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1, duration: 0.5 }}
+                        >
+                            <span className="text-brand">{t('landing.juliana.name')}</span>
+                        </motion.h2>
+                        <motion.p
+                            className="text-lg lg:text-xl italic opacity-80 text-brand"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.25, duration: 0.5 }}
+                        >
                             {t('landing.juliana.title')}
-                        </p>
-                        <p className="mt-6 text-gray-600 dark:text-gray-300 leading-relaxed animate-text-fade-in text-base md:text-lg" style={{ animationDelay: '500ms' }}>
+                        </motion.p>
+                        <motion.p
+                            className="mt-6 text-gray-600 dark:text-gray-300 leading-relaxed text-base md:text-lg"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4, duration: 0.5 }}
+                        >
                             {t('landing.juliana.bio')}
-                        </p>
+                        </motion.p>
 
-                        <div className="mt-10 animate-text-fade-in" style={{ animationDelay: '700ms' }}>
+                        <motion.div
+                            className="mt-10"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.55, duration: 0.5 }}
+                        >
                             <button
                             onClick={onGetStarted}
-                            className="inline-flex items-center gap-3 px-8 py-4 text-white font-bold rounded-xl shadow-lg transition-transform duration-300 hover:animate-gentle-bounce hover:shadow-xl hover:scale-105 active:scale-95"
-                            style={{backgroundColor: BURGUNDY_COLOR}}
+                            className="inline-flex items-center gap-3 px-8 py-4 text-white font-bold rounded-xl shadow-lg transition-transform duration-300 hover:animate-gentle-bounce hover:shadow-xl hover:scale-105 active:scale-95 bg-brand"
                             >
                             {t('landing.juliana.cta')}
-                            <ArrowRightIcon className={`w-5 h-5 ${isRtl ? 'transform rotate-180' : ''}`} />
+                            <ArrowRight className={`w-5 h-5 ${isRtl ? 'transform rotate-180' : ''}`} />
                             </button>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </div>
@@ -185,62 +172,45 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                     className="p-2 rounded-full hover:bg-white/20 dark:hover:bg-black/20 transition-colors focus:outline-none"
                     aria-label="Scroll down"
                 >
-                    <ArrowDownIcon className="w-8 h-8 text-gray-600 dark:text-gray-400 opacity-70" />
+                    <ArrowDown className="w-8 h-8 text-gray-200 opacity-70" />
                 </button>
             </div>
         </section>
 
         {/* Features Section */}
-        <section ref={featuresRef} className="relative py-24 px-4 md:px-8 bg-white dark:bg-gray-800 transition-colors duration-300 scroll-mt-10">
+        <section id="landing-features" className="relative py-24 px-4 md:px-8 bg-white dark:bg-gray-800 transition-colors duration-300 scroll-mt-10">
             <div className="max-w-7xl mx-auto">
-                <div className={`text-center mb-16 transition-all duration-1000 transform ${areFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                <motion.div
+                    className="text-center mb-16"
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.5 }}
+                >
                     <h2 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">{t('landing.features.title')}</h2>
                     <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">{t('landing.features.subtitle')}</p>
-                </div>
+                </motion.div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <FeatureCard 
-                        icon={<SparklesIcon className="w-8 h-8" />}
-                        title={t('landing.features.ai.title')}
-                        description={t('landing.features.ai.desc')}
-                        index={0}
-                        isVisible={areFeaturesVisible}
-                    />
-                    <FeatureCard 
-                        icon={<PlusMinusIcon className="w-8 h-8" />}
-                        title={t('landing.features.mix.title')}
-                        description={t('landing.features.mix.desc')}
-                        index={1}
-                        isVisible={areFeaturesVisible}
-                    />
-                    <FeatureCard 
-                        icon={<GlobeIcon className="w-8 h-8" />}
-                        title={t('landing.features.trends.title')}
-                        description={t('landing.features.trends.desc')}
-                        index={2}
-                        isVisible={areFeaturesVisible}
-                    />
-                    <FeatureCard 
-                        icon={<ChatBubbleIcon className="w-8 h-8" />}
-                        title={t('landing.features.chat.title')}
-                        description={t('landing.features.chat.desc')}
-                        index={3}
-                        isVisible={areFeaturesVisible}
-                    />
-                    <FeatureCard 
-                        icon={<MapPinIcon className="w-8 h-8" />}
-                        title={t('landing.features.local.title')}
-                        description={t('landing.features.local.desc')}
-                        index={4}
-                        isVisible={areFeaturesVisible}
-                    />
-                     <FeatureCard 
-                        icon={<UploadIcon className="w-8 h-8" />}
-                        title={t('landing.features.closet.title')}
-                        description={t('landing.features.closet.desc')}
-                        index={5}
-                        isVisible={areFeaturesVisible}
-                    />
+                    {[
+                        { icon: Sparkles, title: 'landing.features.ai.title', desc: 'landing.features.ai.desc' },
+                        { icon: Shuffle, title: 'landing.features.mix.title', desc: 'landing.features.mix.desc' },
+                        { icon: Globe, title: 'landing.features.trends.title', desc: 'landing.features.trends.desc' },
+                        { icon: MessageCircle, title: 'landing.features.chat.title', desc: 'landing.features.chat.desc' },
+                        { icon: MapPin, title: 'landing.features.local.title', desc: 'landing.features.local.desc' },
+                        { icon: Upload, title: 'landing.features.closet.title', desc: 'landing.features.closet.desc' },
+                    ].map((feature, index) => {
+                        const Icon = feature.icon;
+                        return (
+                            <FeatureCard
+                                key={feature.title}
+                                icon={<Icon className="w-8 h-8" />}
+                                title={t(feature.title as TranslationKey)}
+                                description={t(feature.desc as TranslationKey)}
+                                index={index}
+                            />
+                        );
+                    })}
                 </div>
             </div>
         </section>
