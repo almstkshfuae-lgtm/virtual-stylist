@@ -70,49 +70,27 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, ind
 export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   const { t, language } = useTranslation();
   const isRtl = language === 'ar';
-  const backgroundText = t('landing.hello');
 
   const scrollToFeatures = () => {
       document.getElementById('landing-features')?.scrollIntoView({ behavior: 'smooth' });
   };
-  
-  // Reduced font size slightly on mobile to prevent visual crowding
-  const commonTextStyle = "font-black text-[12vw] sm:text-[14vw] md:text-[8vw] lg:text-[9rem] leading-none tracking-[-0.05em] select-none whitespace-nowrap transition-all duration-500";
 
   return (
     <div className="min-h-screen w-full font-sans bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-x-hidden">
         {/* Header Actions */}
-        <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex items-center gap-2 sm:gap-4">
+        <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex items-center gap-2 sm:gap-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-2 sm:p-3 rounded-full shadow-lg">
           <ThemeToggle />
           <LanguageSelector />
         </div>
         
         {/* Hero Section */}
         <section
-            className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image pt-20 sm:pt-24"
+            className="relative w-full flex flex-col items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image pt-20 sm:pt-24 pb-16 sm:pb-20 md:pb-24 min-h-fit"
         >
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" aria-hidden="true" />
             
-            {/* BACKGROUND TEXT LAYER - Hidden on very small screens */}
-            <div className="hidden sm:flex absolute inset-0 pointer-events-none z-10">
-                <div className="relative w-full h-full flex items-center justify-center">
-                     {/* Dark text part */}
-                    <AnimatedText 
-                        text={backgroundText}
-                        isRtl={isRtl}
-                        className={`${commonTextStyle} absolute inset-0 flex items-center justify-center opacity-10 dark:opacity-20 text-brand ${isRtl ? 'clip-dark-rtl' : 'clip-dark-ltr'}`}
-                    />
-                     {/* Light text part */}
-                     <AnimatedText 
-                        text={backgroundText}
-                        isRtl={isRtl}
-                        className={`${commonTextStyle} text-gray-200 dark:text-gray-700 absolute inset-0 flex items-center justify-center opacity-30 dark:opacity-10 ${isRtl ? 'clip-light-rtl' : 'clip-light-ltr'}`}
-                    />
-                </div>
-            </div>
-
             {/* Main Hero Content - Simplified and Responsive */}
-            <div className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center flex-grow">
+            <div className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
                 <div className="w-full max-w-2xl">
                     {/* Decorative Dots */}
                     <motion.div 
@@ -153,7 +131,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                     </motion.p>
 
                     <motion.p
-                        className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-8 sm:mb-10 max-w-xl mx-auto"
+                        className="text-base sm:text-lg md:text-xl text-gray-200 dark:text-gray-100 leading-relaxed mb-6 sm:mb-8 max-w-xl mx-auto"
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.6 }}
@@ -178,16 +156,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
             {/* Scroll Indicator */}
             <motion.div 
-                className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-30"
+                className="relative mt-6 sm:mt-8 z-30"
                 animate={{ y: [0, 8, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
             >
                 <button 
                     onClick={scrollToFeatures}
-                    className="p-2 sm:p-3 rounded-full hover:bg-white/20 dark:hover:bg-black/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+                    className="p-2 sm:p-3 rounded-full bg-white/20 dark:bg-white/10 hover:bg-white/40 dark:hover:bg-white/20 transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
                     aria-label="Scroll down to features"
                 >
-                    <ArrowDown className="w-6 h-6 sm:w-8 sm:h-8 text-gray-200 opacity-70" />
+                    <ArrowDown className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </button>
             </motion.div>
         </section>
