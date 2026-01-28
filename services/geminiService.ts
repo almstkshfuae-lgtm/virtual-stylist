@@ -103,8 +103,14 @@ Format the output as a JSON array of objects.`;
         config: { responseMimeType: 'application/json' }
     };
     const result = await callProxy(model, payload);
-    const responseText = result.text;
+    
+    // Extract text from response - handle different response structures
+    const responseText = result.text || 
+                        result.candidates?.[0]?.content?.parts?.[0]?.text ||
+                        (typeof result === 'string' ? result : null);
+    
   if (!responseText) {
+      console.error('Response structure:', JSON.stringify(result).substring(0, 200));
       throw new Error("Failed to generate outfit descriptions.");
   }
   return JSON.parse(responseText.trim());
@@ -197,7 +203,9 @@ Format the output as a JSON array of objects. The values for 'title', 'descripti
     const payload = { contents: { parts: [...imageParts, { text: prompt }] }, config: { responseMimeType: 'application/json' } };
     const result = await callProxy(model, payload);
 
-    const responseText = result.text;
+    const responseText = result.text || 
+                        result.candidates?.[0]?.content?.parts?.[0]?.text ||
+                        (typeof result === 'string' ? result : null);
     if (!responseText) {
         throw new Error("Failed to generate outfit combinations.");
     }
@@ -272,7 +280,9 @@ export const analyzeTrends = async (file: File, language: string): Promise<Trend
         },
     });
     
-    const text = result.text;
+    const text = result.text || 
+                result.candidates?.[0]?.content?.parts?.[0]?.text ||
+                (typeof result === 'string' ? result : null);
     const groundingChunks = result.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
 
     if (!text) {
@@ -319,10 +329,13 @@ export const sendMessageToChat = async (history: ChatMessage[], language: string
         }
     });
 
-    if (!result.text) {
+    const responseText = result.text || 
+                        result.candidates?.[0]?.content?.parts?.[0]?.text ||
+                        (typeof result === 'string' ? result : null);
+    if (!responseText) {
         throw new Error("Received an empty response from the chat API.");
     }
-    return result.text;
+    return responseText;
 };
 
 export const findNearbyStores = async (accessory: string, location: Coordinates | string, language: string): Promise<StoreLocation[]> => {

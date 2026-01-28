@@ -42,23 +42,31 @@ app.get('/', (req, res) => {
 
 app.post('/api/gemini-proxy', async (req, res) => {
   if (!API_KEY) {
-    console.error('❌ ERROR: API_KEY not set in .env.local');
-    return res.status(500).json({ error: 'API key not configured on server' });
+    console.error('❌ ERROR: API_KEY not set');
+    return res.status(500).json({ error: 'API key not configured' });
   }
+  
   const { model, payload } = req.body || {};
   if (!model || !payload) {
-    return res.status(400).json({ error: 'Missing model or payload in request body' });
+    return res.status(400).json({ error: 'Missing model or payload' });
   }
 
   try {
-    console.log(`📤 Calling model: ${model}`);
+    console.log(`📤 Calling ${model}...`);
+    
     const ai = new GoogleGenAI({ apiKey: API_KEY });
-    const result = await ai.models.generateContent({ model, ...payload });
-    console.log(`✓ Received response from ${model}`);
+    const result = await ai.models.generateContent({
+      model,
+      contents: payload.contents,
+      systemInstruction: payload.systemInstruction,
+      generationConfig: payload.generationConfig
+    });
+    
+    console.log(`✓ Got response from ${model}`);
     res.json(result);
-  } catch (err) {
-    console.error('❌ Proxy error:', err.message || err);
-    res.status(500).json({ error: err.message || String(err) });
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -74,6 +82,14 @@ server.on('error', (err) => {
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason) => {
-  console.error('❌ Unhandled Rejection:', reason);
+// Global error handlers
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error(reason instanceof Error ? reason.stack : reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error.message);
+  console.error(error.stack);
+  process.exit(1);
 });
