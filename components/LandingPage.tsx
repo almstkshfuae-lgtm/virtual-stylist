@@ -89,7 +89,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
         
         {/* Hero Section */}
         <section
-            className="relative w-full flex flex-col items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image pt-52 sm:pt-72 md:pt-96 pb-16 sm:pb-20 md:pb-24 min-h-fit"
+        className="relative w-full flex flex-col items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image pt-28 sm:pt-44 md:pt-64 pb-16 sm:pb-20 md:pb-24 min-h-[70vh] sm:min-h-[75vh]"
         >
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" aria-hidden="true" />
             
@@ -97,7 +97,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
             <div className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
                 <div className="w-full max-w-2xl">
                     <motion.h1
-                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 sm:mb-4 leading-tight"
+                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 sm:mb-4 leading-tight text-responsive-hero"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1, duration: 0.6 }}
@@ -106,7 +106,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
                     </motion.h1>
 
                     <motion.p
-                        className="text-lg sm:text-xl md:text-2xl italic text-brand/80 mb-4 sm:mb-6 font-semibold"
+                        className="text-lg sm:text-xl md:text-2xl italic text-brand/80 mb-4 sm:mb-6 font-semibold text-responsive-subtitle"
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.6 }}
@@ -115,7 +115,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
                     </motion.p>
 
                     <motion.p
-                        className="text-base sm:text-lg md:text-xl text-gray-200 dark:text-gray-100 leading-relaxed mb-6 sm:mb-8 max-w-xl mx-auto"
+                        className="text-base sm:text-lg md:text-xl text-gray-200 dark:text-gray-100 leading-relaxed mb-6 sm:mb-8 max-w-xl mx-auto text-responsive-subtitle"
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.6 }}

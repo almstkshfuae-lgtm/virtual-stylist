@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  overscroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
 :root {
   --brand-burgundy: #6b1a3c;
 }
@@ -174,6 +190,10 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   .text-responsive-hero {
     font-size: clamp(2.25rem, 5vw, 4rem);
   }
+}
+
+.text-responsive-subtitle {
+  font-size: clamp(1rem, 3vw, 1.35rem);
 }
 
 /* Focus visible for accessibility */
