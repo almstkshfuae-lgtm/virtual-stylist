@@ -34,9 +34,20 @@ View your app in AI Studio: https://ai.studio/apps/drive/1YsOrqPoGzy7ZluonQ12x5Q
    ```bash
    npm run dev
    ```
-   Frontend runs on `http://localhost:5175`.
+   Frontend runs on Vite's default dev URL (typically `http://localhost:5173`).
 
-5. **Open the app**: Visit `http://localhost:5175` in your browser.
+5. **Open the app**: Visit the dev URL printed in your terminal.
+
+### Optional: Use the deployed proxy while developing
+
+If you want your local frontend to call the **Vercel** proxy instead of the local Express proxy,
+set this in `.env.local`:
+
+```
+VITE_API_BASE_URL=https://your-vercel-domain
+```
+
+This will route `/api/gemini-proxy` calls to your Vercel deployment.
 
 ### What's Included
 

@@ -55,7 +55,7 @@
 | Server | Status | URL | Purpose |
 |--------|--------|-----|---------|
 | **Local Proxy** | ✅ Running | `http://localhost:3000` | Keeps API key server-side |
-| **Frontend Dev** | ✅ Running | `http://localhost:5175` | Test the app locally |
+| **Frontend Dev** | ✅ Running | `http://localhost:5173` | Test the app locally |
 | **GitHub** | ✅ Live | https://github.com/almstkshfuae-lgtm/virtual-stylist | Your code repository |
 | **Vercel** | ⏳ Ready | (will deploy) | Your live web app |
 | **Google Play** | ⏳ Ready | (will deploy) | Your live Android app |
@@ -116,7 +116,12 @@ npm run start:api
 npm run dev
 ```
 
-Visit `http://localhost:5175` and develop!
+Visit the dev URL printed in your terminal and develop!
+
+Optional: If you want your local frontend to use the Vercel proxy instead of the local Express proxy, set this in `.env.local`:
+```
+VITE_API_BASE_URL=https://your-vercel-domain
+```
 
 ---
 

@@ -12,8 +12,8 @@
 - **Test**: `curl http://localhost:3000/` returns server info
 
 ### 2. Frontend Dev Server
-- **Status**: ✓ Running on `http://localhost:5175`
-- **Command**: `npm run dev` (or `npm run dev -- --port 5175`)
+- **Status**: ✓ Running on `http://localhost:5173`
+- **Command**: `npm run dev` (or `npm run dev -- --port 5173`)
 - **Usage**: Frontend calls the proxy at `/api/gemini-proxy` for all Gemini API requests
 - **API Key Location**: Safely stored in `.env.local` (not in frontend build)
 
@@ -51,11 +51,16 @@ npm run start:api
 **Terminal 2 - Start the frontend (keep running):**
 ```bash
 npm run dev
-# or: npm run dev -- --port 5175
-# Frontend at http://localhost:5175
+# or: npm run dev -- --port 5173
+# Frontend at http://localhost:5173
 ```
 
-**Result**: Visit `http://localhost:5175` in your browser. The app will work, calling the local proxy for Gemini requests instead of embedding the API key.
+**Result**: Visit the dev URL printed in your terminal. The app will work, calling the local proxy for Gemini requests instead of embedding the API key.
+
+Optional: To point local development at the Vercel proxy instead of the local Express proxy, set:
+```
+VITE_API_BASE_URL=https://your-vercel-domain
+```
 
 ## Next Steps to Deploy
 

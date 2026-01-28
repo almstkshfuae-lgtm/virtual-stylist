@@ -6,8 +6,13 @@ import type { CombinationResult } from '../types';
 // at `/api/gemini-proxy`. The proxy holds the API key and calls Google GenAI
 // using the server SDK. This prevents shipping the API key to the browser.
 
+const apiBaseUrl = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
+const proxyUrl = apiBaseUrl
+    ? `${apiBaseUrl.replace(/\/+$/, '')}/api/gemini-proxy`
+    : '/api/gemini-proxy';
+
 const callProxy = async (model: string, payload: any) => {
-    const res = await fetch('/api/gemini-proxy', {
+    const res = await fetch(proxyUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model, payload }),

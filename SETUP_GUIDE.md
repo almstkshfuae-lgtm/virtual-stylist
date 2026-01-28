@@ -154,6 +154,7 @@ npx cap sync android
 ```bash
 npm run dev
 npx cap open android
+```
 
 ### Local API Proxy (development)
 
@@ -174,6 +175,11 @@ npm run dev
 ```
 
 The local proxy reads `API_KEY` from `.env.local`.
+
+Optional: To use your Vercel proxy while developing locally, set:
+```
+VITE_API_BASE_URL=https://your-vercel-domain
+```
 ```
 │       │   ├── AndroidManifest.xml
 │       │   └── java/
