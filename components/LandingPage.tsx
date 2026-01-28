@@ -85,7 +85,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
         
         {/* Hero Section */}
         <section
-            className="relative w-full flex flex-col items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image pt-32 sm:pt-40 md:pt-48 pb-16 sm:pb-20 md:pb-24 min-h-fit"
+            className="relative w-full flex flex-col items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image pt-40 sm:pt-52 md:pt-64 pb-16 sm:pb-20 md:pb-24 min-h-fit"
         >
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" aria-hidden="true" />
             
