@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     build: {
       rollupOptions: {
+        input: {
+          main: './index.html',
+        },
         output: {
           manualChunks(id) {
             if (!id.includes('node_modules')) return;
@@ -20,6 +23,7 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
+      outDir: 'dist',
     },
     server: {
       proxy: {

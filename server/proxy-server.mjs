@@ -23,6 +23,18 @@ if (fs.existsSync(envPath)) {
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
+// Add CORS headers
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 const API_KEY = process.env.API_KEY;
 if (!API_KEY) {
   console.error('❌ CRITICAL ERROR: API_KEY not loaded from .env.local');
@@ -46,6 +58,11 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/gemini-proxy', async (req, res) => {
+  console.log('📥 Received request:', { 
+    apiKeyExists: !!API_KEY,
+    body: req.body 
+  });
+  
   if (!API_KEY) {
     console.error('❌ CRITICAL: API_KEY is missing');
     return res.status(500).json({ 
