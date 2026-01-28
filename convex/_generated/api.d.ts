@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as http from "../http.js";
 import type * as loyalty from "../loyalty.js";
 import type * as outfits from "../outfits.js";
 
@@ -18,6 +19,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  http: typeof http;
   loyalty: typeof loyalty;
   outfits: typeof outfits;
 }>;
