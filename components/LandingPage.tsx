@@ -92,26 +92,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             {/* Main Hero Content - Simplified and Responsive */}
             <div className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
                 <div className="w-full max-w-2xl">
-                    {/* Decorative Dots */}
-                    <motion.div 
-                        className="flex justify-center gap-1.5 mb-6 sm:mb-8"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        {Array.from({ length: 9 }).map((_, i) => (
-                            <div 
-                                key={i} 
-                                className="w-2 h-2 rounded-full bg-brand"
-                                style={{ 
-                                    opacity: 0.6 + (i % 3) * 0.15,
-                                    animation: `pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
-                                    animationDelay: `${i * 0.1}s`
-                                }}
-                            />
-                        ))}
-                    </motion.div>
-
                     <motion.h1
                         className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 sm:mb-4 leading-tight"
                         initial={{ opacity: 0, y: 20 }}
