@@ -460,7 +460,9 @@ const App: React.FC = () => {
   const selectedItem = selectedItemIndex !== null ? collection[selectedItemIndex] : null;
 
   if (!hasStarted && collection.length === 0) {
-    return <LandingPage onGetStarted={() => setHasStarted(true)} />;
+    return (
+      <LandingPage onGetStarted={() => setHasStarted(true)} userId={customerId} />
+    );
   }
 
   return (

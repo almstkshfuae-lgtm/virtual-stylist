@@ -7,8 +7,11 @@ import { TranslationKey } from '../i18n/translations';
 import { motion } from 'framer-motion';
 import { ArrowRight, ArrowDown, Sparkles, Shuffle, Globe, MessageCircle, MapPin, Upload } from 'lucide-react';
 
+import { LoyaltyHero } from './LoyaltyHero';
+
 interface LandingPageProps {
   onGetStarted: () => void;
+  userId: string;
 }
 
 const AnimatedText: React.FC<{ text: string; isRtl: boolean; className: string; style?: React.CSSProperties }> = ({ text, isRtl, className, style }) => {
@@ -67,7 +70,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, ind
     </motion.div>
 );
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }) => {
   const { t, language } = useTranslation();
   const isRtl = language === 'ar';
 
@@ -134,9 +137,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
                 </div>
             </div>
 
+            <div className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8">
+                <LoyaltyHero userId={userId} />
+            </div>
+
             {/* Scroll Indicator */}
             <motion.div 
-                className="relative mt-6 sm:mt-8 z-30"
+                className="relative mt-10 sm:mt-12 z-30"
                 animate={{ y: [0, 8, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
             >
