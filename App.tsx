@@ -25,6 +25,7 @@ import { BodyShapeSelector } from './components/BodyShapeSelector';
 import { StyleProfileDisplay } from './components/StyleProfileDisplay';
 import { ConvexProviderWrapper } from './components/ConvexProviderWrapper';
 import { LoyaltyPanel } from './components/LoyaltyPanel';
+import LoyaltyTestHarness from './components/LoyaltyTestHarness';
 import { isConvexEnabled } from './lib/convexConfig';
 
 // Lazy-load the demo image from the public assets folder.
@@ -623,7 +624,14 @@ const App: React.FC = () => {
           </div>
       )}
     </main>
-    {hasStarted && isConvexEnabled && <LoyaltyPanel userId={customerId} />}
+    {hasStarted && isConvexEnabled && (
+      <>
+        <LoyaltyPanel userId={customerId} />
+        <div className="px-4 md:px-8 lg:px-10 mt-6">
+          <LoyaltyTestHarness userId={customerId} />
+        </div>
+      </>
+    )}
     <footer className="text-center p-4 mt-8 text-sm text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-slate-800 space-y-2">
       <p>{t('footer.copyright')}</p>
       <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
