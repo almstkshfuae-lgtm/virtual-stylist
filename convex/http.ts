@@ -1,14 +1,24 @@
 import { httpRouter } from "convex/server";
-import { httpAction } from "./_generated/server";
+import { postMessage, getByAuthor, getByAuthorPathSuffix } from "./messages";
 
 const http = httpRouter();
 
 http.route({
-  path: "/",
+  path: "/postMessage",
+  method: "POST",
+  handler: postMessage,
+});
+
+http.route({
+  path: "/getMessagesByAuthor",
   method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    return new Response(`Hello from ${request.url}`);
-  }),
+  handler: getByAuthor,
+});
+
+http.route({
+  pathPrefix: "/getAuthorMessages/",
+  method: "GET",
+  handler: getByAuthorPathSuffix,
 });
 
 export default http;

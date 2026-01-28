@@ -10,6 +10,7 @@
 
 import type * as http from "../http.js";
 import type * as loyalty from "../loyalty.js";
+import type * as messages from "../messages.js";
 import type * as outfits from "../outfits.js";
 
 import type {
@@ -21,6 +22,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   http: typeof http;
   loyalty: typeof loyalty;
+  messages: typeof messages;
   outfits: typeof outfits;
 }>;
 

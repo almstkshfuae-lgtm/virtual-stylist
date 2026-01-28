@@ -87,6 +87,14 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"]),
 
+  // Messages posted through internal HTTP action
+  messages: defineTable({
+    author: v.string(),
+    body: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_author", ["author"]),
+
   // Loyalty, referrals, and marketing controls
   programSettings: defineTable({
     slug: v.string(),
