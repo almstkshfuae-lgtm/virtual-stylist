@@ -42,6 +42,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1YsOrqPoGzy7ZluonQ12x5Q
 
 - **✅ Web App**: React + TypeScript + Vite (runs on `http://localhost:5175`)
 - **✅ API Proxy**: Express server keeps API key off the frontend (runs on `http://localhost:3000`)
+- **✅ Convex Backend**: Database for user profiles, saved outfits, chat history (runs on `http://127.0.0.1:3210`)
 - **✅ Vercel Deployment**: Serverless proxy for production (auto-deploys on GitHub push)
 - **✅ Android App**: Capacitor integration ready for Google Play
 - **✅ CI/CD**: GitHub Actions workflows for build, deploy, and publish

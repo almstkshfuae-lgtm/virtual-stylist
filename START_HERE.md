@@ -7,17 +7,20 @@
 - Vercel serverless function for production deployments
 - GitHub Actions CI/CD workflows for automated deployments
 - Capacitor configuration for Android packaging
+- **Convex backend** for user data, saved outfits, and chat history
 
 ✅ **Code Quality**
 - Updated `services/geminiService.ts` to use the secure proxy (no embedded API keys)
 - Added comprehensive documentation and setup guides
 - Configured proper module handling (ES6 modules)
+- Integrated Convex database with React hooks
 
 ✅ **Deployment Ready**
 - Code pushed to GitHub
 - CI/CD workflows configured and ready
 - Local dev server tested and working
 - Production proxy infrastructure in place
+- Convex backend running locally and ready for cloud deployment
 
 ✅ **Documentation**
 - Quick start guide (README.md)
@@ -25,6 +28,7 @@
 - Vercel deployment guide (VERCEL_SETUP.md)
 - Google Play setup guide (GOOGLE_PLAY_SETUP.md)
 - Deployment checklist (DEPLOYMENT_CHECKLIST.md)
+- **Convex backend guide (CONVEX_SETUP.md)**
 
 ---
 
@@ -113,6 +117,23 @@ npm run dev
 ```
 
 Visit `http://localhost:5175` and develop!
+
+---
+
+## Backend Database (Convex)
+
+Your app now has a full backend for storing:
+- 👤 User profiles and settings
+- 🎨 Saved outfits and favorites
+- 💬 Chat history
+- 🏪 Bookmarked stores
+- 🔄 Outfit combinations
+
+**Local Development**: Convex is running locally
+- View your data: `npx convex dashboard`
+- Deploy to production: `npx convex login` → `npx convex deploy`
+
+See [`CONVEX_SETUP.md`](CONVEX_SETUP.md) for detailed backend documentation.
 
 ---
 
