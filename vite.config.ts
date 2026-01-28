@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, (process as any).cwd(), '');
+  const convexEnabled = Boolean(env.VITE_CONVEX_URL);
   return {
     plugins: [react()],
     build: {
@@ -18,7 +19,8 @@ export default defineConfig(({ mode }) => {
             if (id.includes('react')) return 'react';
             if (id.includes('framer-motion')) return 'motion';
             if (id.includes('lucide-react')) return 'icons';
-            if (id.includes('convex')) return 'convex';
+            // Avoid Rollup "Generated an empty chunk: 'convex'" when Convex is tree-shaken (e.g., no VITE_CONVEX_URL at build time)
+            if (convexEnabled && id.includes('convex')) return 'convex';
             if (id.includes('dompurify') || id.includes('marked')) return 'markdown';
             return 'vendor';
           },
