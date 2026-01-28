@@ -31,12 +31,13 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
   const [isEditMode, setIsEditMode] = useState(false);
   const [shareFeedback, setShareFeedback] = useState('Share');
   const { t } = useTranslation();
+  const shareLabel = t('outfitCard.share');
 
   const animationDelay = `${index * 150}ms`;
 
   useEffect(() => {
-    setShareFeedback(t('outfitCard.share'));
-  }, [t]);
+    setShareFeedback(shareLabel);
+  }, [shareLabel]);
 
   const handleShare = async () => {
     const shareData = {
@@ -119,7 +120,7 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
                 <button 
                   onClick={() => onFindNearby(outfit.keyAccessory)}
                   disabled={isFindingNearby}
-                  className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 rounded-full hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                  className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 rounded-full hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition-colors disabled:opacity-50 disabled:cursor-wait focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 dark:ring-offset-gray-800"
                 >
                   <MapPinIcon className="w-3 h-3"/>
                   {isFindingNearby ? t('outfitCard.finding') : t('outfitCard.findNearby')}
@@ -155,7 +156,7 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
                       isSaved 
                       ? 'bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-300' 
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 dark:ring-offset-gray-800`}
                   aria-label={isSaved ? t('outfitCard.unsave') : t('outfitCard.save')}
                   title={isSaved ? t('outfitCard.unsave') : t('outfitCard.save')}
                 >
@@ -163,34 +164,43 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
                 </button>
                 <button
                   onClick={() => onRate(outfit, 'liked')}
-                  className={`flex items-center justify-center p-2 rounded-md transition-colors ${rating === 'liked' ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-300' : 'bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-500 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-green-500/20 dark:hover:text-green-400'}`}
+                  className={`flex items-center justify-center p-2 rounded-md transition-colors ${rating === 'liked' ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-300' : 'bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-500 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-green-500/20 dark:hover:text-green-400'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:ring-offset-gray-800`}
                   aria-label={t('outfitCard.like')}
+                  title={t('outfitCard.like')}
                 >
                   <ThumbsUpIcon className="w-5 h-5" />
                 </button>
                  <button
                   onClick={() => onRate(outfit, 'disliked')}
-                  className={`flex items-center justify-center p-2 rounded-md transition-colors ${rating === 'disliked' ? 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300' : 'bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-500 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-red-500/20 dark:hover:text-red-400'}`}
+                  className={`flex items-center justify-center p-2 rounded-md transition-colors ${rating === 'disliked' ? 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300' : 'bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-500 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-red-500/20 dark:hover:text-red-400'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:ring-offset-gray-800`}
                   aria-label={t('outfitCard.dislike')}
+                  title={t('outfitCard.dislike')}
                 >
                   <ThumbsDownIcon className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setIsEditMode(true)}
-                  className="flex items-center justify-center gap-1 p-2 bg-gray-100 text-gray-500 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+                  className="flex items-center justify-center gap-1 p-2 bg-gray-100 text-gray-500 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 dark:ring-offset-gray-800"
                   aria-label={t('outfitCard.edit')}
+                  title={t('outfitCard.edit')}
                 >
                   <EditIcon className="w-5 h-5" />
                 </button>
                 <button
                   onClick={handleShare}
-                  className="flex items-center justify-center gap-1 p-2 bg-gray-100 text-gray-500 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
-                  aria-label={t('outfitCard.share')}
+                  className="flex items-center justify-center gap-1 p-2 bg-gray-100 text-gray-500 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 dark:ring-offset-gray-800"
+                  aria-label={shareLabel}
+                  title={shareLabel}
                 >
                   <ShareIcon className="w-5 h-5" />
                 </button>
               </div>
             )}
+            <div className="mt-2 min-h-[1rem]" aria-live="polite">
+              {shareFeedback !== shareLabel && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">{shareFeedback}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

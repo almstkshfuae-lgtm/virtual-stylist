@@ -30,7 +30,8 @@ const en = {
     subtitle: "Have items you don't know how to style? Upload their photos, and our AI stylist will create complete outfits for you.",
     cta: "Click to upload",
     drop: "or drag and drop",
-    info: "PNG, JPG, WEBP (you can select multiple files)"
+    info: "PNG, JPG, WEBP (you can select multiple files)",
+    invalidType: "Please upload valid image files."
   },
   main: {
     yourItem: "Your Item",
@@ -184,7 +185,8 @@ const ar = {
     subtitle: "هل لديك قطع ملابس تحتار في تنسيقها؟ ارفع صورها هنا، وسأقوم بابتكار إطلالات كاملة ومتناسقة لك.",
     cta: "اضغط للتحميل",
     drop: "أو اسحب الملفات هنا",
-    info: "PNG, JPG, WEBP (يمكنك اختيار عدة صور)"
+    info: "PNG, JPG, WEBP (يمكنك اختيار عدة صور)",
+    invalidType: "يرجى تحميل ملفات صور صالحة."
   },
   main: {
     yourItem: "القطعة المختارة",
@@ -338,7 +340,8 @@ const fr = {
     subtitle: "Vous avez des vêtements que vous ne savez pas comment styliser ? Téléchargez leurs photos et notre styliste IA créera des tenues complètes pour vous.",
     cta: "Cliquez pour télécharger",
     drop: "ou glissez-déposez",
-    info: "PNG, JPG, WEBP (vous pouvez sélectionner plusieurs fichiers)"
+    info: "PNG, JPG, WEBP (vous pouvez sélectionner plusieurs fichiers)",
+    invalidType: "Veuillez télécharger des fichiers image valides."
   },
   main: {
     yourItem: "Votre article",
@@ -492,7 +495,8 @@ const ru = {
     subtitle: "У вас есть вещи, которые вы не знаете, как стилизовать? Загрузите их фото, и наш ИИ-стилист создаст для вас полные образы.",
     cta: "Нажмите для загрузки",
     drop: "или перетащите",
-    info: "PNG, JPG, WEBP (можно выбрать несколько файлов)"
+    info: "PNG, JPG, WEBP (можно выбрать несколько файлов)",
+    invalidType: "Пожалуйста, загрузите корректные изображения."
   },
   main: {
     yourItem: "Ваша вещь",
@@ -646,7 +650,8 @@ const nl = {
     subtitle: "Heeft u items die u niet weet hoe te stylen? Upload de foto's ervan en onze AI-stylist zal complete outfits for u creëren.",
     cta: "Klik om te uploaden",
     drop: "of sleep en zet neer",
-    info: "PNG, JPG, WEBP (u kunt meerdere bestanden selecteren)"
+    info: "PNG, JPG, WEBP (u kunt meerdere bestanden selecteren)",
+    invalidType: "Upload geldige afbeeldingsbestanden."
   },
   main: {
     yourItem: "Jouw item",

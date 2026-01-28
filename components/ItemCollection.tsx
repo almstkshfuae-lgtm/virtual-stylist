@@ -62,7 +62,7 @@ const CollectionItem: React.FC<{
                     onRemoveItem(index, item.url);
                 }}
                 aria-label={t('main.removeItem')}
-                className="absolute top-1 right-1 rtl:right-auto rtl:left-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-1 right-1 rtl:right-auto rtl:left-1 bg-black/50 text-white rounded-full p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 dark:ring-offset-slate-800"
             >
                 <TrashIcon className="w-4 h-4" />
             </button>

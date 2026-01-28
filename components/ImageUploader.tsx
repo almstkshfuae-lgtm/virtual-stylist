@@ -11,6 +11,7 @@ interface ImageUploaderProps {
 export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
 
   const handleFileChange = async (files: FileList | null) => {
@@ -18,11 +19,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) =
       const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
       if (imageFiles.length > 0) {
         setIsProcessing(true);
+        setError(null);
         // Simulate processing delay for better UX
         await new Promise(resolve => setTimeout(resolve, 800));
         onImageUpload(imageFiles);
       } else {
-        alert('Please upload valid image files.');
+        setError(t('uploader.invalidType'));
       }
     }
   };
@@ -57,6 +59,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) =
     <div className="text-center p-8">
         <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2">{t('uploader.title')}</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-xl mx-auto">{t('uploader.subtitle')}</p>
+        {error && (
+            <p className="mb-4 text-sm text-red-600 dark:text-red-400" role="status" aria-live="polite">
+                {error}
+            </p>
+        )}
         <label
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
