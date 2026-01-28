@@ -8,8 +8,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const apiKey = process.env.API_KEY;
+  
+  // Debug logging
+  console.log('API Route called');
+  console.log('API_KEY exists:', !!apiKey);
+  console.log('API_KEY first 8 chars:', apiKey?.substring(0, 8) || 'undefined');
+  console.log('All env vars:', Object.keys(process.env).filter(k => k.includes('API') || k.includes('GOOGLE')));
+  
   if (!apiKey) {
-    res.status(500).json({ error: 'API key not configured on server' });
+    console.error('CRITICAL: API_KEY not found in process.env');
+    res.status(500).json({ 
+      error: 'API key not configured on server',
+      debug: {
+        hasApiKey: !!apiKey,
+        envVarNames: Object.keys(process.env).filter(k => k.includes('API') || k.includes('GOOGLE'))
+      }
+    });
     return;
   }
 
@@ -20,10 +34,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    console.log(`Calling ${model}...`);
     const ai = new GoogleGenAI({ apiKey });
     const result = await ai.models.generateContent({ model, ...payload });
+    console.log(`Success: ${model}`);
     res.status(200).json(result);
   } catch (err: any) {
+    console.error('API Error:', err?.message || String(err));
     res.status(500).json({ error: err?.message || String(err) });
   }
 }
