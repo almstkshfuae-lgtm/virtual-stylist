@@ -1,13 +1,25 @@
 import { GoogleGenAI } from '@google/genai';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+const safeJsonParse = (value: string) => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
-  const apiKey = process.env.API_KEY;
+  const apiKey =
+    process.env.API_KEY ||
+    process.env.GOOGLE_GENAI_API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_API_KEY;
   
   // Debug logging
   console.log('API Route called');
@@ -27,7 +39,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const { model, payload } = req.body || {};
+  // Support both parsed JSON and raw string bodies
+  const body = typeof req.body === 'string' ? safeJsonParse(req.body) : req.body;
+  const { model, payload } = body || {};
   if (!model || !payload) {
     res.status(400).json({ error: 'Missing model or payload in request body' });
     return;

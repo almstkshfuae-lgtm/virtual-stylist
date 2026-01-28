@@ -1,10 +1,19 @@
 
-import type { Outfit, StyleProfile, TrendAnalysisResult, BodyShape, ChatMessage, Coordinates, StoreLocation, GroundingChunk } from '../types';
+import type {
+    Outfit,
+    StyleProfile,
+    TrendAnalysisResult,
+    BodyShape,
+    ChatMessage,
+    Coordinates,
+    StoreLocation,
+    GroundingChunk
+} from '../types';
 import type { CombinationResult } from '../types';
+import type { Content } from '@google/genai';
 
-// This client-side service now forwards requests to the server-side proxy
-// at `/api/gemini-proxy`. The proxy holds the API key and calls Google GenAI
-// using the server SDK. This prevents shipping the API key to the browser.
+// All Gemini calls go through the server-side proxy at `/api/gemini-proxy`
+// so the API key never ships to the client bundle.
 
 const apiBaseUrl = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
 const proxyUrl = apiBaseUrl
@@ -52,7 +61,13 @@ const fileToGenerativePart = async (file: File) => {
 async function generateIconImage(prompt: string): Promise<string> {
     const model = 'gemini-2.5-flash-image';
     const payload = {
-      contents: { parts: [{ text: `A simple, minimalist, vector-style icon of ${prompt}, on a pure white background, no shadows, clean lines.` }] }
+      contents: [
+        {
+          parts: [
+            { text: `A simple, minimalist, vector-style icon of ${prompt}, on a pure white background, no shadows, clean lines.` }
+          ]
+        }
+      ]
     };
     const result = await callProxy(model, payload);
     for (const part of result.candidates?.[0]?.content?.parts || []) {
@@ -85,7 +100,7 @@ Use this profile to heavily influence your creations, making them more personali
 The user has identified their body shape as **'${bodyShape}'**. Please tailor your suggestions to be flattering for this shape. For each valid outfit, you **MUST** add a 'bodyShapeTip' (in ${targetLanguage}) explaining in one concise sentence why this outfit works well for the specified body shape.` : '';
 
 
-  const prompt = `You are a world-class, honest, and creative fashion consultant. Your response MUST be in ${targetLanguage} for the specified fields.
+    const prompt = `You are a world-class, honest, and creative fashion consultant. Your response MUST be in ${targetLanguage} for the specified fields.
 ${userPreferencePrompt}
 ${bodyShapePrompt}
 Deeply analyze the clothing item in the image. Based on this analysis, create ${numStyles} ${outfitText}, one for each of these styles: '${styles.join("', '")}'.
@@ -104,7 +119,7 @@ ${bodyShape ? "7. A 'bodyShapeTip' field as described in the User's Body Shape s
 Format the output as a JSON array of objects.`;
   
     const payload = {
-        contents: { parts: [imagePart, { text: prompt }] },
+        contents: [{ parts: [imagePart, { text: prompt }] }],
         config: { responseMimeType: 'application/json' }
     };
     const result = await callProxy(model, payload);
@@ -124,7 +139,7 @@ Format the output as a JSON array of objects.`;
 // 2. Generate a flat-lay image based on a prompt and the original item
 async function generateFlatLayImage(imagePart: { inlineData: { data: string; mimeType: string; } }, prompt: string): Promise<string> {
     const model = 'gemini-2.5-flash-image';
-    const payload = { contents: { parts: [imagePart, { text: prompt }] } };
+    const payload = { contents: [{ parts: [imagePart, { text: prompt }] }] };
     const result = await callProxy(model, payload);
     for (const part of result.candidates?.[0]?.content?.parts || []) {
         if (part.inlineData) {
@@ -236,7 +251,7 @@ Format the output as a JSON array of objects. The values for 'title', 'descripti
 
 export const editImage = async (base64ImageUrl: string, uploadedItem: File, editPrompt: string): Promise<string> => {
     const model = 'gemini-2.5-flash-image';
-    
+
     const uploadedItemPart = await fileToGenerativePart(uploadedItem);
 
     // Convert the base64 URL of the outfit image back to an API-compatible part
@@ -246,18 +261,18 @@ export const editImage = async (base64ImageUrl: string, uploadedItem: File, edit
 
     const promptText = `Your task is to edit the main outfit image based on the following instruction: "${editPrompt}". It is crucial that you maintain the integrity and style of the original clothing item provided. Apply the edit to the complete outfit image.`;
 
-    const result = await ai.models.generateContent({
-        model,
-        contents: { parts: [outfitImagePart, uploadedItemPart, { text: promptText }] }
-    });
+    const payload = {
+        contents: [{ parts: [outfitImagePart, uploadedItemPart, { text: promptText }] }],
+    };
 
-    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts) {
-        for (const part of result.candidates[0].content.parts) {
-            if (part.inlineData) {
-                const newBase64data = part.inlineData.data;
-                const newMimeType = part.inlineData.mimeType;
-                return `data:${newMimeType};base64,${newBase64data}`;
-            }
+    const result = await callProxy(model, payload);
+
+    const parts = result.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+        if (part.inlineData) {
+            const newBase64data = part.inlineData.data;
+            const newMimeType = part.inlineData.mimeType;
+            return `data:${newMimeType};base64,${newBase64data}`;
         }
     }
 
@@ -277,15 +292,14 @@ export const analyzeTrends = async (file: File, language: string): Promise<Trend
 
     const prompt = `Based on the clothing item in the image, use Google Search to find and summarize the top 3-4 current fashion trends related to it. For each trend, briefly explain what it is and how this item fits into it. The response must be in ${targetLanguage}. Format the response using markdown.`;
 
-    const result = await ai.models.generateContent({
-        model,
-        contents: { parts: [imagePart, { text: prompt }] },
-        config: {
-            tools: [{ googleSearch: {} }],
-        },
-    });
-    
-    const text = result.text || 
+    const payload = {
+        contents: [{ parts: [imagePart, { text: prompt }] }],
+        tools: [{ googleSearch: {} }]
+    };
+
+    const result = await callProxy(model, payload);
+
+    const text = result.text ||
                 result.candidates?.[0]?.content?.parts?.[0]?.text ||
                 (typeof result === 'string' ? result : null);
     const groundingChunks = result.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
@@ -303,7 +317,7 @@ export const analyzeTrends = async (file: File, language: string): Promise<Trend
 export const sendMessageToChat = async (history: ChatMessage[], language: string, itemFile?: File): Promise<string> => {
     const targetLanguage = languageMap[language] || 'English';
     const model = 'gemini-3-pro-preview';
-    
+
     const systemInstruction = `You are a friendly, enthusiastic, and expert fashion advisor. Your goal is to provide helpful, stylish, and encouraging advice. Converse with the user in ${targetLanguage}. Keep your responses concise and easy to read. Use markdown for formatting like lists or bold text when it improves readability.`;
 
     const contents: Content[] = [];
@@ -325,14 +339,12 @@ export const sendMessageToChat = async (history: ChatMessage[], language: string
             lastUserMessage.parts = [imagePart, {text: "Refer to this image for context in your answer."}, ...userParts];
         }
     }
-    
-    const result = await ai.models.generateContent({
-        model,
+    const payload = {
         contents,
-        config: {
-            systemInstruction
-        }
-    });
+        systemInstruction
+    };
+
+    const result = await callProxy(model, payload);
 
     const responseText = result.text || 
                         result.candidates?.[0]?.content?.parts?.[0]?.text ||
@@ -370,11 +382,12 @@ export const findNearbyStores = async (accessory: string, location: Coordinates 
         };
     }
 
-    const result = await ai.models.generateContent({
-        model,
+    const payload = {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: requestConfig,
-    });
+        ...requestConfig
+    };
+
+    const result = await callProxy(model, payload);
 
     const groundingChunks = result.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     
