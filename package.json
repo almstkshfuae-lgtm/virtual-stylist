@@ -6,10 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:web": "npm run build",
+    "cap:add:android": "npx cap add android",
+    "cap:sync:android": "npx cap sync android",
+    "android:build:aab": "cd android && ./gradlew bundleRelease",
+    "start:api": "node server/proxy-server.js",
+    "dev:all": "concurrently \"npm run start:api\" \"npm run dev\""
   },
   "dependencies": {
     "@google/genai": "^1.38.0",
+    "express": "^4.18.2",
+    "dotenv": "^16.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

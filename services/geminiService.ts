@@ -1,13 +1,23 @@
 
-import { GoogleGenAI, Type, Part, Content } from "@google/genai";
 import type { Outfit, StyleProfile, TrendAnalysisResult, BodyShape, ChatMessage, Coordinates, StoreLocation, GroundingChunk } from '../types';
 import type { CombinationResult } from '../types';
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
-}
+// This client-side service now forwards requests to the server-side proxy
+// at `/api/gemini-proxy`. The proxy holds the API key and calls Google GenAI
+// using the server SDK. This prevents shipping the API key to the browser.
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const callProxy = async (model: string, payload: any) => {
+    const res = await fetch('/api/gemini-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, payload }),
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Proxy error: ${res.status} ${text}`);
+    }
+    return res.json();
+};
 
 const languageMap: { [key: string]: string } = {
     en: 'English',
@@ -36,12 +46,11 @@ const fileToGenerativePart = async (file: File) => {
 // Generate a simple icon for an accessory
 async function generateIconImage(prompt: string): Promise<string> {
     const model = 'gemini-2.5-flash-image';
-    const result = await ai.models.generateContent({
-        model,
-        contents: { parts: [{ text: `A simple, minimalist, vector-style icon of ${prompt}, on a pure white background, no shadows, clean lines.` }] }
-    });
-    
-    for (const part of result.candidates[0].content.parts) {
+    const payload = {
+      contents: { parts: [{ text: `A simple, minimalist, vector-style icon of ${prompt}, on a pure white background, no shadows, clean lines.` }] }
+    };
+    const result = await callProxy(model, payload);
+    for (const part of result.candidates?.[0]?.content?.parts || []) {
         if (part.inlineData) {
             const base64data = part.inlineData.data;
             const mimeType = part.inlineData.mimeType;
@@ -89,35 +98,12 @@ ${bodyShape ? "7. A 'bodyShapeTip' field as described in the User's Body Shape s
 
 Format the output as a JSON array of objects.`;
   
-  const result = await ai.models.generateContent({
-    model,
-    contents: { parts: [imagePart, { text: prompt }] },
-    config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-            type: Type.ARRAY,
-            items: {
-                type: Type.OBJECT,
-                properties: {
-                    title: { type: Type.STRING },
-                    isUnsuitable: { type: Type.BOOLEAN },
-                    rejectionReason: { type: Type.STRING },
-                    description: { type: Type.STRING },
-                    imagePrompt: { type: Type.STRING },
-                    keyAccessory: { type: Type.STRING },
-                    iconPrompt: { type: Type.STRING },
-                    keywords: { 
-                        type: Type.ARRAY,
-                        items: { type: Type.STRING },
-                    },
-                    bodyShapeTip: { type: Type.STRING }
-                }
-            }
-        }
-    }
-  });
-
-  const responseText = result.text;
+    const payload = {
+        contents: { parts: [imagePart, { text: prompt }] },
+        config: { responseMimeType: 'application/json' }
+    };
+    const result = await callProxy(model, payload);
+    const responseText = result.text;
   if (!responseText) {
       throw new Error("Failed to generate outfit descriptions.");
   }
@@ -127,12 +113,9 @@ Format the output as a JSON array of objects.`;
 // 2. Generate a flat-lay image based on a prompt and the original item
 async function generateFlatLayImage(imagePart: { inlineData: { data: string; mimeType: string; } }, prompt: string): Promise<string> {
     const model = 'gemini-2.5-flash-image';
-    const result = await ai.models.generateContent({
-        model,
-        contents: { parts: [imagePart, { text: prompt }] }
-    });
-    
-    for (const part of result.candidates[0].content.parts) {
+    const payload = { contents: { parts: [imagePart, { text: prompt }] } };
+    const result = await callProxy(model, payload);
+    for (const part of result.candidates?.[0]?.content?.parts || []) {
         if (part.inlineData) {
             const base64data = part.inlineData.data;
             const mimeType = part.inlineData.mimeType;
@@ -211,29 +194,8 @@ For each valid, high-quality combination you find, provide:
 
 Format the output as a JSON array of objects. The values for 'title', 'description' and 'keyAccessory' MUST be in ${targetLanguage}. The value for 'iconPrompt' MUST be in English.`;
 
-    const result = await ai.models.generateContent({
-        model,
-        contents: { parts: [...imageParts, { text: prompt }] },
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-                type: Type.ARRAY,
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        title: { type: Type.STRING },
-                        description: { type: Type.STRING },
-                        itemIndices: {
-                            type: Type.ARRAY,
-                            items: { type: Type.INTEGER }
-                        },
-                        keyAccessory: { type: Type.STRING },
-                        iconPrompt: { type: Type.STRING }
-                    }
-                }
-            }
-        }
-    });
+    const payload = { contents: { parts: [...imageParts, { text: prompt }] }, config: { responseMimeType: 'application/json' } };
+    const result = await callProxy(model, payload);
 
     const responseText = result.text;
     if (!responseText) {
