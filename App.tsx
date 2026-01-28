@@ -23,6 +23,7 @@ import { PlusMinusIcon } from './components/icons/PlusMinusIcon';
 import { StyleSelector } from './components/StyleSelector';
 import { BodyShapeSelector } from './components/BodyShapeSelector';
 import { StyleProfileDisplay } from './components/StyleProfileDisplay';
+import { ConvexProviderWrapper } from './components/ConvexProviderWrapper';
 
 // Helper to convert a Base64 data URL into a File object
 const dataURLtoFile = (dataurl: string, filename: string): File => {

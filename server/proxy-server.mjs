@@ -7,16 +7,29 @@ import express from 'express';
 import { GoogleGenAI } from '@google/genai';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
+const envPath = path.resolve(__dirname, '../.env.local');
+
+// Load .env.local with detailed logging
+if (fs.existsSync(envPath)) {
+  console.log(`✓ Found .env.local at: ${envPath}`);
+  dotenv.config({ path: envPath });
+} else {
+  console.warn(`⚠️  .env.local not found at: ${envPath}`);
+}
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
 const API_KEY = process.env.API_KEY;
 if (!API_KEY) {
-  console.warn('⚠️  Warning: API_KEY not set in .env.local — proxy will not work without it.');
+  console.error('❌ ERROR: API_KEY not loaded from .env.local');
+  console.error(`    Expected file at: ${envPath}`);
+  console.error(`    File exists: ${fs.existsSync(envPath)}`);
+} else {
+  console.log('✓ API_KEY loaded successfully');
 }
 
 app.get('/', (req, res) => {

@@ -8,6 +8,14 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     define: {
       'process.env.API_KEY': JSON.stringify(env.API_KEY)
+    },
+    server: {
+      proxy: {
+        '/api/gemini-proxy': {
+          target: 'http://localhost:3000',
+          changeOrigin: true,
+        }
+      }
     }
   }
 })
