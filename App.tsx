@@ -25,6 +25,7 @@ import { BodyShapeSelector } from './components/BodyShapeSelector';
 import { StyleProfileDisplay } from './components/StyleProfileDisplay';
 import { ConvexProviderWrapper } from './components/ConvexProviderWrapper';
 import { LoyaltyPanel } from './components/LoyaltyPanel';
+import { isConvexEnabled } from './lib/convexConfig';
 
 // Lazy-load the demo image from the public assets folder.
 const DEMO_IMAGE_FILENAME = 'demo-skirt.png';
@@ -622,7 +623,7 @@ const App: React.FC = () => {
           </div>
       )}
     </main>
-    {hasStarted && <LoyaltyPanel userId={customerId} />}
+    {hasStarted && isConvexEnabled && <LoyaltyPanel userId={customerId} />}
     <footer className="text-center p-4 mt-8 text-sm text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-slate-800">
       <p>{t('footer.poweredBy')}</p>
     </footer>

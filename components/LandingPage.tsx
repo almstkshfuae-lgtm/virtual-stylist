@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, ArrowDown, Sparkles, Shuffle, Globe, MessageCircle, MapPin, Upload } from 'lucide-react';
 
 import { LoyaltyHero } from './LoyaltyHero';
+import { isConvexEnabled } from '../lib/convexConfig';
 
 interface LandingPageProps {
   onGetStarted: () => void;
@@ -137,9 +138,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
                 </div>
             </div>
 
-            <div className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8">
+            {isConvexEnabled && (
+              <div className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8">
                 <LoyaltyHero userId={userId} />
-            </div>
+              </div>
+            )}
 
             {/* Scroll Indicator */}
             <motion.div 
