@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
+import { isConvexEnabled } from "../lib/convexConfig";
 
 /**
  * Hook to manage saved outfits
@@ -94,7 +95,7 @@ export function useBookmarkedStores(userId: string | null) {
 export function useLoyalty(userId: string | null) {
   // Type guard: codegen may not be regenerated yet in local envs (WSL1).
   const loyaltyApi = (api as any).loyalty;
-  if (!loyaltyApi) {
+  if (!isConvexEnabled || !loyaltyApi) {
     return {
       account: null,
       settings: null,
