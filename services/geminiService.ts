@@ -220,7 +220,7 @@ For each valid, high-quality combination you find, provide:
 
 Format the output as a JSON array of objects. The values for 'title', 'description' and 'keyAccessory' MUST be in ${targetLanguage}. The value for 'iconPrompt' MUST be in English.`;
 
-    const payload = { contents: { parts: [...imageParts, { text: prompt }] }, config: { responseMimeType: 'application/json' } };
+    const payload = { contents: [{ parts: [...imageParts, { text: prompt }] }], config: { responseMimeType: 'application/json' } };
     const result = await callProxy(model, payload);
 
     const responseText = result.text || 
