@@ -20,6 +20,19 @@ body {
 
 :root {
   --brand-burgundy: #6b1a3c;
+  --landing-cream: #f7f1e8;
+  --landing-ink: #141318;
+  --landing-accent: #c25b3e;
+  --landing-moss: #1f4e3d;
+  --landing-rose: #8c2340;
+}
+
+html.dark {
+  --landing-cream: #0f1115;
+  --landing-ink: #f7f1e8;
+  --landing-accent: #e27a55;
+  --landing-moss: #7fd0b8;
+  --landing-rose: #f06a8c;
 }
 
 .text-brand {
@@ -304,4 +317,159 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 
 .animate-image-scale {
   animation: image-subtle-scale 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Landing page styling */
+.landing-shell {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(900px circle at 8% 12%, rgba(194, 91, 62, 0.18), transparent 55%),
+    radial-gradient(800px circle at 88% 18%, rgba(31, 78, 61, 0.16), transparent 60%),
+    radial-gradient(900px circle at 40% 92%, rgba(140, 35, 64, 0.14), transparent 60%),
+    linear-gradient(180deg, var(--landing-cream) 0%, #ffffff 68%, #ffffff 100%);
+  color: var(--landing-ink);
+}
+
+.landing-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(12, 12, 12, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12, 12, 12, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.22;
+  pointer-events: none;
+  z-index: 0;
+}
+
+
+html.dark .landing-shell {
+  background:
+    radial-gradient(900px circle at 10% 12%, rgba(226, 122, 85, 0.2), transparent 55%),
+    radial-gradient(800px circle at 90% 15%, rgba(127, 208, 184, 0.18), transparent 60%),
+    radial-gradient(800px circle at 40% 90%, rgba(240, 106, 140, 0.16), transparent 60%),
+    linear-gradient(180deg, var(--landing-cream) 0%, #0b0e12 68%, #0b0e12 100%);
+  color: var(--landing-ink);
+}
+
+html.dark .landing-shell::before {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+}
+
+.landing-shell,
+.landing-shell * {
+  font-family: 'Rubik', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+html[dir="rtl"] .landing-shell,
+html[dir="rtl"] .landing-shell * {
+  font-family: 'Tajawal', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.landing-hero {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(60% 60% at 78% 8%, rgba(255, 255, 255, 0.5), transparent 60%),
+    url('/hero_section_background.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.22;
+  filter: saturate(0.9) contrast(1.05);
+  pointer-events: none;
+}
+
+html.dark .landing-hero::before {
+  opacity: 0.16;
+  filter: saturate(0.8) contrast(1.1);
+}
+
+.landing-hello {
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(3rem, 14vw, 10rem);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(15, 15, 15, 0.08);
+  z-index: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+html.dark .landing-hello {
+  color: rgba(248, 242, 234, 0.08);
+}
+
+html[dir="rtl"] .landing-hello {
+  letter-spacing: 0;
+}
+
+.landing-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 15, 15, 0.1);
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+html.dark .landing-eyebrow {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(15, 18, 24, 0.6);
+}
+
+html[dir="rtl"] .landing-eyebrow {
+  letter-spacing: 0;
+}
+
+.landing-card {
+  border-radius: 1.5rem;
+  border: 1px solid rgba(15, 15, 15, 0.12);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 25px 60px rgba(20, 20, 20, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+html.dark .landing-card {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(15, 18, 24, 0.7);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+}
+
+.landing-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 15, 15, 0.12);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--landing-ink);
+}
+
+html.dark .landing-chip {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(15, 18, 24, 0.7);
+  color: var(--landing-ink);
 }

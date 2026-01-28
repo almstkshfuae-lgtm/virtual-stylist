@@ -54,7 +54,7 @@ interface FeatureCardProps {
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, index }) => (
     <motion.div
-        className="group bg-white dark:bg-gray-700/50 p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-600 flex flex-col items-center text-center h-full"
+        className="group relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-6 sm:p-8 shadow-[0_24px_45px_rgba(15,15,15,0.08)] transition-all duration-300 hover:-translate-y-2 dark:border-white/10 dark:bg-slate-900/70 dark:shadow-[0_24px_45px_rgba(0,0,0,0.4)] flex flex-col items-start text-start h-full"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
@@ -62,13 +62,13 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, ind
         whileHover={{ y: -8 }}
     >
         <motion.div 
-            className="w-14 h-14 sm:w-16 sm:h-16 bg-pink-50 dark:bg-pink-900/30 rounded-full flex items-center justify-center mb-5 sm:mb-6 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform duration-300"
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-5 sm:mb-6 text-[color:var(--landing-rose)] bg-[linear-gradient(135deg,rgba(194,91,62,0.18),rgba(31,78,61,0.18))] dark:bg-[linear-gradient(135deg,rgba(226,122,85,0.2),rgba(127,208,184,0.18))] group-hover:scale-110 transition-transform duration-300"
             whileHover={{ rotate: 10, scale: 1.15 }}
         >
             {icon}
         </motion.div>
-        <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 mb-3 sm:mb-4 leading-tight">{title}</h3>
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed flex-grow">{description}</p>
+        <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 sm:mb-4 leading-tight">{title}</h3>
+        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed flex-grow">{description}</p>
     </motion.div>
 );
 
@@ -115,10 +115,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
         : 'border-white/70 bg-white/90 text-gray-900 hover:border-white dark:border-gray-700 dark:bg-gray-900/70 dark:text-white dark:hover:bg-gray-800',
     ].join(' ');
 
+  const featureCards = [
+    { icon: Sparkles, title: 'landing.features.ai.title', desc: 'landing.features.ai.desc' },
+    { icon: Shuffle, title: 'landing.features.mix.title', desc: 'landing.features.mix.desc' },
+    { icon: Globe, title: 'landing.features.trends.title', desc: 'landing.features.trends.desc' },
+    { icon: MessageCircle, title: 'landing.features.chat.title', desc: 'landing.features.chat.desc' },
+    { icon: MapPin, title: 'landing.features.local.title', desc: 'landing.features.local.desc' },
+    { icon: Upload, title: 'landing.features.closet.title', desc: 'landing.features.closet.desc' },
+  ];
+
   return (
-    <div className="min-h-screen w-full font-sans bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-x-hidden">
+    <div className="landing-shell min-h-screen w-full overflow-x-hidden">
         {/* Header Actions */}
-        <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex flex-col gap-2 rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-2 sm:p-3 shadow-lg">
+        <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex flex-col gap-2 rounded-3xl border border-white/70 bg-white/80 dark:border-white/10 dark:bg-slate-900/80 backdrop-blur-md p-2 sm:p-3 shadow-[0_18px_45px_rgba(15,15,15,0.2)]">
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -166,87 +175,169 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
         
         {/* Hero Section */}
         <section
-        className="relative hero-hello w-full flex flex-col items-center justify-center overflow-hidden bg-cover bg-center bg-hero-image pt-28 sm:pt-44 md:pt-64 pb-16 sm:pb-20 md:pb-24 min-h-[70vh] sm:min-h-[75vh]"
+        className="landing-hero relative w-full overflow-hidden pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 min-h-[70vh] lg:min-h-[75vh]"
         >
-            <div className="absolute inset-0 z-20 bg-gradient-to-b from-black/20 via-black/40 to-black/60" aria-hidden="true" />
-            
-            {/* Main Hero Content - Simplified and Responsive */}
+            <span className="landing-hello" aria-hidden="true">
+              {t('landing.hello')}
+            </span>
+
             <div
               id="landing-profile-target"
-              className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center"
+              className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8"
             >
-                <div className="w-full max-w-2xl">
-                    <motion.h1
-                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 sm:mb-4 leading-tight text-responsive-hero"
+                <div className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr] items-center">
+                  <div className="flex flex-col gap-6 text-center lg:text-start items-center lg:items-start">
+                      <motion.span
+                        className="landing-eyebrow"
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.05, duration: 0.6 }}
+                      >
+                        {t('landing.hello')}
+                      </motion.span>
+
+                      <motion.h1
+                        className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight text-slate-900 dark:text-slate-100"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1, duration: 0.6 }}
-                    >
+                        transition={{ delay: 0.12, duration: 0.6 }}
+                      >
                         <span className="text-brand">{t('landing.juliana.name')}</span>
-                    </motion.h1>
+                      </motion.h1>
 
-                    <motion.p
-                        className="text-lg sm:text-xl md:text-2xl italic text-brand/80 mb-4 sm:mb-6 font-semibold text-responsive-subtitle"
+                      <motion.p
+                        className="text-lg sm:text-xl lg:text-2xl font-semibold text-[color:var(--landing-rose)]"
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.6 }}
-                    >
+                        transition={{ delay: 0.22, duration: 0.6 }}
+                      >
                         {t('landing.juliana.title')}
-                    </motion.p>
+                      </motion.p>
 
-                    <motion.p
-                        className="text-base sm:text-lg md:text-xl text-gray-200 dark:text-gray-100 leading-relaxed mb-6 sm:mb-8 max-w-xl mx-auto text-responsive-subtitle"
+                      <motion.p
+                        className="text-base sm:text-lg lg:text-xl text-slate-700 dark:text-slate-200 leading-relaxed max-w-xl"
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.6 }}
-                    >
+                      >
                         {t('landing.juliana.bio')}
-                    </motion.p>
+                      </motion.p>
 
-                    <motion.button
-                        onClick={onGetStarted}
-                        className="inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-white font-bold text-base sm:text-lg rounded-full sm:rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95 bg-brand hover:bg-brand/90 w-full sm:w-auto max-w-sm sm:max-w-none"
+                      <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+                        <motion.button
+                            onClick={onGetStarted}
+                            className="inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-white font-bold text-base sm:text-lg rounded-full shadow-[0_20px_45px_rgba(140,35,64,0.35)] transition-all duration-300 hover:shadow-[0_25px_60px_rgba(140,35,64,0.45)] hover:-translate-y-0.5 active:translate-y-0 bg-brand hover:bg-brand/90 w-full sm:w-auto"
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.38, duration: 0.6 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            {t('landing.juliana.cta')}
+                            <ArrowRight className={`w-5 h-5 sm:w-6 sm:h-6 ${isRtl ? 'transform rotate-180' : ''}`} />
+                        </motion.button>
+
+                        <motion.button
+                          onClick={scrollToFeatures}
+                          className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-900/15 bg-white/80 px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm transition duration-300 hover:border-slate-900/30 hover:bg-white dark:border-white/20 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:bg-slate-800/80"
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.46, duration: 0.6 }}
+                        >
+                          {t('landing.features.title')}
+                          <ArrowDown className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+
+                      <motion.div
+                        className="flex flex-wrap justify-center lg:justify-start gap-2"
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.6 }}
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.98 }}
+                        transition={{ delay: 0.52, duration: 0.6 }}
+                      >
+                        {featureCards.slice(0, 3).map((feature) => {
+                          const Icon = feature.icon;
+                          return (
+                            <span key={feature.title} className="landing-chip">
+                              <Icon className="w-4 h-4 text-[color:var(--landing-moss)]" />
+                              {t(feature.title as TranslationKey)}
+                            </span>
+                          );
+                        })}
+                      </motion.div>
+                  </div>
+
+                  <div className="relative flex flex-col gap-4">
+                    <motion.div
+                      className="landing-card p-6 sm:p-8"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.25, duration: 0.6 }}
                     >
-                        {t('landing.juliana.cta')}
-                        <ArrowRight className={`w-5 h-5 sm:w-6 sm:h-6 ${isRtl ? 'transform rotate-180' : ''}`} />
-                    </motion.button>
+                      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--landing-rose)]">
+                        {t('landing.features.title')}
+                      </p>
+                      <h3 className="mt-3 text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">
+                        {t('landing.features.ai.title')}
+                      </h3>
+                      <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300">
+                        {t('landing.features.subtitle')}
+                      </p>
+                      <div className="mt-6 grid grid-cols-3 gap-3">
+                        {['bg-amber-500/20', 'bg-emerald-500/20', 'bg-rose-500/20'].map((color, index) => (
+                          <div
+                            key={`swatch-${index}`}
+                            className={`h-12 rounded-2xl border border-white/60 ${color} dark:border-white/10`}
+                          />
+                        ))}
+                      </div>
+                    </motion.div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {featureCards.slice(1, 3).map((feature, index) => {
+                        const Icon = feature.icon;
+                        return (
+                          <motion.div
+                            key={`mini-${feature.title}`}
+                            className="landing-card p-4"
+                            initial={{ opacity: 0, y: 18 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 + index * 0.1, duration: 0.5 }}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/80 text-[color:var(--landing-moss)] shadow-sm dark:bg-slate-800/80">
+                                <Icon className="w-5 h-5" />
+                              </span>
+                              <div>
+                                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                  {t(feature.title as TranslationKey)}
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {t(feature.desc as TranslationKey)}
+                                </p>
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
             </div>
 
             {isConvexEnabled && (
               <div
                 id="landing-referral-target"
-                className="relative w-full max-w-4xl mx-auto z-30 px-4 sm:px-6 lg:px-8"
+                className="relative w-full max-w-5xl mx-auto z-30 px-4 sm:px-6 lg:px-8 mt-10 sm:mt-14"
               >
                 <LoyaltyHero userId={userId} />
               </div>
             )}
-
-            {/* Scroll Indicator */}
-            <motion.div 
-                className="relative mt-10 sm:mt-12 z-30"
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-            >
-                <button 
-                    onClick={scrollToFeatures}
-                    className="p-2 sm:p-3 rounded-full bg-white/20 dark:bg-white/10 hover:bg-white/40 dark:hover:bg-white/20 transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
-                    aria-label="Scroll down to features"
-                >
-                    <ArrowDown className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                </button>
-            </motion.div>
         </section>
 
         {/* Features Section */}
         <section 
             id="landing-features" 
-            className="relative w-full py-16 sm:py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800 transition-colors duration-300 scroll-mt-10"
+            className="relative z-10 w-full py-16 sm:py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-white/80 dark:bg-slate-900/70 transition-colors duration-300 scroll-mt-10"
         >
             <div className="max-w-6xl mx-auto">
                 {/* Section Header */}
@@ -268,14 +359,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
 
                 {/* Features Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                    {[
-                        { icon: Sparkles, title: 'landing.features.ai.title', desc: 'landing.features.ai.desc' },
-                        { icon: Shuffle, title: 'landing.features.mix.title', desc: 'landing.features.mix.desc' },
-                        { icon: Globe, title: 'landing.features.trends.title', desc: 'landing.features.trends.desc' },
-                        { icon: MessageCircle, title: 'landing.features.chat.title', desc: 'landing.features.chat.desc' },
-                        { icon: MapPin, title: 'landing.features.local.title', desc: 'landing.features.local.desc' },
-                        { icon: Upload, title: 'landing.features.closet.title', desc: 'landing.features.closet.desc' },
-                    ].map((feature, index) => {
+                    {featureCards.map((feature, index) => {
                         const Icon = feature.icon;
                         return (
                             <FeatureCard
