@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     build: {
       rollupOptions: {
+        external: ['./api/**'],
         input: {
           main: './index.html',
         },
