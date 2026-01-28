@@ -57,9 +57,7 @@ app.post('/api/gemini-proxy', async (req, res) => {
     const ai = new GoogleGenAI({ apiKey: API_KEY });
     const result = await ai.models.generateContent({
       model,
-      contents: payload.contents,
-      systemInstruction: payload.systemInstruction,
-      generationConfig: payload.generationConfig
+      ...payload,
     });
     
     console.log(`✓ Got response from ${model}`);

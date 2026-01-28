@@ -1,5 +1,7 @@
 
 import React from 'react';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 import { useTranslation } from '../i18n/LanguageContext';
 import { TrendAnalysisResult } from '../types';
 import { GlobeIcon } from './icons/GlobeIcon';
@@ -11,6 +13,7 @@ interface TrendAnalysisModalProps {
 
 export const TrendAnalysisModal: React.FC<TrendAnalysisModalProps> = ({ result, onClose }) => {
   const { t } = useTranslation();
+  const sanitizedHtml = DOMPurify.sanitize(marked.parse(result.text || '', { breaks: true }));
 
   return (
     <div 
@@ -31,8 +34,8 @@ export const TrendAnalysisModal: React.FC<TrendAnalysisModalProps> = ({ result, 
         
         <div className="p-6 overflow-y-auto">
           <div 
-            className="prose prose-sm max-w-none dark:prose-invert" 
-            dangerouslySetInnerHTML={{ __html: result.text.replace(/\n/g, '<br/>') }}
+            className="prose prose-sm max-w-none dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
           />
         </div>
 

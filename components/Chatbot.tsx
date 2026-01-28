@@ -1,5 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 import { useTranslation } from '../i18n/LanguageContext';
 import { ChatMessage } from '../types';
 import { SendIcon } from './icons/SendIcon';
@@ -18,6 +20,10 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
   const { t } = useTranslation();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const renderMarkdown = (text: string) => ({
+    __html: DOMPurify.sanitize(marked.parse(text, { breaks: true })),
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -60,7 +66,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
           {history.map((msg, index) => (
             <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-3`}>
               <div className={`max-w-xs lg:max-w-sm px-4 py-2 rounded-2xl ${msg.role === 'user' ? 'bg-pink-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200'}`}>
-                <p className="text-sm" dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br />') }}></p>
+                <p className="text-sm" dangerouslySetInnerHTML={renderMarkdown(msg.text)}></p>
               </div>
             </div>
           ))}
