@@ -25,11 +25,16 @@ app.use(express.json({ limit: '10mb' }));
 
 const API_KEY = process.env.API_KEY;
 if (!API_KEY) {
-  console.error('❌ ERROR: API_KEY not loaded from .env.local');
-  console.error(`    Expected file at: ${envPath}`);
-  console.error(`    File exists: ${fs.existsSync(envPath)}`);
+  console.error('❌ CRITICAL ERROR: API_KEY not loaded from .env.local');
+  console.error(`   Expected file at: ${envPath}`);
+  console.error(`   File exists: ${fs.existsSync(envPath)}`);
+  console.error('\n   FIX: Add your API key to .env.local:');
+  console.error('   API_KEY=your_google_genai_api_key');
+  console.error('\n   Get your key from: https://aistudio.google.com/apikey\n');
+  process.exit(1);
 } else {
-  console.log('✓ API_KEY loaded successfully');
+  const masked = API_KEY.substring(0, 8) + '...' + API_KEY.substring(API_KEY.length - 4);
+  console.log(`✓ API_KEY loaded successfully (${masked})`);
 }
 
 app.get('/', (req, res) => {
@@ -42,13 +47,19 @@ app.get('/', (req, res) => {
 
 app.post('/api/gemini-proxy', async (req, res) => {
   if (!API_KEY) {
-    console.error('❌ ERROR: API_KEY not set');
-    return res.status(500).json({ error: 'API key not configured' });
+    console.error('❌ CRITICAL: API_KEY is missing');
+    return res.status(500).json({ 
+      error: 'API key not configured on server',
+      help: 'Set API_KEY in .env.local. Get it from https://aistudio.google.com/apikey'
+    });
   }
   
   const { model, payload } = req.body || {};
-  if (!model || !payload) {
-    return res.status(400).json({ error: 'Missing model or payload' });
+  if (!model) {
+    return res.status(400).json({ error: 'Missing "model" in request body. Example: "gemini-2.0-flash"' });
+  }
+  if (!payload) {
+    return res.status(400).json({ error: 'Missing "payload" in request body' });
   }
 
   try {
@@ -63,8 +74,23 @@ app.post('/api/gemini-proxy', async (req, res) => {
     console.log(`✓ Got response from ${model}`);
     res.json(result);
   } catch (error) {
-    console.error('❌ Error:', error.message);
-    res.status(500).json({ error: error.message });
+    const errorMsg = error.message || String(error);
+    console.error(`❌ API Error (${model}):`, errorMsg);
+    
+    // Better error messages for common issues
+    let userMessage = errorMsg;
+    if (errorMsg.includes('401') || errorMsg.includes('UNAUTHENTICATED')) {
+      userMessage = 'Invalid API key - check your .env.local API_KEY value';
+    } else if (errorMsg.includes('429')) {
+      userMessage = 'Rate limit exceeded - wait a moment and try again';
+    } else if (errorMsg.includes('PERMISSION_DENIED')) {
+      userMessage = 'API key lacks required permissions. Regenerate it from https://aistudio.google.com/apikey';
+    }
+    
+    res.status(500).json({ 
+      error: userMessage,
+      debug: process.env.NODE_ENV === 'development' ? errorMsg : undefined
+    });
   }
 });
 

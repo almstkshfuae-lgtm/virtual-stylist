@@ -11,8 +11,9 @@
     "cap:add:android": "npx cap add android",
     "cap:sync:android": "npx cap sync android",
     "android:build:aab": "cd android && ./gradlew bundleRelease",
+    "verify:setup": "node scripts/verify-setup.mjs",
     "start:api": "node server/proxy-server.mjs",
-    "dev:all": "concurrently \"npm run start:api\" \"npm run dev\""
+    "dev:all": "npm run verify:setup && concurrently \"npm run start:api\" \"npm run dev\""
   },
   "dependencies": {
     "@google/genai": "^1.38.0",
