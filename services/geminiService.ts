@@ -294,7 +294,9 @@ export const analyzeTrends = async (file: File, language: string): Promise<Trend
 
     const payload = {
         contents: [{ parts: [imagePart, { text: prompt }] }],
-        tools: [{ googleSearch: {} }]
+        config: {
+            tools: [{ googleSearch: {} }],
+        },
     };
 
     const result = await callProxy(model, payload);
@@ -364,15 +366,15 @@ export const findNearbyStores = async (accessory: string, location: Coordinates 
     const targetLanguage = languageMap[language] || 'English';
 
     let prompt = "";
-    let requestConfig: any = {
+    const config: any = {
         tools: [{ googleMaps: {} }]
     };
 
     if (typeof location === 'string') {
-        prompt = `As a personal stylist assistant, please find 3-5 top-rated fashion retailers, clothing boutiques, or shoe stores in or near "${location}" that are likely to sell "${accessory}". Prioritize physical stores with high ratings. The response should rely on Google Maps data.`;
+        prompt = `As a personal stylist assistant, please find 3-5 top-rated fashion retailers, clothing boutiques, or shoe stores in or near "${location}" that are likely to sell "${accessory}". Prioritize physical stores with high ratings. The response should rely on Google Maps data and be returned in ${targetLanguage}.`;
     } else {
-        prompt = `As a personal stylist assistant, please find 3-5 top-rated fashion retailers, clothing boutiques, or shoe stores near the user's current location that are likely to sell "${accessory}". Prioritize physical stores with high ratings. The response should rely on Google Maps data.`;
-        requestConfig.toolConfig = {
+        prompt = `As a personal stylist assistant, please find 3-5 top-rated fashion retailers, clothing boutiques, or shoe stores near the user's current location that are likely to sell "${accessory}". Prioritize physical stores with high ratings. The response should rely on Google Maps data and be returned in ${targetLanguage}.`;
+        config.toolConfig = {
             retrievalConfig: {
                 latLng: {
                     latitude: location.latitude,
@@ -384,7 +386,7 @@ export const findNearbyStores = async (accessory: string, location: Coordinates 
 
     const payload = {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        ...requestConfig
+        config
     };
 
     const result = await callProxy(model, payload);
@@ -397,14 +399,16 @@ export const findNearbyStores = async (accessory: string, location: Coordinates 
         .map(maps => ({ title: maps.title, uri: maps.uri }));
 
     if (stores.length === 0) {
-        const fallbackText = result.text;
-        if(fallbackText && fallbackText.length > 0) {
-             const queryLocation = typeof location === 'string' ? location : '';
-             // If no structured map data, return a generic Google Maps search link as fallback
-             return [{ title: "Search on Google Maps", uri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`clothing stores selling ${accessory} ${queryLocation}`)}` }]
-        }
+        const queryLocation = typeof location === 'string'
+            ? location
+            : `${location.latitude},${location.longitude}`;
+        // If no structured map data, return a generic Google Maps search link as fallback
+        return [{
+            title: "Search on Google Maps",
+            uri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`clothing stores selling ${accessory} near ${queryLocation}`)}`
+        }];
     }
-    
+
     // Remove duplicate stores based on title
     const uniqueStores = Array.from(new Map(stores.map(store => [store.title, store])).values());
 

@@ -86,3 +86,53 @@ export function useBookmarkedStores(userId: string | null) {
     bookmarkStore,
   };
 }
+
+/**
+ * Hook for loyalty/referral program.
+ * Keeps program settings editable from Convex and points ledger transparent to UI.
+ */
+export function useLoyalty(userId: string | null) {
+  // Type guard: codegen may not be regenerated yet in local envs (WSL1).
+  const loyaltyApi = (api as any).loyalty;
+  if (!loyaltyApi) {
+    return {
+      account: null,
+      settings: null,
+      ledger: [],
+      ensureCustomer: async () => {
+        throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
+      },
+      issueMonthly: async () => {
+        throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
+      },
+      spendPoints: async () => {
+        throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
+      },
+      adjustPoints: async () => {
+        throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
+      },
+    };
+  }
+  const data = useQuery(
+    loyaltyApi?.getCustomer,
+    userId ? { userId } : "skip"
+  );
+  const ensureCustomer = useMutation(loyaltyApi?.getOrCreateCustomer);
+  const issueMonthly = useMutation(loyaltyApi?.issueMonthlyPoints);
+  const spendPoints = useMutation(loyaltyApi?.spendPoints);
+  const adjustPoints = useMutation(loyaltyApi?.adjustPoints);
+  const getLedger = useQuery(
+    loyaltyApi?.getLedger,
+    userId ? { userId, limit: 50 } : "skip"
+  );
+
+  return {
+    account: data?.account ?? null,
+    settings: data?.settings ?? null,
+    ledger: getLedger || [],
+    ensureCustomer,
+    issueMonthly,
+    spendPoints,
+    adjustPoints,
+  };
+}

@@ -86,4 +86,76 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_userId", ["userId"]),
+
+  // Loyalty, referrals, and marketing controls
+  programSettings: defineTable({
+    slug: v.string(),
+    monthlyPoints: v.number(),
+    signupBonusPoints: v.number(),
+    welcomePackagePoints: v.number(),
+    referralRewardPoints: v.number(),
+    adInventoryEnabled: v.boolean(),
+    adProductNotes: v.optional(v.string()),
+    updatedAt: v.number(),
+  }).index("by_slug", ["slug"]),
+
+  customerAccounts: defineTable({
+    userId: v.string(),
+    email: v.optional(v.string()),
+    name: v.optional(v.string()),
+    referralCode: v.string(),
+    referredByCode: v.optional(v.string()),
+    pointsBalance: v.number(),
+    lifetimePoints: v.number(),
+    monthlyIssuedFor: v.optional(v.string()), // YYYY-MM string
+    signupAwarded: v.boolean(),
+    welcomeAwarded: v.boolean(),
+    marketingTags: v.array(v.string()),
+    adConsent: v.boolean(),
+    segments: v.array(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_referralCode", ["referralCode"])
+    .index("by_referredByCode", ["referredByCode"]),
+
+  pointsLedger: defineTable({
+    userId: v.string(),
+    delta: v.number(),
+    type: v.union(
+      v.literal("monthly"),
+      v.literal("signup"),
+      v.literal("welcome"),
+      v.literal("referral_referrer"),
+      v.literal("referral_new_user"),
+      v.literal("spend"),
+      v.literal("adjustment")
+    ),
+    description: v.string(),
+    meta: v.optional(
+      v.object({
+        monthKey: v.optional(v.string()),
+        referralCode: v.optional(v.string()),
+        sourceUserId: v.optional(v.string()),
+      })
+    ),
+    createdAt: v.number(),
+  }).index("by_userId", ["userId"]),
+
+  referrals: defineTable({
+    referrerUserId: v.string(),
+    refereeUserId: v.optional(v.string()),
+    referralCode: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("converted"),
+      v.literal("rewarded"),
+      v.literal("duplicate")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_referralCode", ["referralCode"])
+    .index("by_referrer", ["referrerUserId"]),
 });
