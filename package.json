@@ -11,7 +11,7 @@
     "cap:add:android": "npx cap add android",
     "cap:sync:android": "npx cap sync android",
     "android:build:aab": "cd android && ./gradlew bundleRelease",
-    "start:api": "node server/proxy-server.js",
+    "start:api": "node server/proxy-server.mjs",
     "dev:all": "concurrently \"npm run start:api\" \"npm run dev\""
   },
   "dependencies": {
