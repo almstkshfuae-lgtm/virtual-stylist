@@ -9,6 +9,7 @@ import { ArrowRight, ArrowDown, Sparkles, Shuffle, Globe, MessageCircle, MapPin,
 import { useLoyalty } from '../hooks/useConvex';
 
 import { LoyaltyHero } from './LoyaltyHero';
+import CustomerProfileForm from './CustomerProfileForm';
 import { isConvexEnabled } from '../lib/convexConfig';
 
 interface LandingPageProps {
@@ -100,7 +101,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
   }, []);
 
   const handleProfileClick = useCallback(() => {
-    scrollToSection('landing-profile-target');
+    scrollToSection('landing-profile-form');
   }, [scrollToSection]);
 
   const handleReferralClick = useCallback(() => {
@@ -182,7 +183,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
             </span>
 
             <div
-              id="landing-profile-target"
               className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8"
             >
                 <div className="grid gap-10 lg:grid-cols-[1.1fr,0.9fr] items-center">
@@ -327,7 +327,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
             {isConvexEnabled && (
               <div
                 id="landing-referral-target"
-                className="relative w-full max-w-5xl mx-auto z-30 px-4 sm:px-6 lg:px-8 mt-10 sm:mt-14"
+                className="relative w-full max-w-5xl mx-auto z-30 px-4 sm:px-6 lg:px-8 mt-10 sm:mt-14 scroll-mt-24"
               >
                 <LoyaltyHero userId={userId} />
               </div>
@@ -335,6 +335,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
         </section>
 
         {/* Features Section */}
+        {isConvexEnabled && (
+          <section
+            id="landing-profile-form"
+            className="relative z-10 w-full py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-white/85 dark:bg-slate-900/70"
+          >
+            <div className="max-w-5xl mx-auto space-y-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">
+                أكمل ملفك الشخصي واحصل على نقاطك الآن
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
+                أدخل الاسم والبريد وكود الإحالة (إن وجد) لتحصل على مكافأة التسجيل والترحيب وتفعيل الإحالة فوراً.
+              </p>
+              <CustomerProfileForm userId={userId} />
+            </div>
+          </section>
+        )}
+
         <section 
             id="landing-features" 
             className="relative z-10 w-full py-16 sm:py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-white/80 dark:bg-slate-900/70 transition-colors duration-300 scroll-mt-10"

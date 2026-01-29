@@ -4,6 +4,7 @@ import type { StoreLocation } from '../types';
 import { Loader } from './Loader';
 import { MapPinIcon } from './icons/MapPinIcon';
 import { SendIcon } from './icons/SendIcon';
+import { CopyIcon } from './icons/CopyIcon';
 
 interface StoreLocatorModalProps {
   isOpen: boolean;
@@ -18,12 +19,23 @@ interface StoreLocatorModalProps {
 export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, onClose, stores, isLoading, error, accessory, onSearchManualLocation }) => {
   const { t } = useTranslation();
   const [manualLocation, setManualLocation] = useState('');
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const handleManualSearch = (e: React.FormEvent) => {
       e.preventDefault();
       if(manualLocation.trim()) {
           onSearchManualLocation(manualLocation);
       }
+  };
+
+  const handleCopy = async (uri: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(uri);
+      setCopiedIndex(index);
+      setTimeout(() => setCopiedIndex(null), 1200);
+    } catch (e) {
+      setCopiedIndex(null);
+    }
   };
 
   if (!isOpen) {
@@ -70,8 +82,16 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
             </form>
 
             {isLoading && (
-                <div className="flex flex-col items-center justify-center h-48">
-                    <Loader />
+                <div className="space-y-3">
+                  {[1,2,3].map((s) => (
+                    <div key={s} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3 animate-pulse">
+                      <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 w-3/4 rounded bg-gray-200 dark:bg-gray-700" />
+                        <div className="h-3 w-1/2 rounded bg-gray-100 dark:bg-gray-600" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
             )}
             {error && !isLoading && (
@@ -80,20 +100,38 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
                 </div>
             )}
             {!isLoading && !error && stores.length > 0 && (
-                <ul className="space-y-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                     {stores.map((store, index) => (
-                        <li key={index}>
-                            <a
-                                href={store.uri}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                            >
-                                <p className="font-medium text-cyan-700 dark:text-cyan-400">{store.title}</p>
-                            </a>
-                        </li>
+                        <div key={index} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-700/40 hover:border-pink-400 transition">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-full bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 dark:text-pink-200">
+                                    <MapPinIcon className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-gray-800 dark:text-gray-100 truncate">{store.title}</p>
+                                    <p className="text-[11px] text-cyan-700 dark:text-cyan-300 truncate">{store.uri}</p>
+                                </div>
+                            </div>
+                            <div className="mt-3 flex items-center gap-2">
+                                <a
+                                    href={store.uri}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 rounded-md bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800"
+                                >
+                                    {t('storeLocator.buttonOpen', 'Open in Maps')}
+                                </a>
+                                <button
+                                    type="button"
+                                    onClick={() => handleCopy(store.uri, index)}
+                                    className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-pink-400 hover:text-pink-600 dark:border-gray-600 dark:text-gray-200 dark:hover:border-pink-400"
+                                >
+                                    <CopyIcon className="w-4 h-4" /> {copiedIndex === index ? t('storeLocator.copied', 'تم النسخ') : t('storeLocator.copy', 'نسخ الرابط')}
+                                </button>
+                            </div>
+                        </div>
                     ))}
-                </ul>
+                </div>
             )}
              {!isLoading && !error && stores.length === 0 && (
                  <div className="text-center text-gray-500 dark:text-gray-400 p-4">

@@ -132,7 +132,10 @@ const en = {
     subtitle: "Showing results for '{{accessory}}'",
     empty: "Sorry, we couldn't find any specific stores nearby. Try a broader search on Google Maps.",
     error: "Could not fetch store locations. Please ensure you've granted location permissions and try again.",
-    manualLocationPlaceholder: "Enter city or zip code"
+    manualLocationPlaceholder: "Enter city or zip code",
+    buttonOpen: "Open in Maps",
+    copy: "Copy link",
+    copied: "Copied"
   },
   rejectedCard: {
     title: "Style Rejected",
@@ -297,7 +300,10 @@ const ar = {
     subtitle: "نتائج البحث عن: '{{accessory}}'",
     empty: "عذراً، لم نجد متاجر محددة بالقرب منك. جرب البحث العام في خرائط جوجل.",
     error: "تعذر تحديد الموقع. تأكد من تفعيل خدمة الموقع وحاول مرة أخرى.",
-    manualLocationPlaceholder: "أدخل اسم المدينة أو الحي"
+    manualLocationPlaceholder: "أدخل اسم المدينة أو الحي",
+    buttonOpen: "فتح في الخرائط",
+    copy: "نسخ الرابط",
+    copied: "تم النسخ"
   },
   rejectedCard: {
     title: "تنسيق غير مناسب",
@@ -462,7 +468,10 @@ const fr = {
     subtitle: "Affichage des résultats pour '{{accessory}}'",
     empty: "Désolé, nous n'avons pas pu trouver de magasins spécifiques à proximité. Essayez une recherche plus large sur Google Maps.",
     error: "Impossible de récupérer les emplacements des magasins. Veuillez vous assurer que vous avez accordé les autorisations de localisation et réessayez.",
-    manualLocationPlaceholder: "Entrez la ville ou le code postal"
+    manualLocationPlaceholder: "Entrez la ville ou le code postal",
+    buttonOpen: "Ouvrir dans Maps",
+    copy: "Copier le lien",
+    copied: "Copié"
   },
   rejectedCard: {
     title: "Style rejeté",
@@ -627,7 +636,10 @@ const ru = {
     subtitle: "Результаты для '{{accessory}}'",
     empty: "К сожалению, мы не смогли найти конкретные магазины поблизости. Попробуйте более широкий поиск на Google Картах.",
     error: "Не удалось загрузить расположение магазинов. Убедитесь, что вы предоставили доступ к местоположению, и попробуйте снова.",
-    manualLocationPlaceholder: "Введите город или индекс"
+    manualLocationPlaceholder: "Введите город или индекс",
+    buttonOpen: "Открыть в картах",
+    copy: "Копировать ссылку",
+    copied: "Скопировано"
   },
   rejectedCard: {
     title: "Стиль отклонен",
@@ -792,7 +804,10 @@ const nl = {
     subtitle: "Resultaten voor '{{accessory}}'",
     empty: "Sorry, we konden geen specifieke winkels in de buurt vinden. Probeer een bredere zoekopdracht op Google Maps.",
     error: "Kon winkellocaties niet ophalen. Zorg ervoor dat je locatietoestemming hebt gegeven en probeer het opnieuw.",
-    manualLocationPlaceholder: "Voer stad of postcode in"
+    manualLocationPlaceholder: "Voer stad of postcode in",
+    buttonOpen: "Openen in Maps",
+    copy: "Link kopiëren",
+    copied: "Gekopieerd"
   },
   rejectedCard: {
     title: "Stijl afgewezen",

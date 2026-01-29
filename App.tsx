@@ -27,6 +27,7 @@ import { ConvexProviderWrapper } from './components/ConvexProviderWrapper';
 import { LoyaltyPanel } from './components/LoyaltyPanel';
 import LoyaltyTestHarness from './components/LoyaltyTestHarness';
 import { isConvexEnabled } from './lib/convexConfig';
+import { useMemo } from 'react';
 
 // Lazy-load the demo image from the public assets folder.
 const DEMO_IMAGE_FILENAME = 'demo-skirt.png';
@@ -103,8 +104,30 @@ const App: React.FC = () => {
   const [storeLocations, setStoreLocations] = useState<StoreLocation[]>([]);
   const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
   const [activeSearchAccessory, setActiveSearchAccessory] = useState<string | null>(null);
+  const storeCache = React.useRef<Map<string, StoreLocation[]>>(new Map());
+  const inFlightStoreKey = React.useRef<string | null>(null);
+  const nearMePhrase = useMemo(() => {
+    switch (language) {
+      case 'ar':
+        return 'بالقرب مني';
+      case 'fr':
+        return 'près de moi';
+      case 'ru':
+        return 'рядом со мной';
+      case 'nl':
+        return 'bij mij in de buurt';
+      default:
+        return 'near me';
+    }
+  }, [language]);
 
   const [selectedStyles, setSelectedStyles] = useState<string[]>(['Casual', 'Business', 'Night Out']);
+
+  const loyaltySectionRef = React.useRef<HTMLDivElement | null>(null);
+
+  const scrollToLoyalty = useCallback(() => {
+    loyaltySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   const [savedOutfits, setSavedOutfits] = useState<ValidOutfit[]>([]);
   const [customerId] = useState<string>(() => getLocalCustomerId());
@@ -369,8 +392,14 @@ const App: React.FC = () => {
       setStoreLocations([]);
       
       try {
-          const stores = await findNearbyStores(activeSearchAccessory, location, language);
-          setStoreLocations(stores);
+          const cacheKey = `${activeSearchAccessory}::${location}`;
+          if (storeCache.current.has(cacheKey)) {
+            setStoreLocations(storeCache.current.get(cacheKey) || []);
+          } else {
+            const stores = await findNearbyStores(activeSearchAccessory, location, language);
+            storeCache.current.set(cacheKey, stores);
+            setStoreLocations(stores);
+          }
       } catch (e) {
           console.error(e);
           setStoreFinderError(t('storeLocator.error'));
@@ -381,6 +410,20 @@ const App: React.FC = () => {
 
   const handleFindNearbyStores = useCallback(async (accessory: string) => {
       const search = async (coords: Coordinates) => {
+          const key = `${accessory}::${coords.latitude.toFixed(3)},${coords.longitude.toFixed(3)}`;
+          if (storeCache.current.has(key)) {
+            setStoreLocations(storeCache.current.get(key) || []);
+            setActiveSearchAccessory(accessory);
+            setIsStoreModalOpen(true);
+            return;
+          }
+
+          if (inFlightStoreKey.current === key) {
+            setIsStoreModalOpen(true);
+            return;
+          }
+
+          inFlightStoreKey.current = key;
           setIsFindingStores(true);
           setStoreFinderError(null);
           setStoreLocations([]);
@@ -388,12 +431,14 @@ const App: React.FC = () => {
           setIsStoreModalOpen(true);
           try {
               const stores = await findNearbyStores(accessory, coords, language);
+              storeCache.current.set(key, stores);
               setStoreLocations(stores);
           } catch (e) {
               console.error(e);
               setStoreFinderError(t('storeLocator.error'));
           } finally {
               setIsFindingStores(false);
+              inFlightStoreKey.current = null;
           }
       };
 
@@ -412,10 +457,24 @@ const App: React.FC = () => {
                   setUserLocation(coords);
                   search(coords);
               },
-              (error) => {
+              async (error) => {
                   console.error("Geolocation error:", error);
-                  setStoreFinderError(t('storeLocator.error'));
-                  setIsFindingStores(false);
+          // Fallback: still provide a generic Google Maps search link so the user sees suggestions.
+                  try {
+                      const key = `${accessory}::${nearMePhrase}`;
+                      if (storeCache.current.has(key)) {
+                        setStoreLocations(storeCache.current.get(key) || []);
+                      } else {
+                        const fallbackStores = await findNearbyStores(accessory, nearMePhrase, language);
+                        storeCache.current.set(key, fallbackStores);
+                        setStoreLocations(fallbackStores);
+                      }
+                  } catch (err) {
+                      console.error("Fallback store lookup failed:", err);
+                      setStoreFinderError(t('storeLocator.error'));
+                  } finally {
+                      setIsFindingStores(false);
+                  }
                   // The modal remains open, allowing manual search
               }
           );
@@ -477,6 +536,15 @@ const App: React.FC = () => {
             </h1>
           </div>
           <div className='flex items-center gap-4'>
+            {isConvexEnabled && (
+              <button
+                onClick={scrollToLoyalty}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
+                aria-label="Profile & loyalty"
+              >
+                <span>{t('landing.header.profile')}</span>
+              </button>
+            )}
             <button 
                 onClick={resetApp} 
                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
@@ -625,21 +693,22 @@ const App: React.FC = () => {
       )}
     </main>
     {hasStarted && isConvexEnabled && (
-      <>
+      <div ref={loyaltySectionRef} id="customer-profile-section" className="px-4 md:px-8 lg:px-10 mt-4 space-y-4 scroll-mt-20">
         <LoyaltyPanel userId={customerId} />
-        <div className="px-4 md:px-8 lg:px-10 mt-6">
-          <LoyaltyTestHarness userId={customerId} />
-        </div>
-      </>
+        <LoyaltyTestHarness userId={customerId} />
+      </div>
     )}
     <footer className="text-center p-4 mt-8 text-sm text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-slate-800 space-y-2">
       <p>{t('footer.copyright')}</p>
-      <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-400">
         <span className="gemini3-logo" aria-hidden="true">
           Gemini
           <span className="gemini3-logo-number">3</span>
         </span>
         <span>{t('footer.poweredBy')}</span>
+        <a href="/privacy.html" className="underline hover:text-pink-500 dark:hover:text-pink-400">
+          Privacy & Cookies
+        </a>
       </div>
     </footer>
        <button 
