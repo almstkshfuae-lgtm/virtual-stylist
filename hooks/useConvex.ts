@@ -103,6 +103,9 @@ export function useLoyalty(userId: string | null) {
       ensureCustomer: async () => {
         throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
       },
+      loginWithEmail: async () => {
+        throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
+      },
       issueMonthly: async () => {
         throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
       },
@@ -119,6 +122,7 @@ export function useLoyalty(userId: string | null) {
     userId ? { userId } : "skip"
   );
   const ensureCustomer = useMutation(loyaltyApi?.getOrCreateCustomer);
+  const loginWithEmail = useMutation(loyaltyApi?.loginWithEmail);
   const issueMonthly = useMutation(loyaltyApi?.issueMonthlyPoints);
   const spendPoints = useMutation(loyaltyApi?.spendPoints);
   const adjustPoints = useMutation(loyaltyApi?.adjustPoints);
@@ -132,8 +136,25 @@ export function useLoyalty(userId: string | null) {
     settings: data?.settings ?? null,
     ledger: getLedger || [],
     ensureCustomer,
+    loginWithEmail,
     issueMonthly,
     spendPoints,
     adjustPoints,
   };
+}
+
+/**
+ * Hook to log developer-only fashion insights (for B2B/brand analytics).
+ */
+export function useFashionInsights(userId: string | null) {
+  const insightsApi = (api as any).insights;
+  if (!isConvexEnabled || !insightsApi) {
+    return {
+      logInsight: async () => {
+        throw new Error("Convex codegen missing insights api. Run `npx convex dev`.");
+      },
+    };
+  }
+  const logInsight = useMutation(insightsApi.logFashionInsight);
+  return { logInsight };
 }

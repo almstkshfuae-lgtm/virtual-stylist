@@ -15,6 +15,9 @@ import { isConvexEnabled } from '../lib/convexConfig';
 interface LandingPageProps {
   onGetStarted: () => void;
   userId: string;
+  onRestoreAccount: (email: string, name?: string) => Promise<void>;
+  restoreLoading: boolean;
+  onRegisterAccount: (email: string, name?: string, referralCode?: string) => Promise<void>;
 }
 
 const AnimatedText: React.FC<{ text: string; isRtl: boolean; className: string; style?: React.CSSProperties }> = ({ text, isRtl, className, style }) => {
@@ -73,9 +76,18 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, ind
     </motion.div>
 );
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, onRestoreAccount, restoreLoading, onRegisterAccount }) => {
   const { t, language } = useTranslation();
   const isRtl = language === 'ar';
+  const { account, ensureCustomer } = useLoyalty(userId);
+  const [restoreEmail, setRestoreEmail] = React.useState('');
+  const [restoreName, setRestoreName] = React.useState('');
+  const [restoreError, setRestoreError] = React.useState<string | null>(null);
+  const [signupEmail, setSignupEmail] = React.useState('');
+  const [signupName, setSignupName] = React.useState('');
+  const [signupReferral, setSignupReferral] = React.useState('');
+  const [signupError, setSignupError] = React.useState<string | null>(null);
+  const [isSignupLoading, setIsSignupLoading] = React.useState(false);
 
   const scrollToFeatures = () => {
       document.getElementById('landing-features')?.scrollIntoView({ behavior: 'smooth' });
@@ -85,7 +97,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
   const referralLabel = t('landing.header.referral');
   const referralUnavailableLabel = t('landing.header.referralUnavailable');
 
-  const { account } = useLoyalty(userId);
   const userName = account?.name ?? t('landing.header.guest');
   const userPoints = account ? `${account.pointsBalance.toLocaleString()} pts` : t('landing.header.pointsUnknown');
   const referralStatus = account?.referralCode
@@ -107,6 +118,50 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
   const handleReferralClick = useCallback(() => {
     scrollToSection('landing-referral-target');
   }, [scrollToSection]);
+
+  // Ensure loyalty account exists early so referral code is auto-generated.
+  React.useEffect(() => {
+    if (!userId || !ensureCustomer) return;
+    ensureCustomer({ userId }).catch((err: Error) =>
+      console.debug('ensureCustomer (landing) skipped', err.message)
+    );
+  }, [ensureCustomer, userId]);
+
+  const handleRestore = async () => {
+    setRestoreError(null);
+    if (!restoreEmail.trim()) {
+      setRestoreError('أدخل بريدك لاستعادة حسابك.');
+      return;
+    }
+    try {
+      await onRestoreAccount(restoreEmail.trim(), restoreName.trim() || undefined);
+    } catch (error) {
+      console.error('restore failed', error);
+      setRestoreError('تعذر استعادة الحساب. حاول لاحقاً.');
+    }
+  };
+
+  const handleSignup = async () => {
+    setSignupError(null);
+    if (!signupEmail.trim()) {
+      setSignupError('أدخل بريدك للحصول على النقاط.');
+      return;
+    }
+    setIsSignupLoading(true);
+    try {
+      await onRegisterAccount(
+        signupEmail.trim(),
+        signupName.trim() || undefined,
+        signupReferral.trim() || undefined
+      );
+      setSignupError(null);
+    } catch (error) {
+      console.error('signup failed', error);
+      setSignupError('تعذر التسجيل حالياً. حاول لاحقاً.');
+    } finally {
+      setIsSignupLoading(false);
+    }
+  };
 
   const navButtonClass = (isDisabled = false) =>
     [
@@ -149,6 +204,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
               <Gift className="h-4 w-4" aria-hidden="true" />
               <span>{referralLabel}</span>
             </button>
+            <div className="flex items-center gap-1 rounded-full border border-white/60 bg-white/80 px-2 py-1 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={restoreEmail}
+                onChange={(e) => setRestoreEmail(e.target.value)}
+                className="w-32 rounded-full border border-gray-200 bg-white px-3 py-1 text-[0.7rem] text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+              />
+              <input
+                type="text"
+                placeholder="اسم اختياري"
+                value={restoreName}
+                onChange={(e) => setRestoreName(e.target.value)}
+                className="hidden sm:block w-28 rounded-full border border-gray-200 bg-white px-3 py-1 text-[0.7rem] text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+              />
+              <button
+                type="button"
+                onClick={handleRestore}
+                disabled={restoreLoading || !restoreEmail.trim()}
+                className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[0.7rem] font-semibold text-gray-700 hover:border-pink-400 hover:text-pink-600 disabled:cursor-not-allowed disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:border-pink-500 dark:hover:text-pink-200"
+              >
+                {restoreLoading ? '...' : 'استعادة'}
+              </button>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/90 px-2 py-1 text-[0.65rem] font-semibold text-gray-900 shadow-sm dark:border-white/20 dark:bg-gray-900/70 dark:text-white">
@@ -168,6 +247,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
               {referralStatus}
             </span>
           </div>
+          {restoreError && (
+            <p className="text-[0.65rem] text-red-500 dark:text-red-300 px-1">{restoreError}</p>
+          )}
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <LanguageSelector />
@@ -330,6 +412,50 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId }
                 className="relative w-full max-w-5xl mx-auto z-30 px-4 sm:px-6 lg:px-8 mt-10 sm:mt-14 scroll-mt-24"
               >
                 <LoyaltyHero userId={userId} />
+                <div className="mt-6 rounded-3xl border border-pink-100 bg-pink-50/80 p-5 shadow-lg dark:border-pink-700/40 dark:bg-pink-900/20">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-pink-700 dark:text-pink-200">
+                    مستخدم جديد؟ سجّل لتحصل على النقاط فوراً
+                  </p>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <input
+                      type="text"
+                      placeholder="اسمك"
+                      value={signupName}
+                      onChange={(e) => setSignupName(e.target.value)}
+                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                    />
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={signupEmail}
+                      onChange={(e) => setSignupEmail(e.target.value)}
+                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                    />
+                    <input
+                      type="text"
+                      placeholder="كود إحالة (اختياري)"
+                      value={signupReferral}
+                      onChange={(e) => setSignupReferral(e.target.value)}
+                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40 sm:col-span-2"
+                    />
+                  </div>
+                  {signupError && (
+                    <p className="mt-2 text-xs font-semibold text-red-500">{signupError}</p>
+                  )}
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSignup}
+                      disabled={isSignupLoading || !signupEmail.trim()}
+                      className="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-pink-300"
+                    >
+                      {isSignupLoading ? '...' : 'سجّل واحصل على النقاط'}
+                    </button>
+                    <span className="text-xs text-pink-700/80 dark:text-pink-200">
+                      نقاط التسجيل + الترحيب تصلك فوراً، والإحالة تكافئكما معاً.
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
         </section>

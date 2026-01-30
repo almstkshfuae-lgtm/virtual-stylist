@@ -5,6 +5,7 @@ import { Loader } from './Loader';
 import { MapPinIcon } from './icons/MapPinIcon';
 import { SendIcon } from './icons/SendIcon';
 import { CopyIcon } from './icons/CopyIcon';
+import { GlobeIcon } from './icons/GlobeIcon';
 
 interface StoreLocatorModalProps {
   isOpen: boolean;
@@ -20,6 +21,17 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
   const { t } = useTranslation();
   const [manualLocation, setManualLocation] = useState('');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const GLOBAL_BRANDS = [
+    'zara','h&m','hm','uniqlo','nike','adidas','puma','reebok','under armour',
+    'levi','gap','mango','bershka','pull&bear','pull and bear','massimo dutti',
+    'stradivarius','gucci','prada','louis vuitton','lv','chanel','dior','balenciaga','celine','armani'
+  ];
+
+  const isGlobalBrand = (title: string) => {
+    const lower = title.toLowerCase();
+    return GLOBAL_BRANDS.some((brand) => lower.includes(brand));
+  };
 
   const handleManualSearch = (e: React.FormEvent) => {
       e.preventDefault();
@@ -102,13 +114,34 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
             {!isLoading && !error && stores.length > 0 && (
                 <div className="grid gap-3 sm:grid-cols-2">
                     {stores.map((store, index) => (
-                        <div key={index} className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-700/40 hover:border-pink-400 transition">
+                        <div
+                          key={index}
+                          className={`relative rounded-lg p-3 bg-gray-50 dark:bg-gray-700/40 transition ${
+                            isGlobalBrand(store.title)
+                              ? 'border border-amber-400/70 shadow-[0_8px_28px_rgba(255,193,7,0.35)]'
+                              : 'border border-gray-200 dark:border-gray-700 hover:border-pink-400'
+                          }`}
+                        >
+                            {isGlobalBrand(store.title) && (
+                              <span className="absolute -top-2 -left-2 inline-flex items-center gap-1 rounded-full bg-amber-500 text-white px-2 py-1 text-[10px] font-bold shadow-md">
+                                <GlobeIcon className="w-3 h-3" />
+                                {t('storeLocator.globalBrand', 'علامة عالمية')}
+                              </span>
+                            )}
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 dark:text-pink-200">
-                                    <MapPinIcon className="w-5 h-5" />
+                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                                  isGlobalBrand(store.title)
+                                    ? 'bg-amber-100 text-amber-700 shadow-inner'
+                                    : 'bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-200'
+                                }`}>
+                                  <MapPinIcon className="w-5 h-5" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-gray-800 dark:text-gray-100 truncate">{store.title}</p>
+                                    <p className={`font-semibold truncate ${
+                                      isGlobalBrand(store.title)
+                                        ? 'text-amber-700 dark:text-amber-300'
+                                        : 'text-gray-800 dark:text-gray-100'
+                                    }`}>{store.title}</p>
                                     <p className="text-[11px] text-cyan-700 dark:text-cyan-300 truncate">{store.uri}</p>
                                 </div>
                             </div>

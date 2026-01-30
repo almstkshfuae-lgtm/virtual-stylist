@@ -26,6 +26,8 @@ import { StyleProfileDisplay } from './components/StyleProfileDisplay';
 import { ConvexProviderWrapper } from './components/ConvexProviderWrapper';
 import { LoyaltyPanel } from './components/LoyaltyPanel';
 import LoyaltyTestHarness from './components/LoyaltyTestHarness';
+import ProfilePage from './components/ProfilePage';
+import { useLoyalty, useFashionInsights } from './hooks/useConvex';
 import { isConvexEnabled } from './lib/convexConfig';
 import { useMemo } from 'react';
 
@@ -130,7 +132,20 @@ const App: React.FC = () => {
   }, []);
 
   const [savedOutfits, setSavedOutfits] = useState<ValidOutfit[]>([]);
-  const [customerId] = useState<string>(() => getLocalCustomerId());
+  const [customerId, setCustomerId] = useState<string>(() => getLocalCustomerId());
+  const isProfileRoute =
+    typeof window !== 'undefined' &&
+    (window.location.pathname === '/profile' || window.location.pathname === '/profile/');
+  const {
+    account: loyaltyAccount,
+    ensureCustomer,
+    spendPoints,
+    loginWithEmail,
+  } = useLoyalty(customerId);
+  const { logInsight } = useFashionInsights(customerId);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [paywallMessage, setPaywallMessage] = useState<string | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
 
 
   useEffect(() => {
@@ -144,6 +159,66 @@ const App: React.FC = () => {
     }
     setChatHistory([{ role: 'model', text: t('chat.welcome') }]);
   }, []);
+
+  // Ensure loyalty account exists to track balance for paywall.
+  useEffect(() => {
+    if (!isConvexEnabled || !customerId || !ensureCustomer) return;
+    ensureCustomer({ userId: customerId }).catch(() => {
+      /* ignore */ 
+    });
+  }, [customerId, ensureCustomer]);
+
+  const requireCredit = useCallback(
+    async (pointsNeeded = 1) => {
+      if (!isConvexEnabled) return true;
+      const balance = loyaltyAccount?.pointsBalance ?? 0;
+      if (balance < pointsNeeded) {
+        setIsBlocked(true);
+        setPaywallMessage('رصيد النقاط انتهى. اشترك للاستمرار في استخدام منسق الأزياء.');
+        return false;
+      }
+      if (spendPoints) {
+        try {
+          await spendPoints({
+            userId: customerId,
+            amount: pointsNeeded,
+            description: 'Gemini usage',
+          });
+        } catch (error) {
+          console.error('Failed to spend points', error);
+          setIsBlocked(true);
+          setPaywallMessage('تعذر خصم النقاط. يرجى الاشتراك أو المحاولة لاحقاً.');
+          return false;
+        }
+      }
+      return true;
+    },
+    [customerId, loyaltyAccount?.pointsBalance, spendPoints]
+  );
+
+  const handleRestoreAccount = async (email: string, name?: string, referralCode?: string) => {
+    if (!loginWithEmail || !email.trim()) return;
+    setIsAuthLoading(true);
+    try {
+      const result = await loginWithEmail({
+        email: email.trim(),
+        name: name?.trim() || undefined,
+        referredByCode: referralCode?.trim() || undefined,
+      });
+      const newUserId = result?.account?.userId;
+      if (newUserId) {
+        setCustomerId(newUserId);
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(LOCAL_CUSTOMER_ID_KEY, newUserId);
+        }
+      }
+    } catch (error) {
+      console.error('Auth login failed', error);
+      setError('تعذر تسجيل الدخول بالبريد. حاول لاحقاً.');
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
 
    useEffect(() => {
     setChatHistory(prev => prev.length > 1 ? prev : [{ role: 'model', text: t('chat.welcome') }]);
@@ -247,6 +322,9 @@ const App: React.FC = () => {
   }
 
   const handleGenerateOutfits = useCallback(async (itemFile: File, styles: string[]) => {
+    if (!(await requireCredit(1))) {
+      return;
+    }
     setOutfits([]); // Clear old outfits immediately
     setIsLoading(true);
     setError(null);
@@ -254,6 +332,22 @@ const App: React.FC = () => {
     try {
       const generated = await generateOutfits(itemFile, styles, language, styleProfile, bodyShape);
       setOutfits(generated);
+
+      // Log anonymized fashion insights for developer/brand analytics.
+      const keywords = generated
+        .filter((o): o is ValidOutfit => o !== null && !(o as any).rejectionReason)
+        .flatMap((o) => o.keywords || [])
+        .slice(0, 25);
+      if (logInsight) {
+        logInsight({
+          userId: customerId,
+          sessionId: undefined,
+          styles,
+          keywords,
+          language,
+          bodyShape: bodyShape || undefined,
+        }).catch((err: any) => console.debug('logInsight skipped', err));
+      }
     } catch (e) {
       setOutfits([]);
       console.error(e);
@@ -263,8 +357,11 @@ const App: React.FC = () => {
     }
   }, [language, styleProfile, bodyShape]);
 
-   const handleAnalyzeTrends = useCallback(async () => {
+  const handleAnalyzeTrends = useCallback(async () => {
     if (selectedItemIndex === null || !collection[selectedItemIndex]) return;
+    if (!(await requireCredit(1))) {
+      return;
+    }
 
     setIsTrendLoading(true);
     setError(null);
@@ -283,6 +380,9 @@ const App: React.FC = () => {
   const handleCombineItems = useCallback(async () => {
     if (combinationSelection.length < 2) {
       setError(t('main.error.minTwoItems'));
+      return;
+    }
+    if (!(await requireCredit(1))) {
       return;
     }
     
@@ -308,6 +408,9 @@ const App: React.FC = () => {
   const handleEditImage = async (outfitIndex: number, editPrompt: string): Promise<string> => {
     if (selectedItemIndex === null || !collection[selectedItemIndex]) {
       throw new Error("No item selected for editing.");
+    }
+    if (!(await requireCredit(1))) {
+      throw new Error('لا يوجد رصيد نقاط كافٍ. اشترك للاستمرار.');
     }
     
     const currentOutfit = outfits[outfitIndex];
@@ -369,6 +472,9 @@ const App: React.FC = () => {
   }
 
   const handleSendMessage = async (message: string) => {
+    if (!(await requireCredit(1))) {
+      return;
+    }
     const currentSelectedItemFile = (selectedItemIndex !== null && viewMode === 'single') ? collection[selectedItemIndex].file : undefined;
     const newHistory: ChatMessage[] = [...chatHistory, { role: 'user', text: message }];
     setChatHistory(newHistory);
@@ -522,8 +628,18 @@ const App: React.FC = () => {
 
   if (!hasStarted && collection.length === 0) {
     return (
-      <LandingPage onGetStarted={() => setHasStarted(true)} userId={customerId} />
+      <LandingPage
+        onGetStarted={() => setHasStarted(true)}
+        userId={customerId}
+        onRestoreAccount={handleRestoreAccount}
+        restoreLoading={isAuthLoading}
+        onRegisterAccount={handleRestoreAccount}
+      />
     );
+  }
+
+  if (isProfileRoute) {
+    return <ProfilePage userId={customerId} />;
   }
 
   return (
@@ -733,6 +849,30 @@ const App: React.FC = () => {
             result={trendAnalysisResult}
             onClose={() => setTrendAnalysisResult(null)}
         />
+      )}
+
+      {isBlocked && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl dark:bg-slate-900">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">انتهى رصيد النقاط</h3>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              {paywallMessage || 'استهلكت كل رصيدك. اشترك لإكمال الاستخدام.'}
+            </p>
+            <div className="mt-4 flex flex-col gap-2">
+              <button
+                className="rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-pink-700"
+              >
+                اشترك الآن
+              </button>
+              <button
+                className="text-sm text-gray-500 underline"
+                onClick={() => setIsBlocked(false)}
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {isStoreModalOpen && (

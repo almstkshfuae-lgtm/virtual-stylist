@@ -171,7 +171,7 @@ export const generateOutfits = async (file: File, styles: string[], language: st
     ]);
     
     let validCounter = 0;
-    return outfitPrompts.map((prompt): Outfit => {
+    const outfits = outfitPrompts.map((prompt): Outfit => {
         if (prompt.isUnsuitable) {
             return {
                 title: prompt.title,
@@ -193,6 +193,8 @@ export const generateOutfits = async (file: File, styles: string[], language: st
         validCounter++;
         return result;
     });
+
+    return outfits;
 };
 
 

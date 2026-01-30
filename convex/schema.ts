@@ -116,6 +116,9 @@ export default defineSchema({
     pointsBalance: v.number(),
     lifetimePoints: v.number(),
     monthlyIssuedFor: v.optional(v.string()), // YYYY-MM string
+    trialStartAt: v.optional(v.number()), // ms timestamp UTC
+    trialLastIssuedFor: v.optional(v.string()), // YYYY-MM-DD string
+    trialDaysIssued: v.optional(v.number()),
     signupAwarded: v.boolean(),
     welcomeAwarded: v.boolean(),
     marketingTags: v.array(v.string()),
@@ -125,6 +128,7 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_userId", ["userId"])
+    .index("by_email", ["email"])
     .index("by_referralCode", ["referralCode"])
     .index("by_referredByCode", ["referredByCode"]),
 
@@ -135,6 +139,7 @@ export default defineSchema({
       v.literal("monthly"),
       v.literal("signup"),
       v.literal("welcome"),
+      v.literal("trial"),
       v.literal("referral_referrer"),
       v.literal("referral_new_user"),
       v.literal("spend"),
@@ -150,6 +155,18 @@ export default defineSchema({
     ),
     createdAt: v.number(),
   }).index("by_userId", ["userId"]),
+
+  fashionInsights: defineTable({
+    userId: v.optional(v.string()),
+    sessionId: v.optional(v.string()),
+    styles: v.array(v.string()),
+    keywords: v.array(v.string()),
+    language: v.string(),
+    bodyShape: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_createdAt", ["createdAt"]),
 
   referrals: defineTable({
     referrerUserId: v.string(),

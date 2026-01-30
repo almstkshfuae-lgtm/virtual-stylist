@@ -32,6 +32,7 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
   const { account, settings, ledger, ensureCustomer, issueMonthly } = useLoyalty(userId);
   const [copyStatus, setCopyStatus] = useState<CopyStatus>('idle');
   const [copyLinkStatus, setCopyLinkStatus] = useState<CopyStatus>('idle');
+  const [inviteEmail, setInviteEmail] = useState('');
   const [isIssuing, setIsIssuing] = useState(false);
   const [origin, setOrigin] = useState('');
 
@@ -81,6 +82,15 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
     const base = origin || 'https://virtual-stylist.ai';
     return `${base}/?ref=${account.referralCode}`;
   }, [account?.referralCode, origin]);
+
+  const sendInvite = () => {
+    if (!referralLink || !inviteEmail.trim()) return;
+    const subject = encodeURIComponent('انضم إلي منسق الأزياء الافتراضي');
+    const body = encodeURIComponent(
+      `جرّب منسق الأزياء الافتراضي واحصل على نقاط مكافأة باستخدام رابط الإحالة الخاص بي:\n${referralLink}`
+    );
+    window.location.href = `mailto:${inviteEmail.trim()}?subject=${subject}&body=${body}`;
+  };
 
   const copyReferralLink = async () => {
     if (!referralLink || typeof navigator === 'undefined' || !navigator.clipboard) {
@@ -231,6 +241,31 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
               أرسل الرابط عبر البريد
             </a>
           )}
+          <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-pink-100 bg-white/70 p-3 shadow-sm dark:border-pink-700/30 dark:bg-slate-900/60">
+            <label className="text-xs font-semibold uppercase text-pink-700 dark:text-pink-200">
+              أرسل رابط الإحالة لصديق جديد
+            </label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="friend@example.com"
+                className="flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+              />
+              <button
+                type="button"
+                onClick={sendInvite}
+                disabled={!referralLink || !inviteEmail.trim()}
+                className="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-pink-300"
+              >
+                إرسال الدعوة
+              </button>
+            </div>
+            <p className="text-[11px] text-pink-600/80 dark:text-pink-200">
+              سيُفتح بريدك الافتراضي مع رسالة جاهزة تتضمن رابط الإحالة.
+            </p>
+          </div>
         </div>
         <div className="rounded-2xl border border-gray-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/40">
           <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Referred by</p>
