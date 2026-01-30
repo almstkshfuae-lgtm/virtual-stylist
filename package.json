@@ -13,7 +13,8 @@
     "android:build:aab": "cd android && ./gradlew bundleRelease",
     "verify:setup": "node scripts/verify-setup.mjs",
     "start:api": "node server/proxy-server.mjs",
-    "dev:all": "npm run verify:setup && concurrently \"npm run start:api\" \"npm run dev\""
+    "dev:all": "npm run verify:setup && concurrently \"npm run start:api\" \"npm run dev\"",
+    "test:loyalty": "node --loader ts-node/esm --test tests/loyalty.test.ts"
   },
   "dependencies": {
     "@google/genai": "^1.38.0",
@@ -37,6 +38,7 @@
     "@vitejs/plugin-react": "^5.1.2",
     "autoprefixer": "^10.4.19",
     "concurrently": "^9.2.1",
+    "ts-node": "^10.9.2",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.2.0",

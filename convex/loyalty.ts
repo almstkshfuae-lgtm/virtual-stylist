@@ -6,6 +6,14 @@ const DEFAULT_PROGRAM_SLUG = "default";
 // Normalize codes for consistent lookups (case-insensitive comparisons).
 const normalizeCode = (code: string) => code.trim().toLowerCase();
 
+// Central auth helper used across mutations/queries.
+const requireUser = async (ctx: any, userId?: string) => {
+  const identity = await ctx.auth.getUserIdentity?.();
+  if (!identity) throw new Error("Unauthorized");
+  if (userId && identity.subject !== userId) throw new Error("Forbidden");
+  return identity;
+};
+
 // Helper to create a stable month key (YYYY-MM)
 const monthKey = () => {
   const now = new Date();
@@ -52,7 +60,10 @@ async function ensureProgramSettingsCore(ctx: any) {
 // Public mutation wrapper for client-side management if ever needed.
 export const ensureProgramSettings = mutation({
   args: {},
-  handler: ensureProgramSettingsCore,
+  handler: async (ctx) => {
+    await requireUser(ctx);
+    return ensureProgramSettingsCore(ctx);
+  },
 });
 
 // Create or fetch a customer account, award signup + welcome, and handle referrals.
@@ -64,6 +75,7 @@ export const getOrCreateCustomer = mutation({
     referredByCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     const settings = await ensureProgramSettingsCore(ctx);
     const referredByCode = args.referredByCode
       ? normalizeCode(args.referredByCode)
@@ -139,24 +151,25 @@ export const getOrCreateCustomer = mutation({
     if (!account) throw new Error("Failed to create account");
 
     // Award signup bonus once.
-    await addPoints(ctx, account, settings.signupBonusPoints, "signup", {
+    let updatedAccount = await addPoints(ctx, account._id, settings.signupBonusPoints, "signup", {
       description: "Signup bonus",
+      idempotencyKey: `signup:${account._id}`,
     });
     await ctx.db.patch(account._id, { signupAwarded: true, updatedAt: Date.now() });
 
     // Welcome package (one-time).
-    await addPoints(
+    updatedAccount = await addPoints(
       ctx,
-      { ...account, signupAwarded: true },
+      account._id,
       settings.welcomePackagePoints,
       "welcome",
-      { description: "Welcome package" }
+      { description: "Welcome package", idempotencyKey: `welcome:${account._id}` }
     );
     await ctx.db.patch(account._id, { welcomeAwarded: true, updatedAt: Date.now() });
 
     // Monthly issuance if not yet issued this month.
-    await maybeIssueMonthly(ctx, account, settings);
-    await maybeIssueTrial(ctx, account);
+    await maybeIssueMonthly(ctx, updatedAccount, settings);
+    await maybeIssueTrial(ctx, updatedAccount);
 
     // If referred, credit both parties once.
     if (referredByCode) {
@@ -171,6 +184,7 @@ export const getOrCreateCustomer = mutation({
 export const getCustomer = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     const account = await ctx.db
       .query("customerAccounts")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
@@ -191,6 +205,7 @@ export const loginWithEmail = mutation({
     referredByCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireUser(ctx);
     const settings = await ensureProgramSettingsCore(ctx);
     const normalizedEmail = args.email.trim().toLowerCase();
     const referredByCode = args.referredByCode ? normalizeCode(args.referredByCode) : undefined;
@@ -255,22 +270,23 @@ export const loginWithEmail = mutation({
     if (!account) throw new Error("Failed to create account via email login");
 
     // Award signup + welcome + monthly same as new user flow
-    await addPoints(ctx, account, settings.signupBonusPoints, "signup", {
+    let updatedAccount = await addPoints(ctx, account._id, settings.signupBonusPoints, "signup", {
       description: "Signup bonus",
+      idempotencyKey: `signup:${account._id}`,
     });
     await ctx.db.patch(account._id, { signupAwarded: true, updatedAt: Date.now() });
 
-    await addPoints(
+    updatedAccount = await addPoints(
       ctx,
-      { ...account, signupAwarded: true },
+      account._id,
       settings.welcomePackagePoints,
       "welcome",
-      { description: "Welcome package" }
+      { description: "Welcome package", idempotencyKey: `welcome:${account._id}` }
     );
     await ctx.db.patch(account._id, { welcomeAwarded: true, updatedAt: Date.now() });
 
-    await maybeIssueMonthly(ctx, account, settings);
-    await maybeIssueTrial(ctx, account);
+    await maybeIssueMonthly(ctx, updatedAccount, settings);
+    await maybeIssueTrial(ctx, updatedAccount);
 
     // If referred, credit both parties once.
     if (referredByCode) {
@@ -289,6 +305,7 @@ export const spendPoints = mutation({
     description: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     if (args.amount <= 0) throw new Error("Amount must be positive");
 
     const account = await ctx.db
@@ -298,7 +315,7 @@ export const spendPoints = mutation({
     if (!account) throw new Error("Account not found");
     if (account.pointsBalance < args.amount) throw new Error("Insufficient points");
 
-    await addPoints(ctx, account, -args.amount, "spend", {
+    await addPoints(ctx, account._id, -args.amount, "spend", {
       description: args.description,
     });
 
@@ -317,13 +334,15 @@ export const adjustPoints = mutation({
     description: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
+    if (!Number.isFinite(args.delta)) throw new Error("Invalid delta");
     const account = await ctx.db
       .query("customerAccounts")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .first();
     if (!account) throw new Error("Account not found");
 
-    await addPoints(ctx, account, args.delta, "adjustment", {
+    await addPoints(ctx, account._id, args.delta, "adjustment", {
       description: args.description,
     });
 
@@ -338,6 +357,7 @@ export const adjustPoints = mutation({
 export const issueMonthlyPoints = mutation({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     const settings = await ensureProgramSettingsCore(ctx);
     const account = await ctx.db
       .query("customerAccounts")
@@ -359,6 +379,7 @@ export const issueMonthlyPoints = mutation({
 export const getLedger = query({
   args: { userId: v.string(), limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     const entries = await ctx.db
       .query("pointsLedger")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
@@ -370,9 +391,9 @@ export const getLedger = query({
 
 // --- Internal helpers ---
 
-async function addPoints(
+export async function addPoints(
   ctx: any,
-  account: any,
+  accountId: string,
   delta: number,
   type:
     | "monthly"
@@ -383,12 +404,33 @@ async function addPoints(
     | "referral_new_user"
     | "spend"
     | "adjustment",
-  options: { description: string; meta?: Record<string, any> }
+  options: { description: string; meta?: Record<string, any>; idempotencyKey?: string }
 ) {
+  const account = await ctx.db.get(accountId);
+  if (!account) throw new Error("Account not found");
+  if (!Number.isFinite(delta)) throw new Error("Invalid delta");
+
+  if (options.idempotencyKey) {
+    const existing = await ctx.db
+      .query("pointsLedger")
+      .withIndex("by_idempotencyKey", (q: any) => q.eq("idempotencyKey", options.idempotencyKey))
+      .first();
+    if (existing) {
+      return account;
+    }
+  }
+
   const updatedBalance = account.pointsBalance + delta;
   const updatedLifetime = account.lifetimePoints + Math.max(delta, 0);
 
-  await ctx.db.patch(account._id, {
+  if (!Number.isFinite(updatedBalance) || !Number.isFinite(updatedLifetime)) {
+    throw new Error("Balance overflow");
+  }
+  if (updatedBalance < 0) {
+    throw new Error("Balance cannot go negative");
+  }
+
+  await ctx.db.patch(accountId, {
     pointsBalance: updatedBalance,
     lifetimePoints: updatedLifetime,
     updatedAt: Date.now(),
@@ -400,26 +442,35 @@ async function addPoints(
     type,
     description: options.description,
     meta: options.meta,
+    idempotencyKey: options.idempotencyKey,
     createdAt: Date.now(),
   });
+
+  return (await ctx.db.get(accountId))!;
 }
 
 async function maybeIssueMonthly(ctx: any, account: any, settings: any) {
   const currentMonth = monthKey();
   if (account.monthlyIssuedFor === currentMonth) return;
 
-  await addPoints(
+  const updated = await addPoints(
     ctx,
-    account,
+    account._id,
     settings.monthlyPoints,
     "monthly",
-    { description: `Monthly points for ${currentMonth}`, meta: { monthKey: currentMonth } }
+    {
+      description: `Monthly points for ${currentMonth}`,
+      meta: { monthKey: currentMonth },
+      idempotencyKey: `monthly:${account.userId}:${currentMonth}`,
+    }
   );
 
   await ctx.db.patch(account._id, {
     monthlyIssuedFor: currentMonth,
     updatedAt: Date.now(),
   });
+
+  return updated;
 }
 
 async function maybeIssueTrial(ctx: any, account: any) {
@@ -438,12 +489,15 @@ async function maybeIssueTrial(ctx: any, account: any) {
   const daysSinceStart = Math.floor((Date.now() - startAt) / (1000 * 60 * 60 * 24));
   if (daysSinceStart >= TRIAL_DAYS) return;
 
-  await addPoints(
+  const updated = await addPoints(
     ctx,
-    account,
+    account._id,
     TRIAL_DAILY_POINTS,
     "trial",
-    { description: `Trial day ${daysIssued + 1}/${TRIAL_DAYS}` }
+    {
+      description: `Trial day ${daysIssued + 1}/${TRIAL_DAYS}`,
+      idempotencyKey: `trial:${account.userId}:${today}`,
+    }
   );
 
   await ctx.db.patch(account._id, {
@@ -452,10 +506,13 @@ async function maybeIssueTrial(ctx: any, account: any) {
     trialStartAt: startAt,
     updatedAt: Date.now(),
   });
+
+  return updated;
 }
 
 async function rewardReferral(ctx: any, newAccount: any, referredByCodeRaw: string, settings: any) {
   const referredByCode = normalizeCode(referredByCodeRaw);
+  const referralKey = `referral:${referredByCode}:${newAccount.userId}`;
 
   // Prevent self-referrals.
   const referrer = await ctx.db
@@ -475,10 +532,17 @@ async function rewardReferral(ctx: any, newAccount: any, referredByCodeRaw: stri
     return;
   }
 
+  const existingByKey = await ctx.db
+    .query("referrals")
+    .withIndex("by_idempotencyKey", (q) => q.eq("idempotencyKey", referralKey))
+    .first();
+  if (existingByKey) return;
+
   const existing = await ctx.db
     .query("referrals")
-    .withIndex("by_referralCode", (q) => q.eq("referralCode", referredByCode))
-    .filter((q) => q.eq(q.field("refereeUserId"), newAccount.userId))
+    .withIndex("by_referrer_referee", (q) =>
+      q.eq("referrerUserId", referrer.userId).eq("refereeUserId", newAccount.userId)
+    )
     .first();
 
   if (existing) return;
@@ -488,29 +552,32 @@ async function rewardReferral(ctx: any, newAccount: any, referredByCodeRaw: stri
     refereeUserId: newAccount.userId,
     referralCode: referredByCode,
     status: "converted",
+    idempotencyKey: referralKey,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   });
 
   await addPoints(
     ctx,
-    referrer,
+    referrer._id,
     settings.referralRewardPoints,
     "referral_referrer",
     {
       description: "Referral bonus (referrer)",
       meta: { sourceUserId: newAccount.userId, referralCode: referredByCode },
+      idempotencyKey: `${referralKey}:referrer`,
     }
   );
 
   await addPoints(
     ctx,
-    newAccount,
+    newAccount._id,
     settings.referralRewardPoints,
     "referral_new_user",
     {
       description: "Referral bonus (new user)",
       meta: { referralCode: referredByCode },
+      idempotencyKey: `${referralKey}:new`,
     }
   );
 
@@ -534,3 +601,6 @@ async function generateUniqueReferralCode(ctx: any): Promise<string> {
 
   throw new Error("Unable to generate a unique referral code. Please retry.");
 }
+
+// Expose helpers for lightweight unit tests.
+export const _test = { addPoints, maybeIssueMonthly, maybeIssueTrial, rewardReferral };

@@ -1,10 +1,18 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+const requireUser = async (ctx: any, userId?: string) => {
+  const identity = await ctx.auth.getUserIdentity?.();
+  if (!identity) throw new Error("Unauthorized");
+  if (userId && identity.subject !== userId) throw new Error("Forbidden");
+  return identity;
+};
+
 // Get or create user profile
 export const getOrCreateUser = mutation({
   args: { userId: v.string(), email: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     const existingUser = await ctx.db
       .query("users")
       .withIndex("by_clerkId", (q) => q.eq("clerkId", args.userId))
@@ -38,6 +46,7 @@ export const saveOutfit = mutation({
     bodyShapeTip: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     const outfitId = await ctx.db.insert("outfits", {
       userId: args.userId,
       title: args.title,
@@ -60,9 +69,11 @@ export const saveOutfit = mutation({
 export const getUserOutfits = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     return await ctx.db
       .query("outfits")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
   },
 });
@@ -71,11 +82,13 @@ export const getUserOutfits = query({
 export const getFavoritedOutfits = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     return await ctx.db
       .query("outfits")
       .withIndex("by_favorited", (q) =>
         q.eq("userId", args.userId).eq("favorited", true)
       )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
   },
 });
@@ -86,6 +99,8 @@ export const toggleFavorite = mutation({
   handler: async (ctx, args) => {
     const outfit = await ctx.db.get(args.outfitId);
     if (!outfit) throw new Error("Outfit not found");
+    if (outfit.deletedAt) throw new Error("Outfit deleted");
+    await requireUser(ctx, outfit.userId);
 
     await ctx.db.patch(args.outfitId, {
       favorited: !outfit.favorited,
@@ -104,6 +119,11 @@ export const rateOutfit = mutation({
       throw new Error("Rating must be between 0 and 5");
     }
 
+    const outfit = await ctx.db.get(args.outfitId);
+    if (!outfit) throw new Error("Outfit not found");
+    if (outfit.deletedAt) throw new Error("Outfit deleted");
+    await requireUser(ctx, outfit.userId);
+
     await ctx.db.patch(args.outfitId, {
       rating: args.rating,
       updatedAt: Date.now(),
@@ -117,8 +137,11 @@ export const rateOutfit = mutation({
 export const deleteOutfit = mutation({
   args: { outfitId: v.id("outfits") },
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.outfitId);
-    return { success: true };
+    const outfit = await ctx.db.get(args.outfitId);
+    if (!outfit) throw new Error("Outfit not found");
+    await requireUser(ctx, outfit.userId);
+    await ctx.db.patch(args.outfitId, { deletedAt: Date.now(), updatedAt: Date.now() });
+    return { success: true, deletedAt: Date.now() };
   },
 });
 
@@ -131,6 +154,7 @@ export const updateStyleProfile = mutation({
     preferredBodyShape: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     const existing = await ctx.db
       .query("styleProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
@@ -161,9 +185,11 @@ export const updateStyleProfile = mutation({
 export const getStyleProfile = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     return await ctx.db
       .query("styleProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .first();
   },
 });
@@ -177,6 +203,7 @@ export const saveCombination = mutation({
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     const combinationId = await ctx.db.insert("combinations", {
       userId: args.userId,
       outfitIds: args.outfitIds,
@@ -194,9 +221,11 @@ export const saveCombination = mutation({
 export const getUserCombinations = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     return await ctx.db
       .query("combinations")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
   },
 });
@@ -209,6 +238,7 @@ export const addChatMessage = mutation({
     content: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     const messageId = await ctx.db.insert("chatMessages", {
       userId: args.userId,
       role: args.role,
@@ -224,9 +254,11 @@ export const addChatMessage = mutation({
 export const getChatHistory = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     return await ctx.db
       .query("chatMessages")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
   },
 });
@@ -245,6 +277,7 @@ export const bookmarkStore = mutation({
     rating: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     const storeId = await ctx.db.insert("bookmarkedStores", {
       userId: args.userId,
       name: args.name,
@@ -266,9 +299,11 @@ export const bookmarkStore = mutation({
 export const getBookmarkedStores = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
     return await ctx.db
       .query("bookmarkedStores")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
   },
 });

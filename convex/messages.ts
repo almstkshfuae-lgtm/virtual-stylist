@@ -2,6 +2,12 @@ import { v } from "convex/values";
 import { httpAction, internalMutation, type ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 
+const requireUser = async (ctx: any) => {
+  const identity = await ctx.auth.getUserIdentity?.();
+  if (!identity) throw new Response("Unauthorized", { status: 401 });
+  return identity;
+};
+
 export const sendOne = internalMutation({
   args: {
     author: v.string(),
@@ -32,6 +38,7 @@ const fetchMessagesByAuthor = (ctx: ActionCtx, author: string) =>
   ctx.db
     .query("messages")
     .withIndex("by_author", (q) => q.eq("author", author))
+    .filter((q) => q.eq(q.field("deletedAt"), undefined))
     .collect();
 
 const respondWithMessages = async (ctx: ActionCtx, author: string) => {
@@ -40,6 +47,7 @@ const respondWithMessages = async (ctx: ActionCtx, author: string) => {
 };
 
 export const postMessage = httpAction(async (ctx, request) => {
+  const identity = await requireUser(ctx);
   const contentType = request.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) {
     return new Response("Expected JSON payload", { status: 400 });
@@ -48,6 +56,10 @@ export const postMessage = httpAction(async (ctx, request) => {
   const payload = (await request.json()) as PostMessagePayload;
   if (!payload?.author || !payload?.body) {
     return new Response("Missing author or body", { status: 400 });
+  }
+
+  if (payload.author !== identity.subject) {
+    return new Response("Forbidden", { status: 403 });
   }
 
   await ctx.runMutation(internal.messages.sendOne, {
@@ -59,16 +71,21 @@ export const postMessage = httpAction(async (ctx, request) => {
 });
 
 export const getByAuthor = httpAction(async (ctx, request) => {
+  const identity = await requireUser(ctx);
   const url = new URL(request.url);
   const author = url.searchParams.get("author");
   if (!author) {
     return new Response("Missing author query param", { status: 400 });
+  }
+  if (author !== identity.subject) {
+    return new Response("Forbidden", { status: 403 });
   }
 
   return respondWithMessages(ctx, author);
 });
 
 export const getByAuthorPathSuffix = httpAction(async (ctx, request) => {
+  const identity = await requireUser(ctx);
   const url = new URL(request.url);
   const prefix = "/getAuthorMessages/";
   const suffix = url.pathname.slice(prefix.length);
@@ -77,5 +94,8 @@ export const getByAuthorPathSuffix = httpAction(async (ctx, request) => {
   }
 
   const author = decodeURIComponent(suffix);
+  if (author !== identity.subject) {
+    return new Response("Forbidden", { status: 403 });
+  }
   return respondWithMessages(ctx, author);
 });

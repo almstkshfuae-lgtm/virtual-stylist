@@ -26,6 +26,7 @@ export default defineSchema({
     favorited: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
   })
     .index("by_userId", ["userId"])
     .index("by_favorited", ["userId", "favorited"]),
@@ -37,6 +38,7 @@ export default defineSchema({
     disliked: v.array(v.string()), // Keywords they dislike
     preferredBodyShape: v.optional(v.string()),
     updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
   })
     .index("by_userId", ["userId"]),
 
@@ -49,6 +51,7 @@ export default defineSchema({
     rating: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
   })
     .index("by_userId", ["userId"]),
 
@@ -75,6 +78,7 @@ export default defineSchema({
     distance: v.number(),
     rating: v.optional(v.number()),
     createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
   })
     .index("by_userId", ["userId"]),
 
@@ -84,6 +88,7 @@ export default defineSchema({
     role: v.union(v.literal("user"), v.literal("assistant")),
     content: v.string(),
     createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
   })
     .index("by_userId", ["userId"]),
 
@@ -92,6 +97,7 @@ export default defineSchema({
     author: v.string(),
     body: v.string(),
     createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
   })
     .index("by_author", ["author"]),
 
@@ -153,8 +159,11 @@ export default defineSchema({
         sourceUserId: v.optional(v.string()),
       })
     ),
+    idempotencyKey: v.optional(v.string()),
     createdAt: v.number(),
-  }).index("by_userId", ["userId"]),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_idempotencyKey", ["idempotencyKey"]),
 
   fashionInsights: defineTable({
     userId: v.optional(v.string()),
@@ -164,6 +173,7 @@ export default defineSchema({
     language: v.string(),
     bodyShape: v.optional(v.string()),
     createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
   })
     .index("by_userId", ["userId"])
     .index("by_createdAt", ["createdAt"]),
@@ -178,9 +188,13 @@ export default defineSchema({
       v.literal("rewarded"),
       v.literal("duplicate")
     ),
+    idempotencyKey: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_referralCode", ["referralCode"])
-    .index("by_referrer", ["referrerUserId"]),
+    .index("by_referrer", ["referrerUserId"])
+    .index("by_referrer_referee", ["referrerUserId", "refereeUserId"])
+    .index("by_referralCode_referee", ["referralCode", "refereeUserId"])
+    .index("by_idempotencyKey", ["idempotencyKey"]),
 });
