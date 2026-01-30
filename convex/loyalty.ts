@@ -24,32 +24,35 @@ const dayKey = () => {
   )}-${String(now.getUTCDate()).padStart(2, "0")}`;
 };
 
-// Ensure a settings row exists so future marketing tweaks are one place.
+// Helper that can be safely reused inside Convex functions without nesting calls.
+async function ensureProgramSettingsCore(ctx: any) {
+  const existing = await ctx.db
+    .query("programSettings")
+    .withIndex("by_slug", (q: any) => q.eq("slug", DEFAULT_PROGRAM_SLUG))
+    .first();
+
+  if (existing) {
+    return existing;
+  }
+
+  const id = await ctx.db.insert("programSettings", {
+    slug: DEFAULT_PROGRAM_SLUG,
+    monthlyPoints: 300,
+    signupBonusPoints: 500,
+    welcomePackagePoints: 1300,
+    referralRewardPoints: 500,
+    adInventoryEnabled: false,
+    adProductNotes: "Toggle to monetize via brand services/placements later.",
+    updatedAt: Date.now(),
+  });
+
+  return await ctx.db.get(id);
+}
+
+// Public mutation wrapper for client-side management if ever needed.
 export const ensureProgramSettings = mutation({
   args: {},
-  handler: async (ctx) => {
-    const existing = await ctx.db
-      .query("programSettings")
-      .withIndex("by_slug", (q) => q.eq("slug", DEFAULT_PROGRAM_SLUG))
-      .first();
-
-    if (existing) {
-      return existing;
-    }
-
-    const id = await ctx.db.insert("programSettings", {
-      slug: DEFAULT_PROGRAM_SLUG,
-      monthlyPoints: 300,
-      signupBonusPoints: 500,
-      welcomePackagePoints: 1300,
-      referralRewardPoints: 500,
-      adInventoryEnabled: false,
-      adProductNotes: "Toggle to monetize via brand services/placements later.",
-      updatedAt: Date.now(),
-    });
-
-    return await ctx.db.get(id);
-  },
+  handler: ensureProgramSettingsCore,
 });
 
 // Create or fetch a customer account, award signup + welcome, and handle referrals.
@@ -61,7 +64,7 @@ export const getOrCreateCustomer = mutation({
     referredByCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const settings = await ctx.runMutation(ensureProgramSettings, {});
+    const settings = await ensureProgramSettingsCore(ctx);
     const referredByCode = args.referredByCode
       ? normalizeCode(args.referredByCode)
       : undefined;
@@ -188,7 +191,7 @@ export const loginWithEmail = mutation({
     referredByCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const settings = await ctx.runMutation(ensureProgramSettings, {});
+    const settings = await ensureProgramSettingsCore(ctx);
     const normalizedEmail = args.email.trim().toLowerCase();
     const referredByCode = args.referredByCode ? normalizeCode(args.referredByCode) : undefined;
 
@@ -335,7 +338,7 @@ export const adjustPoints = mutation({
 export const issueMonthlyPoints = mutation({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
-    const settings = await ctx.runMutation(ensureProgramSettings, {});
+    const settings = await ensureProgramSettingsCore(ctx);
     const account = await ctx.db
       .query("customerAccounts")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))

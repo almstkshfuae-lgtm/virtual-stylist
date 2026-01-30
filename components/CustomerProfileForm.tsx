@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useId } from 'react';
 import { useLoyalty } from '../hooks/useConvex';
 
 interface CustomerProfileFormProps {
@@ -12,6 +12,11 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
   const [referralCode, setReferralCode] = useState('');
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Unique ids keep aria-labelledby links valid even when the form is rendered twice (landing + loyalty panel).
+  const nameId = useId();
+  const emailId = useId();
+  const referralId = useId();
 
   useEffect(() => {
     if (account?.name) setName(account.name);
@@ -73,9 +78,11 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
-          الاسم
+        <label htmlFor={nameId} className="flex flex-col gap-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
+          <span id={`${nameId}-label`}>الاسم</span>
           <input
+            id={nameId}
+            aria-labelledby={`${nameId}-label`}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
@@ -83,9 +90,11 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
             autoComplete="name"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
-          البريد الإلكتروني
+        <label htmlFor={emailId} className="flex flex-col gap-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
+          <span id={`${emailId}-label`}>البريد الإلكتروني</span>
           <input
+            id={emailId}
+            aria-labelledby={`${emailId}-label`}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -96,9 +105,11 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
         </label>
       </div>
 
-      <label className="flex flex-col gap-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
-        كود الإحالة (للاستفادة من نقاط صديقك)
+      <label htmlFor={referralId} className="flex flex-col gap-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
+        <span id={`${referralId}-label`}>كود الإحالة (للاستفادة من نقاط صديقك)</span>
         <input
+          id={referralId}
+          aria-labelledby={`${referralId}-label`}
           value={referralCode}
           onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
           className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"

@@ -38,12 +38,12 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({ selectedStyles, on
 
   return (
     <div className="p-4 bg-white rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <p className="block text-sm font-medium text-gray-700 dark:text-gray-300">
         {t('styleSelector.label')}
         <span className="ms-2 text-xs font-normal text-gray-500 dark:text-gray-400">
             ({t('styleSelector.selectionCount', { selected: selectedCount, max: MAX_STYLES })})
         </span>
-      </label>
+      </p>
       <div className="flex flex-wrap gap-2 mt-2">
         {STYLE_KEYS.map((styleKey) => {
           const isSelected = selectedStyles.includes(styleKey);

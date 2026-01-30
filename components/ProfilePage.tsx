@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useId } from 'react';
 import { toDataURL } from 'qrcode';
 import { Copy, Share2, ArrowLeft } from 'lucide-react';
 import { useLoyalty } from '../hooks/useConvex';
@@ -18,6 +18,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
   const [copyCodeState, setCopyCodeState] = useState<CopyState>('idle');
   const [copyLinkState, setCopyLinkState] = useState<CopyState>('idle');
   const [inviteEmail, setInviteEmail] = useState('');
+  const inviteEmailId = useId();
   const [qrSrc, setQrSrc] = useState<string | null>(null);
   const [origin, setOrigin] = useState('');
 
@@ -202,11 +203,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
                 <p className="mt-2 truncate text-xs text-gray-500 dark:text-gray-400">{referralLink}</p>
               )}
               <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-pink-100 bg-white/70 p-3 shadow-sm dark:border-pink-700/30 dark:bg-slate-900/60">
-                <label className="text-xs font-semibold uppercase text-pink-700 dark:text-pink-200">
+                <label htmlFor={inviteEmailId} className="text-xs font-semibold uppercase text-pink-700 dark:text-pink-200">
                   أرسل رابط الإحالة لصديق جديد
                 </label>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <input
+                    id={inviteEmailId}
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
