@@ -9,9 +9,46 @@ const safeJsonParse = (value: string) => {
   }
 };
 
+const ALLOWED_MODELS = new Set([
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash-image',
+  'gemini-2.5-flash',
+  'gemini-3-pro-preview'
+]);
+
+const requireAuth = (req: VercelRequest) => {
+  const expected = process.env.API_SECRET || process.env.VERCEL_API_SECRET;
+  if (!expected) return false;
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  return !!token && token === expected;
+};
+
+// Defensive payload scrubber: only allow known keys, drop tool configs to avoid unintended external calls.
+const sanitizePayload = (payload: any) => {
+  if (typeof payload !== 'object' || payload === null) return null;
+  const allowed: any = {
+    contents: payload.contents,
+    systemInstruction: payload.systemInstruction,
+    config: undefined,
+  };
+
+  // Retain config only if it does not contain tools/toolConfig which could trigger external calls.
+  if (payload.config && typeof payload.config === 'object') {
+    const { responseMimeType, maxOutputTokens, temperature, topP, topK } = payload.config;
+    allowed.config = { responseMimeType, maxOutputTokens, temperature, topP, topK };
+  }
+  return allowed;
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  if (!requireAuth(req)) {
+    res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
@@ -46,12 +83,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
+  if (!ALLOWED_MODELS.has(model)) {
+    res.status(400).json({ error: 'Model not allowed' });
+    return;
+  }
+
+  const safePayload = sanitizePayload(payload);
+  if (!safePayload) {
+    res.status(400).json({ error: 'Invalid payload format' });
+    return;
+  }
+
   try {
     if (isDev) {
       console.log(`Calling ${model}...`);
     }
     const ai = new GoogleGenAI({ apiKey });
-    const result = await ai.models.generateContent({ model, ...payload });
+    const result = await ai.models.generateContent({ model, ...safePayload });
     if (isDev) {
       console.log(`Success: ${model}`);
     }

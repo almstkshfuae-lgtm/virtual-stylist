@@ -23,19 +23,20 @@ if (fs.existsSync(envPath)) {
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
-// Add CORS headers
+// Restrictive CORS for local dev only; default to localhost
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  const allowOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
+  res.header('Access-Control-Allow-Origin', allowOrigin);
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
+    return res.sendStatus(200);
   }
+  next();
 });
 
 const API_KEY = process.env.API_KEY;
+const API_SECRET = process.env.API_SECRET || process.env.VERCEL_API_SECRET;
 if (!API_KEY) {
   console.error('❌ CRITICAL ERROR: API_KEY not loaded from .env.local');
   console.error(`   Expected file at: ${envPath}`);
@@ -58,10 +59,8 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/gemini-proxy', async (req, res) => {
-  console.log('📥 Received request:', { 
-    apiKeyExists: !!API_KEY,
-    body: req.body 
-  });
+  // Minimal logging to avoid leaking payloads
+  console.log('📥 Received request');
   
   if (!API_KEY) {
     console.error('❌ CRITICAL: API_KEY is missing');
@@ -69,6 +68,21 @@ app.post('/api/gemini-proxy', async (req, res) => {
       error: 'API key not configured on server',
       help: 'Set API_KEY in .env.local. Get it from https://aistudio.google.com/apikey'
     });
+  }
+
+  if (!API_SECRET) {
+    console.error('❌ CRITICAL: API_SECRET missing. Set API_SECRET in .env.local');
+    return res.status(500).json({ error: 'API secret not configured on server' });
+  }
+
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token || token !== API_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (isRateLimited(token)) {
+    return res.status(429).json({ error: 'Rate limit exceeded. Try again shortly.' });
   }
   
   const { model, payload } = req.body || {};
@@ -79,13 +93,66 @@ app.post('/api/gemini-proxy', async (req, res) => {
     return res.status(400).json({ error: 'Missing "payload" in request body' });
   }
 
+const ALLOWED_MODELS = new Set([
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash-image',
+  'gemini-2.5-flash',
+  'gemini-3-pro-preview'
+]);
+
+// Simple in-memory rate limiting: max 60 requests per 60s per token
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 60;
+const tokenBuckets = new Map();
+
+const isRateLimited = (tokenKey) => {
+  const now = Date.now();
+  const bucket = tokenBuckets.get(tokenKey) || { start: now, count: 0 };
+  if (now - bucket.start > RATE_LIMIT_WINDOW_MS) {
+    bucket.start = now;
+    bucket.count = 0;
+  }
+  bucket.count += 1;
+  tokenBuckets.set(tokenKey, bucket);
+  return bucket.count > RATE_LIMIT_MAX;
+};
+
+const clampConfig = (config = {}) => {
+  const maxOutputTokens = Math.min(Number(config.maxOutputTokens) || 512, 2048);
+  const temperature = Math.min(Math.max(config.temperature ?? 0.7, 0), 1);
+  const topP = Math.min(Math.max(config.topP ?? 0.95, 0), 1);
+  const topK = Math.min(Math.max(config.topK ?? 40, 1), 200);
+  const responseMimeType = typeof config.responseMimeType === 'string' ? config.responseMimeType : undefined;
+  return { responseMimeType, maxOutputTokens, temperature, topP, topK };
+};
+
+// Strip tool invocations to avoid unintended external calls in dev
+const sanitizePayload = (input) => {
+  if (typeof input !== 'object' || input === null) return null;
+  const { contents, systemInstruction, config } = input;
+  return {
+    contents,
+    systemInstruction,
+    config: clampConfig(config),
+  };
+};
+
+if (!ALLOWED_MODELS.has(model)) {
+  return res.status(400).json({ error: 'Model not allowed' });
+}
+
+const safePayload = sanitizePayload(payload);
+if (!safePayload) {
+  return res.status(400).json({ error: 'Invalid payload format' });
+}
+
   try {
     console.log(`📤 Calling ${model}...`);
     
     const ai = new GoogleGenAI({ apiKey: API_KEY });
     const result = await ai.models.generateContent({
       model,
-      ...payload,
+      ...safePayload,
     });
     
     console.log(`✓ Got response from ${model}`);

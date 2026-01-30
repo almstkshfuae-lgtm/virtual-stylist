@@ -20,6 +20,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
   const { t } = useTranslation();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const renderMarkdown = (text: string) => ({
     __html: DOMPurify.sanitize(marked.parse(text, { breaks: true })),
@@ -33,6 +34,35 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
     scrollToBottom();
   }, [history, isLoading]);
 
+  useEffect(() => {
+    if (!isOpen || !dialogRef.current) return;
+    const dialog = dialogRef.current;
+    const focusable = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter(el => !el.hasAttribute('disabled'));
+
+    focusable.find(el => el.tagName === 'INPUT')?.focus() || focusable[0]?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+      if (event.key === 'Tab' && focusable.length > 0) {
+        const currentIndex = focusable.indexOf(document.activeElement as HTMLElement);
+        const direction = event.shiftKey ? -1 : 1;
+        const nextIndex = (currentIndex + direction + focusable.length) % focusable.length;
+        focusable[nextIndex].focus();
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && !isLoading) {
@@ -44,15 +74,27 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-20">
-      <div className="w-[calc(100vw-3rem)] sm:w-96 h-[60vh] sm:h-[32rem] bg-white dark:bg-gray-800 rounded-xl shadow-2xl flex flex-col transition-transform duration-300 transform origin-bottom-right">
+    <div className="fixed inset-x-3 bottom-3 sm:inset-auto sm:bottom-8 sm:right-8 z-20">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="chat-title"
+        className="w-full max-sm:h-[70vh] max-sm:max-h-[calc(100vh-5rem)] sm:w-96 h-[60vh] sm:h-[32rem] bg-white dark:bg-gray-800 rounded-2xl sm:rounded-xl shadow-2xl flex flex-col transition-transform duration-300 transform origin-bottom-right pb-[env(safe-area-inset-bottom,8px)] focus:outline-none"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+          <h3 id="chat-title" className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
             <SparklesIcon className="w-5 h-5 text-pink-500" />
             {t('chat.title')}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">&times;</button>
+          <button
+            onClick={onClose}
+            aria-label={t('chat.close')}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 rounded-full"
+          >
+            &times;
+          </button>
         </div>
 
         {/* Messages */}

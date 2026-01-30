@@ -1,5 +1,12 @@
 
 const en = {
+  paywall: {
+    insufficient: "Out of points. Subscribe to keep using the stylist.",
+    spendFailed: "We couldn't deduct points. Please subscribe or try again later."
+  },
+  auth: {
+    loginFailedEmail: "Could not sign in with email. Please try again later."
+  },
   header: {
     titlePart1: "Virtual",
     titlePart2: "Stylist",
@@ -82,13 +89,15 @@ const en = {
     button: "Analyze Trends",
     loading: "Analyzing trends...",
     modalTitle: "Current Trends",
-    sources: "Sources"
+    sources: "Sources",
+    close: "Close trends dialog"
   },
   chat: {
     title: "Fashion Chat",
     welcome: "Hi! I'm your AI fashion assistant. Ask me anything about styling or trends!",
     placeholder: "Ask a fashion question...",
-    askingAbout: "Asking about:"
+    askingAbout: "Asking about:",
+    close: "Close chat"
   },
   bodyShape: {
     title: "Your Body Shape",
@@ -133,9 +142,12 @@ const en = {
     empty: "Sorry, we couldn't find any specific stores nearby. Try a broader search on Google Maps.",
     error: "Could not fetch store locations. Please ensure you've granted location permissions and try again.",
     manualLocationPlaceholder: "Enter city or zip code",
+    manualLocationLabel: "Search by city or zip code",
+    manualSearch: "Search this location",
     buttonOpen: "Open in Maps",
     copy: "Copy link",
-    copied: "Copied"
+    copied: "Copied",
+    close: "Close store locator"
   },
   rejectedCard: {
     title: "Style Rejected",
@@ -168,6 +180,13 @@ const en = {
 };
 
 const ar = {
+  paywall: {
+    insufficient: "رصيد النقاط انتهى. اشترك للاستمرار في استخدام منسق الأزياء.",
+    spendFailed: "تعذر خصم النقاط. يرجى الاشتراك أو المحاولة لاحقاً."
+  },
+  auth: {
+    loginFailedEmail: "تعذر تسجيل الدخول بالبريد. حاول لاحقاً."
+  },
   header: {
     titlePart1: "منسق الأزياء",
     titlePart2: "الافتراضي",
@@ -250,13 +269,15 @@ const ar = {
     button: "تحليل الصيحات",
     loading: "نبحث في الصيحات...",
     modalTitle: "أحدث صيحات الموضة",
-    sources: "المصادر"
+    sources: "المصادر",
+    close: "إغلاق نافذة الصيحات"
   },
   chat: {
     title: "مستشارك للأزياء",
     welcome: "أهلاً بك! أنا مساعدك الشخصي للأناقة. اسألني عن أي نصيحة أو صيحة تهمك.",
     placeholder: "اكتب سؤالك هنا...",
-    askingAbout: "بخصوص:"
+    askingAbout: "بخصوص:",
+    close: "إغلاق الدردشة"
   },
   bodyShape: {
     title: "شكل الجسم",
@@ -301,9 +322,12 @@ const ar = {
     empty: "عذراً، لم نجد متاجر محددة بالقرب منك. جرب البحث العام في خرائط جوجل.",
     error: "تعذر تحديد الموقع. تأكد من تفعيل خدمة الموقع وحاول مرة أخرى.",
     manualLocationPlaceholder: "أدخل اسم المدينة أو الحي",
+    manualLocationLabel: "ابحث بالمدينة أو الرمز البريدي",
+    manualSearch: "بحث عن هذا الموقع",
     buttonOpen: "فتح في الخرائط",
     copy: "نسخ الرابط",
-    copied: "تم النسخ"
+    copied: "تم النسخ",
+    close: "إغلاق محدد المتاجر"
   },
   rejectedCard: {
     title: "تنسيق غير مناسب",
@@ -336,6 +360,13 @@ const ar = {
 };
 
 const fr = {
+  paywall: {
+    insufficient: "Plus de points. Abonnez-vous pour continuer à utiliser le styliste.",
+    spendFailed: "Impossible de débiter les points. Veuillez vous abonner ou réessayer plus tard."
+  },
+  auth: {
+    loginFailedEmail: "Connexion par e-mail impossible. Veuillez réessayer plus tard."
+  },
   header: {
     titlePart1: "Styliste",
     titlePart2: "Virtuel",
@@ -418,13 +449,15 @@ const fr = {
     button: "Analyser les tendances",
     loading: "Analyse des tendances...",
     modalTitle: "Tendances actuelles",
-    sources: "Sources"
+    sources: "Sources",
+    close: "Fermer la fenêtre des tendances"
   },
   chat: {
     title: "Chat Mode",
     welcome: "Bonjour ! Je suis votre assistant de mode IA. Demandez-moi n'importe quoi sur le style ou les tendances !",
     placeholder: "Posez une question sur la mode...",
-    askingAbout: "Question sur :"
+    askingAbout: "Question sur :",
+    close: "Fermer le chat"
   },
   bodyShape: {
     title: "Votre morphologie",
@@ -469,9 +502,12 @@ const fr = {
     empty: "Désolé, nous n'avons pas pu trouver de magasins spécifiques à proximité. Essayez une recherche plus large sur Google Maps.",
     error: "Impossible de récupérer les emplacements des magasins. Veuillez vous assurer que vous avez accordé les autorisations de localisation et réessayez.",
     manualLocationPlaceholder: "Entrez la ville ou le code postal",
+    manualLocationLabel: "Rechercher par ville ou code postal",
+    manualSearch: "Rechercher cet emplacement",
     buttonOpen: "Ouvrir dans Maps",
     copy: "Copier le lien",
-    copied: "Copié"
+    copied: "Copié",
+    close: "Fermer le localisateur de magasins"
   },
   rejectedCard: {
     title: "Style rejeté",
@@ -504,6 +540,13 @@ const fr = {
 };
 
 const ru = {
+  paywall: {
+    insufficient: "Баллы закончились. Оформите подписку, чтобы продолжить пользоваться стилистом.",
+    spendFailed: "Не удалось списать баллы. Подпишитесь или попробуйте позже."
+  },
+  auth: {
+    loginFailedEmail: "Не удалось войти по email. Попробуйте позже."
+  },
   header: {
     titlePart1: "Виртуальный",
     titlePart2: "Стилист",
@@ -586,13 +629,15 @@ const ru = {
     button: "Анализ трендов",
     loading: "Анализ трендов...",
     modalTitle: "Текущие тренды",
-    sources: "Источники"
+    sources: "Источники",
+    close: "Закрыть окно трендов"
   },
   chat: {
     title: "Модный чат",
     welcome: "Привет! Я ваш ИИ-помощник по моде. Спрашивайте меня о чем угодно, касающемся стиля или трендов!",
     placeholder: "Задайте вопрос о моде...",
-    askingAbout: "Вопрос о:"
+    askingAbout: "Вопрос о:",
+    close: "Закрыть чат"
   },
   bodyShape: {
     title: "Ваш тип фигуры",
@@ -637,9 +682,12 @@ const ru = {
     empty: "К сожалению, мы не смогли найти конкретные магазины поблизости. Попробуйте более широкий поиск на Google Картах.",
     error: "Не удалось загрузить расположение магазинов. Убедитесь, что вы предоставили доступ к местоположению, и попробуйте снова.",
     manualLocationPlaceholder: "Введите город или индекс",
+    manualLocationLabel: "Поиск по городу или почтовому индексу",
+    manualSearch: "Искать этот адрес",
     buttonOpen: "Открыть в картах",
     copy: "Копировать ссылку",
-    copied: "Скопировано"
+    copied: "Скопировано",
+    close: "Закрыть окно магазинов"
   },
   rejectedCard: {
     title: "Стиль отклонен",
@@ -672,6 +720,13 @@ const ru = {
 };
 
 const nl = {
+  paywall: {
+    insufficient: "Punten zijn op. Abonneer om de stylist te blijven gebruiken.",
+    spendFailed: "Punten konden niet worden afgeschreven. Abonneer of probeer het later opnieuw."
+  },
+  auth: {
+    loginFailedEmail: "Aanmelden met e-mail mislukt. Probeer het later opnieuw."
+  },
   header: {
     titlePart1: "Virtuele",
     titlePart2: "Stylist",
@@ -754,13 +809,15 @@ const nl = {
     button: "Analyseer Trends",
     loading: "Trends analyseren...",
     modalTitle: "Huidige Trends",
-    sources: "Bronnen"
+    sources: "Bronnen",
+    close: "Trendsvenster sluiten"
   },
   chat: {
     title: "Mode Chat",
     welcome: "Hoi! Ik ben je AI-modeassistent. Vraag me alles over styling of trends!",
     placeholder: "Stel een modevraag...",
-    askingAbout: "Vraag over:"
+    askingAbout: "Vraag over:",
+    close: "Chat sluiten"
   },
   bodyShape: {
     title: "Jouw Lichaamsvorm",
@@ -805,9 +862,12 @@ const nl = {
     empty: "Sorry, we konden geen specifieke winkels in de buurt vinden. Probeer een bredere zoekopdracht op Google Maps.",
     error: "Kon winkellocaties niet ophalen. Zorg ervoor dat je locatietoestemming hebt gegeven en probeer het opnieuw.",
     manualLocationPlaceholder: "Voer stad of postcode in",
+    manualLocationLabel: "Zoek op stad of postcode",
+    manualSearch: "Zoek op deze locatie",
     buttonOpen: "Openen in Maps",
     copy: "Link kopiëren",
-    copied: "Gekopieerd"
+    copied: "Gekopieerd",
+    close: "Winkellocator sluiten"
   },
   rejectedCard: {
     title: "Stijl afgewezen",

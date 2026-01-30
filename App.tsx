@@ -174,7 +174,7 @@ const App: React.FC = () => {
       const balance = loyaltyAccount?.pointsBalance ?? 0;
       if (balance < pointsNeeded) {
         setIsBlocked(true);
-        setPaywallMessage('رصيد النقاط انتهى. اشترك للاستمرار في استخدام منسق الأزياء.');
+        setPaywallMessage(t('paywall.insufficient'));
         return false;
       }
       if (spendPoints) {
@@ -187,7 +187,7 @@ const App: React.FC = () => {
         } catch (error) {
           console.error('Failed to spend points', error);
           setIsBlocked(true);
-          setPaywallMessage('تعذر خصم النقاط. يرجى الاشتراك أو المحاولة لاحقاً.');
+          setPaywallMessage(t('paywall.spendFailed'));
           return false;
         }
       }
@@ -214,7 +214,7 @@ const App: React.FC = () => {
       }
     } catch (error) {
       console.error('Auth login failed', error);
-      setError('تعذر تسجيل الدخول بالبريد. حاول لاحقاً.');
+      setError(t('auth.loginFailedEmail'));
     } finally {
       setIsAuthLoading(false);
     }

@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from '../i18n/LanguageContext';
 import type { StoreLocation } from '../types';
-import { Loader } from './Loader';
 import { MapPinIcon } from './icons/MapPinIcon';
 import { SendIcon } from './icons/SendIcon';
 import { CopyIcon } from './icons/CopyIcon';
@@ -21,6 +20,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
   const { t } = useTranslation();
   const [manualLocation, setManualLocation] = useState('');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const GLOBAL_BRANDS = [
     'zara','h&m','hm','uniqlo','nike','adidas','puma','reebok','under armour',
@@ -50,6 +50,35 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
     }
   };
 
+  useEffect(() => {
+    if (!isOpen || !dialogRef.current) return;
+    const dialog = dialogRef.current;
+    const focusable = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter(el => !el.hasAttribute('disabled'));
+
+    focusable[0]?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+      if (event.key === 'Tab' && focusable.length > 0) {
+        const currentIndex = focusable.indexOf(document.activeElement as HTMLElement);
+        const direction = event.shiftKey ? -1 : 1;
+        const nextIndex = (currentIndex + direction + focusable.length) % focusable.length;
+        focusable[nextIndex].focus();
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) {
     return null;
   }
@@ -60,33 +89,49 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
         onClick={onClose}
     >
       <div 
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="store-locator-title"
         className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
     >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+            <h3 id="store-locator-title" className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                 <MapPinIcon className="w-5 h-5 text-cyan-500" />
                 {t('storeLocator.title')}
             </h3>
             {accessory && <p className="text-xs text-gray-500 dark:text-gray-400 ms-7">{t('storeLocator.subtitle', { accessory })}</p>}
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl">&times;</button>
+          <button
+            onClick={onClose}
+            aria-label={t('storeLocator.close')}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 rounded-full"
+          >
+            &times;
+          </button>
         </div>
         
         <div className="p-6 overflow-y-auto">
             {/* Manual Search Form - Always shown at top to allow change of location */}
             <form onSubmit={handleManualSearch} className="mb-4 flex gap-2">
+                <label htmlFor="manual-location-input" className="sr-only">
+                    {t('storeLocator.manualLocationLabel')}
+                </label>
                 <input 
                     type="text" 
                     value={manualLocation}
                     onChange={(e) => setManualLocation(e.target.value)}
                     placeholder={t('storeLocator.manualLocationPlaceholder')}
+                    aria-label={t('storeLocator.manualLocationLabel')}
+                    id="manual-location-input"
                     className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
                 <button 
                     type="submit"
                     disabled={isLoading || !manualLocation.trim()}
+                    aria-label={t('storeLocator.manualSearch')}
                     className="px-3 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <SendIcon className="w-4 h-4" />
