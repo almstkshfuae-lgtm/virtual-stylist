@@ -1,5 +1,6 @@
 import React from 'react';
 
+// Simple copy icon to match the icon set used elsewhere.
 export const CopyIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     viewBox="0 0 24 24"
@@ -8,7 +9,6 @@ export const CopyIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    aria-hidden="true"
     {...props}
   >
     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
