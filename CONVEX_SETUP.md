@@ -67,13 +67,14 @@ const { outfits, saveOutfit, toggleFavorite } = useOutfits(userId);
 
 ## Local Development
 
-Convex is already running locally. The app uses a local deployment at `http://127.0.0.1:3210`.
+The project is wired to the hosted Convex deployment used by Vercel:
+```
+CONVEX_DEPLOYMENT=dev:chatty-reindeer-62
+VITE_CONVEX_URL=https://chatty-reindeer-62.convex.cloud
+VITE_CONVEX_SITE_URL=https://chatty-reindeer-62.convex.site
+```
 
-Environment variables added to `.env.local`:
-```
-CONVEX_DEPLOYMENT=...
-VITE_CONVEX_URL=http://127.0.0.1:3210
-```
+**Local fallback (optional):** In development you can comment out `VITE_CONVEX_URL` to fall back to `http://127.0.0.1:3210` thanks to the default in `lib/convexConfig.ts`. When you do that, start a local backend with `npx convex dev` before running the app.
 
 ### View Local Data
 
@@ -145,6 +146,7 @@ function OutfitCard({ outfit }) {
    - Go to Vercel project settings → Environment Variables
    - Add `CONVEX_DEPLOYMENT` (from `npx convex deploy` output)
    - Add `VITE_CONVEX_URL` (provided by Convex)
+   - Add `VITE_CONVEX_SITE_URL` (Convex site URL for the dashboard/share links)
 
 ### Option 2: Keep Local Development
 

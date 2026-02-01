@@ -33,12 +33,20 @@ Your app is now in GitHub with a Vercel deployment workflow. You have two option
 
 ### Step 3: Add Environment Variables
 1. In the import dialog, you'll see **"Environment Variables"** section
-2. Click **"Add"** and fill in:
-   - **Name**: `API_KEY`
-   - **Value**: `AIzaSyDTwN5vmJdvq6cERfCtQilc070Dl2QeqWk` (your Google AI key)
-   - **Environments**: Select `Production`, `Preview`, and `Development`
-3. Click **"Add New"** if you have other variables to set
-4. Click **"Deploy"**
+2. Add these variables (all environments: Production, Preview, Development):
+   - `API_KEY=<your-google-genai-key>`
+   - `VITE_CONVEX_URL=https://chatty-reindeer-62.convex.cloud`
+   - `CONVEX_DEPLOYMENT=dev:chatty-reindeer-62`
+   - `VITE_CONVEX_SITE_URL=https://chatty-reindeer-62.convex.site`
+   - `WORKOS_CLIENT_ID=<your-workos-client-id>`
+   - `WORKOS_API_KEY=<your-workos-api-key>`
+   - `NEXT_PUBLIC_WORKOS_REDIRECT_URI=https://virtual-stylist-khaki.vercel.app/callback`
+   - `DESCOPE_DISCOVERY_URL=https://api.descope.com/v1/apps/P38rdiGpKvaInDPWYZqWARgkBmzi/.well-known/openid-configuration`
+   - `DESCOPE_ISSUER=https://api.descope.com/v1/apps/P38rdiGpKvaInDPWYZqWARgkBmzi`
+   - `DESCOPE_PROJECT_ID=P38rdiGpKvaInDPWYZqWARgkBmzi`
+   - `NEXT_PUBLIC_DESCOPE_BASE_URL=https://api.descope.com`
+   - `NEXT_PUBLIC_DESCOPE_PROJECT_ID=P38rdiGpKvaInDPWYZqWARgkBmzi`
+3. Click **"Deploy"**
 
 ### Step 4: Wait for Deployment
 - Vercel will build and deploy your app

@@ -62,6 +62,7 @@ export const ensureProgramSettings = mutation({
   args: {},
   handler: async (ctx) => {
     await requireUser(ctx);
+    // Note: call the shared helper, not another Convex function.
     return ensureProgramSettingsCore(ctx);
   },
 });
@@ -151,14 +152,20 @@ export const getOrCreateCustomer = mutation({
     if (!account) throw new Error("Failed to create account");
 
     // Award signup bonus once.
-    let updatedAccount = await addPoints(ctx, account._id, settings.signupBonusPoints, "signup", {
-      description: "Signup bonus",
-      idempotencyKey: `signup:${account._id}`,
-    });
+    let updatedAccount = await addPointsHelper(
+      ctx,
+      account._id,
+      settings.signupBonusPoints,
+      "signup",
+      {
+        description: "Signup bonus",
+        idempotencyKey: `signup:${account._id}`,
+      }
+    );
     await ctx.db.patch(account._id, { signupAwarded: true, updatedAt: Date.now() });
 
     // Welcome package (one-time).
-    updatedAccount = await addPoints(
+    updatedAccount = await addPointsHelper(
       ctx,
       account._id,
       settings.welcomePackagePoints,
@@ -270,13 +277,19 @@ export const loginWithEmail = mutation({
     if (!account) throw new Error("Failed to create account via email login");
 
     // Award signup + welcome + monthly same as new user flow
-    let updatedAccount = await addPoints(ctx, account._id, settings.signupBonusPoints, "signup", {
-      description: "Signup bonus",
-      idempotencyKey: `signup:${account._id}`,
-    });
+    let updatedAccount = await addPointsHelper(
+      ctx,
+      account._id,
+      settings.signupBonusPoints,
+      "signup",
+      {
+        description: "Signup bonus",
+        idempotencyKey: `signup:${account._id}`,
+      }
+    );
     await ctx.db.patch(account._id, { signupAwarded: true, updatedAt: Date.now() });
 
-    updatedAccount = await addPoints(
+    updatedAccount = await addPointsHelper(
       ctx,
       account._id,
       settings.welcomePackagePoints,
@@ -315,7 +328,7 @@ export const spendPoints = mutation({
     if (!account) throw new Error("Account not found");
     if (account.pointsBalance < args.amount) throw new Error("Insufficient points");
 
-    await addPoints(ctx, account._id, -args.amount, "spend", {
+    await addPointsHelper(ctx, account._id, -args.amount, "spend", {
       description: args.description,
     });
 
@@ -342,7 +355,7 @@ export const adjustPoints = mutation({
       .first();
     if (!account) throw new Error("Account not found");
 
-    await addPoints(ctx, account._id, args.delta, "adjustment", {
+    await addPointsHelper(ctx, account._id, args.delta, "adjustment", {
       description: args.description,
     });
 
@@ -391,7 +404,9 @@ export const getLedger = query({
 
 // --- Internal helpers ---
 
-export async function addPoints(
+// Plain helper (not a Convex function). Do not export; keep internal to avoid
+// Convex-to-Convex calls that are disallowed at runtime.
+async function addPointsHelper(
   ctx: any,
   accountId: string,
   delta: number,
@@ -453,7 +468,7 @@ async function maybeIssueMonthly(ctx: any, account: any, settings: any) {
   const currentMonth = monthKey();
   if (account.monthlyIssuedFor === currentMonth) return;
 
-  const updated = await addPoints(
+  const updated = await addPointsHelper(
     ctx,
     account._id,
     settings.monthlyPoints,
@@ -489,7 +504,7 @@ async function maybeIssueTrial(ctx: any, account: any) {
   const daysSinceStart = Math.floor((Date.now() - startAt) / (1000 * 60 * 60 * 24));
   if (daysSinceStart >= TRIAL_DAYS) return;
 
-  const updated = await addPoints(
+  const updated = await addPointsHelper(
     ctx,
     account._id,
     TRIAL_DAILY_POINTS,
@@ -557,7 +572,7 @@ async function rewardReferral(ctx: any, newAccount: any, referredByCodeRaw: stri
     updatedAt: Date.now(),
   });
 
-  await addPoints(
+  await addPointsHelper(
     ctx,
     referrer._id,
     settings.referralRewardPoints,
@@ -569,7 +584,7 @@ async function rewardReferral(ctx: any, newAccount: any, referredByCodeRaw: stri
     }
   );
 
-  await addPoints(
+  await addPointsHelper(
     ctx,
     newAccount._id,
     settings.referralRewardPoints,
@@ -603,4 +618,4 @@ async function generateUniqueReferralCode(ctx: any): Promise<string> {
 }
 
 // Expose helpers for lightweight unit tests.
-export const _test = { addPoints, maybeIssueMonthly, maybeIssueTrial, rewardReferral };
+export const _test = { addPoints: addPointsHelper, maybeIssueMonthly, maybeIssueTrial, rewardReferral };
