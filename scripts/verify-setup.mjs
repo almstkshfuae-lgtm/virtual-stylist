@@ -34,6 +34,7 @@ if (fs.existsSync(envPath)) {
 }
 
 const apiKey = process.env.API_KEY;
+const apiSecret = process.env.API_SECRET || process.env.VERCEL_API_SECRET;
 if (!apiKey) {
   console.error('❌ CRITICAL: API_KEY not set in .env.local');
   console.error('   Add this line to .env.local:');
@@ -43,7 +44,21 @@ if (!apiKey) {
   console.error('❌ CRITICAL: API_KEY is too short (invalid format)');
   allGood = false;
 } else {
-  console.log('✅ API_KEY is configured');
+  const masked = apiKey.substring(0, 8) + '...' + apiKey.substring(apiKey.length - 4);
+  console.log(`✅ API_KEY is configured (${masked})`);
+}
+
+if (!apiSecret) {
+  console.error('❌ CRITICAL: API_SECRET not set in .env.local');
+  console.error('   Add this line to .env.local:');
+  console.error('   API_SECRET=your_long_random_secret');
+  allGood = false;
+} else if (apiSecret.length < 12) {
+  console.error('❌ CRITICAL: API_SECRET looks too short');
+  allGood = false;
+} else {
+  const maskedSecret = apiSecret.substring(0, 4) + '...' + apiSecret.substring(apiSecret.length - 4);
+  console.log(`✅ API_SECRET is configured (${maskedSecret})`);
 }
 
 
@@ -85,6 +100,6 @@ if (allGood) {
   process.exit(0);
 } else {
   console.error('\n❌ Configuration issues detected. Please fix the above errors.\n');
-  console.error('Quick fix: Make sure .env.local has a valid API_KEY\n');
+  console.error('Quick fix: Make sure .env.local has valid API_KEY and API_SECRET values\n');
   process.exit(1);
 }

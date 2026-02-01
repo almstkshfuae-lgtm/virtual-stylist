@@ -16,18 +16,27 @@ import type { Content } from '@google/genai';
 // so the API key never ships to the client bundle.
 
 const apiBaseUrl = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
+const apiSecret = (import.meta as any).env?.VITE_API_SECRET as string | undefined;
 const proxyUrl = apiBaseUrl
     ? `${apiBaseUrl.replace(/\/+$/, '')}/api/gemini-proxy`
     : '/api/gemini-proxy';
 
 const callProxy = async (model: string, payload: any) => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (apiSecret) {
+        headers.Authorization = `Bearer ${apiSecret}`;
+    }
+
     const res = await fetch(proxyUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ model, payload }),
     });
     if (!res.ok) {
         const text = await res.text();
+        if (res.status === 401) {
+            throw new Error('Proxy error: 401 Unauthorized. Set matching API_SECRET (server) and VITE_API_SECRET (client).');
+        }
         throw new Error(`Proxy error: ${res.status} ${text}`);
     }
     return res.json();

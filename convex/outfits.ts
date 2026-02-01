@@ -8,6 +8,9 @@ const requireUser = async (ctx: any, userId?: string) => {
   return identity;
 };
 
+const outfitIdArg = v.union(v.id("outfits"), v.string(), v.null());
+const asOutfitId = (id: string | null) => (id ? (id as any) : null);
+
 // Get or create user profile
 export const getOrCreateUser = mutation({
   args: { userId: v.string(), email: v.optional(v.string()) },
@@ -95,52 +98,58 @@ export const getFavoritedOutfits = query({
 
 // Toggle outfit favorite
 export const toggleFavorite = mutation({
-  args: { outfitId: v.id("outfits") },
+  args: { outfitId: outfitIdArg },
   handler: async (ctx, args) => {
-    const outfit = await ctx.db.get(args.outfitId);
+    const outfitId = asOutfitId(args.outfitId);
+    if (!outfitId) return null;
+    const outfit = await ctx.db.get(outfitId);
     if (!outfit) throw new Error("Outfit not found");
     if (outfit.deletedAt) throw new Error("Outfit deleted");
     await requireUser(ctx, outfit.userId);
 
-    await ctx.db.patch(args.outfitId, {
+    await ctx.db.patch(outfitId, {
       favorited: !outfit.favorited,
       updatedAt: Date.now(),
     });
 
-    return await ctx.db.get(args.outfitId);
+    return await ctx.db.get(outfitId);
   },
 });
 
 // Rate an outfit
 export const rateOutfit = mutation({
-  args: { outfitId: v.id("outfits"), rating: v.number() },
+  args: { outfitId: outfitIdArg, rating: v.number() },
   handler: async (ctx, args) => {
+    const outfitId = asOutfitId(args.outfitId);
+    if (!outfitId) throw new Error("Outfit not found");
     if (args.rating < 0 || args.rating > 5) {
       throw new Error("Rating must be between 0 and 5");
     }
 
-    const outfit = await ctx.db.get(args.outfitId);
+    const outfit = await ctx.db.get(outfitId);
     if (!outfit) throw new Error("Outfit not found");
     if (outfit.deletedAt) throw new Error("Outfit deleted");
     await requireUser(ctx, outfit.userId);
 
-    await ctx.db.patch(args.outfitId, {
+    await ctx.db.patch(outfitId, {
       rating: args.rating,
       updatedAt: Date.now(),
     });
 
-    return await ctx.db.get(args.outfitId);
+    return await ctx.db.get(outfitId);
   },
 });
 
 // Delete an outfit
 export const deleteOutfit = mutation({
-  args: { outfitId: v.id("outfits") },
+  args: { outfitId: outfitIdArg },
   handler: async (ctx, args) => {
-    const outfit = await ctx.db.get(args.outfitId);
+    const outfitId = asOutfitId(args.outfitId);
+    if (!outfitId) throw new Error("Outfit not found");
+    const outfit = await ctx.db.get(outfitId);
     if (!outfit) throw new Error("Outfit not found");
     await requireUser(ctx, outfit.userId);
-    await ctx.db.patch(args.outfitId, { deletedAt: Date.now(), updatedAt: Date.now() });
+    await ctx.db.patch(outfitId, { deletedAt: Date.now(), updatedAt: Date.now() });
     return { success: true, deletedAt: Date.now() };
   },
 });
@@ -198,7 +207,7 @@ export const getStyleProfile = query({
 export const saveCombination = mutation({
   args: {
     userId: v.string(),
-    outfitIds: v.array(v.id("outfits")),
+    outfitIds: v.array(v.string()),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
   },

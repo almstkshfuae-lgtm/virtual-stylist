@@ -93,9 +93,7 @@ export function useBookmarkedStores(userId: string | null) {
  * Keeps program settings editable from Convex and points ledger transparent to UI.
  */
 export function useLoyalty(userId: string | null) {
-  // Type guard: codegen may not be regenerated yet in local envs (WSL1).
-  const loyaltyApi = (api as any).loyalty;
-  if (!isConvexEnabled || !loyaltyApi) {
+  if (!isConvexEnabled) {
     return {
       account: null,
       settings: null,
@@ -118,16 +116,16 @@ export function useLoyalty(userId: string | null) {
     };
   }
   const data = useQuery(
-    loyaltyApi?.getCustomer,
+    api.loyalty.getCustomer,
     userId ? { userId } : "skip"
   );
-  const ensureCustomer = useMutation(loyaltyApi?.getOrCreateCustomer);
-  const loginWithEmail = useMutation(loyaltyApi?.loginWithEmail);
-  const issueMonthly = useMutation(loyaltyApi?.issueMonthlyPoints);
-  const spendPoints = useMutation(loyaltyApi?.spendPoints);
-  const adjustPoints = useMutation(loyaltyApi?.adjustPoints);
+  const ensureCustomer = useMutation(api.loyalty.getOrCreateCustomer);
+  const loginWithEmail = useMutation(api.loyalty.loginWithEmail);
+  const issueMonthly = useMutation(api.loyalty.issueMonthlyPoints);
+  const spendPoints = useMutation(api.loyalty.spendPoints);
+  const adjustPoints = useMutation(api.loyalty.adjustPoints);
   const getLedger = useQuery(
-    loyaltyApi?.getLedger,
+    api.loyalty.getLedger,
     userId ? { userId, limit: 50 } : "skip"
   );
 
@@ -147,14 +145,13 @@ export function useLoyalty(userId: string | null) {
  * Hook to log developer-only fashion insights (for B2B/brand analytics).
  */
 export function useFashionInsights(userId: string | null) {
-  const insightsApi = (api as any).insights;
-  if (!isConvexEnabled || !insightsApi) {
+  if (!isConvexEnabled) {
     return {
       logInsight: async () => {
         throw new Error("Convex codegen missing insights api. Run `npx convex dev`.");
       },
     };
   }
-  const logInsight = useMutation(insightsApi.logFashionInsight);
+  const logInsight = useMutation(api.insights.logFashionInsight);
   return { logInsight };
 }

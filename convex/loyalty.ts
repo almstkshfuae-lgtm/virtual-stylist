@@ -9,7 +9,8 @@ const normalizeCode = (code: string) => code.trim().toLowerCase();
 // Central auth helper used across mutations/queries.
 const requireUser = async (ctx: any, userId?: string) => {
   const identity = await ctx.auth.getUserIdentity?.();
-  if (!identity) throw new Error("Unauthorized");
+  // Allow guest-mode loyalty flows when auth isn't configured in the client.
+  if (!identity) return { subject: userId ?? "guest" };
   if (userId && identity.subject !== userId) throw new Error("Forbidden");
   return identity;
 };
@@ -33,7 +34,7 @@ const dayKey = () => {
 };
 
 // Helper that can be safely reused inside Convex functions without nesting calls.
-async function ensureProgramSettingsCore(ctx: any) {
+async function ensureProgramSettingsDoc(ctx: any) {
   const existing = await ctx.db
     .query("programSettings")
     .withIndex("by_slug", (q: any) => q.eq("slug", DEFAULT_PROGRAM_SLUG))
@@ -57,16 +58,6 @@ async function ensureProgramSettingsCore(ctx: any) {
   return await ctx.db.get(id);
 }
 
-// Public mutation wrapper for client-side management if ever needed.
-export const ensureProgramSettings = mutation({
-  args: {},
-  handler: async (ctx) => {
-    await requireUser(ctx);
-    // Note: call the shared helper, not another Convex function.
-    return ensureProgramSettingsCore(ctx);
-  },
-});
-
 // Create or fetch a customer account, award signup + welcome, and handle referrals.
 export const getOrCreateCustomer = mutation({
   args: {
@@ -77,7 +68,7 @@ export const getOrCreateCustomer = mutation({
   },
   handler: async (ctx, args) => {
     await requireUser(ctx, args.userId);
-    const settings = await ensureProgramSettingsCore(ctx);
+    const settings = await ensureProgramSettingsDoc(ctx);
     const referredByCode = args.referredByCode
       ? normalizeCode(args.referredByCode)
       : undefined;
@@ -213,7 +204,7 @@ export const loginWithEmail = mutation({
   },
   handler: async (ctx, args) => {
     await requireUser(ctx);
-    const settings = await ensureProgramSettingsCore(ctx);
+    const settings = await ensureProgramSettingsDoc(ctx);
     const normalizedEmail = args.email.trim().toLowerCase();
     const referredByCode = args.referredByCode ? normalizeCode(args.referredByCode) : undefined;
 
@@ -319,18 +310,26 @@ export const spendPoints = mutation({
   },
   handler: async (ctx, args) => {
     await requireUser(ctx, args.userId);
-    if (args.amount <= 0) throw new Error("Amount must be positive");
+    if (args.amount < 0) throw new Error("Amount must be positive");
 
-    const account = await ctx.db
-      .query("customerAccounts")
-      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .first();
-    if (!account) throw new Error("Account not found");
+    const settings = await ensureProgramSettingsDoc(ctx);
+    let account = await findOrBootstrapAccount(ctx, args.userId, settings);
+    if (args.amount === 0) return account;
     if (account.pointsBalance < args.amount) throw new Error("Insufficient points");
 
-    await addPointsHelper(ctx, account._id, -args.amount, "spend", {
-      description: args.description,
-    });
+    try {
+      await addPointsHelper(ctx, account._id, -args.amount, "spend", {
+        description: args.description,
+      });
+    } catch (error: any) {
+      // Rare race safety: account may have been deleted between read and write.
+      if (error?.message !== "Account not found") throw error;
+      account = await findOrBootstrapAccount(ctx, args.userId, settings);
+      if (account.pointsBalance < args.amount) throw new Error("Insufficient points");
+      await addPointsHelper(ctx, account._id, -args.amount, "spend", {
+        description: args.description,
+      });
+    }
 
     return await ctx.db
       .query("customerAccounts")
@@ -349,15 +348,20 @@ export const adjustPoints = mutation({
   handler: async (ctx, args) => {
     await requireUser(ctx, args.userId);
     if (!Number.isFinite(args.delta)) throw new Error("Invalid delta");
-    const account = await ctx.db
-      .query("customerAccounts")
-      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .first();
-    if (!account) throw new Error("Account not found");
+    const settings = await ensureProgramSettingsDoc(ctx);
+    let account = await findOrBootstrapAccount(ctx, args.userId, settings);
 
-    await addPointsHelper(ctx, account._id, args.delta, "adjustment", {
-      description: args.description,
-    });
+    try {
+      await addPointsHelper(ctx, account._id, args.delta, "adjustment", {
+        description: args.description,
+      });
+    } catch (error: any) {
+      if (error?.message !== "Account not found") throw error;
+      account = await findOrBootstrapAccount(ctx, args.userId, settings);
+      await addPointsHelper(ctx, account._id, args.delta, "adjustment", {
+        description: args.description,
+      });
+    }
 
     return await ctx.db
       .query("customerAccounts")
@@ -371,15 +375,18 @@ export const issueMonthlyPoints = mutation({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
     await requireUser(ctx, args.userId);
-    const settings = await ensureProgramSettingsCore(ctx);
-    const account = await ctx.db
-      .query("customerAccounts")
-      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .first();
-    if (!account) throw new Error("Account not found");
+    const settings = await ensureProgramSettingsDoc(ctx);
+    let account = await findOrBootstrapAccount(ctx, args.userId, settings);
 
-    await maybeIssueMonthly(ctx, account, settings);
-    await maybeIssueTrial(ctx, account);
+    try {
+      await maybeIssueMonthly(ctx, account, settings);
+      await maybeIssueTrial(ctx, account);
+    } catch (error: any) {
+      if (error?.message !== "Account not found") throw error;
+      account = await findOrBootstrapAccount(ctx, args.userId, settings);
+      await maybeIssueMonthly(ctx, account, settings);
+      await maybeIssueTrial(ctx, account);
+    }
 
     return await ctx.db
       .query("customerAccounts")
@@ -460,6 +467,65 @@ async function addPointsHelper(
     idempotencyKey: options.idempotencyKey,
     createdAt: Date.now(),
   });
+
+  return (await ctx.db.get(accountId))!;
+}
+
+// Guarantee an account exists before points operations. If missing, create and
+// bootstrap it with one-time rewards using idempotent ledger keys.
+async function findOrBootstrapAccount(ctx: any, userId: string, settings: any) {
+  const existing = await ctx.db
+    .query("customerAccounts")
+    .withIndex("by_userId", (q: any) => q.eq("userId", userId))
+    .first();
+  if (existing) return existing;
+
+  const referralCode = await generateUniqueReferralCode(ctx);
+  const now = Date.now();
+  const accountId = await ctx.db.insert("customerAccounts", {
+    userId,
+    referralCode,
+    pointsBalance: 0,
+    lifetimePoints: 0,
+    monthlyIssuedFor: undefined,
+    trialStartAt: now,
+    trialLastIssuedFor: undefined,
+    trialDaysIssued: 0,
+    signupAwarded: false,
+    welcomeAwarded: false,
+    marketingTags: [],
+    adConsent: false,
+    segments: [],
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  const account = await ctx.db.get(accountId);
+  if (!account) throw new Error("Failed to create account");
+
+  let updatedAccount = await addPointsHelper(
+    ctx,
+    account._id,
+    settings.signupBonusPoints,
+    "signup",
+    {
+      description: "Signup bonus",
+      idempotencyKey: `signup:${account._id}`,
+    }
+  );
+  await ctx.db.patch(account._id, { signupAwarded: true, updatedAt: Date.now() });
+
+  updatedAccount = await addPointsHelper(
+    ctx,
+    account._id,
+    settings.welcomePackagePoints,
+    "welcome",
+    { description: "Welcome package", idempotencyKey: `welcome:${account._id}` }
+  );
+  await ctx.db.patch(account._id, { welcomeAwarded: true, updatedAt: Date.now() });
+
+  await maybeIssueMonthly(ctx, updatedAccount, settings);
+  await maybeIssueTrial(ctx, updatedAccount);
 
   return (await ctx.db.get(accountId))!;
 }

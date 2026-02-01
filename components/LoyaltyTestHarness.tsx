@@ -58,6 +58,9 @@ export const LoyaltyTestHarness: React.FC<LoyaltyTestHarnessProps> = ({ userId }
     }
   };
 
+  const parsedSpendAmount = Number(spendAmount);
+  const canSpend = Number.isFinite(parsedSpendAmount) && parsedSpendAmount > 0;
+
   return (
     <section className="rounded-3xl border border-dashed border-pink-300/70 bg-white/80 p-4 sm:p-6 shadow-sm dark:border-pink-800/60 dark:bg-slate-900/70">
       <div className="flex items-center justify-between gap-2">
@@ -119,9 +122,18 @@ export const LoyaltyTestHarness: React.FC<LoyaltyTestHarnessProps> = ({ userId }
             <Field label="الوصف" value={spendNote} onChange={setSpendNote} />
             <button
               onClick={() =>
-                run(() => spendPoints({ userId, amount: Number(spendAmount) || 0, description: spendNote || 'Test spend' }), 'Spend points')
+                run(
+                  () =>
+                    spendPoints({
+                      userId,
+                      amount: parsedSpendAmount,
+                      description: spendNote || 'Test spend',
+                    }),
+                  'Spend points'
+                )
               }
-              className="rounded-xl bg-gray-900 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+              disabled={!canSpend}
+              className="rounded-xl bg-gray-900 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
               خصم النقاط
             </button>
