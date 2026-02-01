@@ -43,9 +43,9 @@ if (!apiKey) {
   console.error('❌ CRITICAL: API_KEY is too short (invalid format)');
   allGood = false;
 } else {
-  const masked = apiKey.substring(0, 8) + '...' + apiKey.substring(apiKey.length - 4);
-  console.log(`✅ API_KEY is configured (${masked})`);
+  console.log(`✅ API_KEY is configured (length: ${apiKey.length} characters)`);
 }
+
 
 // Check Node.js version
 const nodeVersion = process.version;
