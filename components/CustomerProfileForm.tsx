@@ -13,10 +13,11 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Unique ids keep aria-labelledby links valid even when the form is rendered twice (landing + loyalty panel).
-  const nameId = useId();
-  const emailId = useId();
-  const referralId = useId();
+  // Build ASCII-only ids so browser autofill/a11y tooling can reliably resolve aria-labelledby.
+  const idBase = useId().replace(/[^a-zA-Z0-9_-]/g, '');
+  const nameId = `customer-name-${idBase}`;
+  const emailId = `customer-email-${idBase}`;
+  const referralId = `customer-referral-${idBase}`;
 
   useEffect(() => {
     if (account?.name) setName(account.name);
@@ -82,6 +83,7 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
           <span id={`${nameId}-label`}>الاسم</span>
           <input
             id={nameId}
+            name="name"
             aria-labelledby={`${nameId}-label`}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -94,6 +96,7 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
           <span id={`${emailId}-label`}>البريد الإلكتروني</span>
           <input
             id={emailId}
+            name="email"
             aria-labelledby={`${emailId}-label`}
             type="email"
             value={email}
@@ -109,6 +112,7 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
         <span id={`${referralId}-label`}>كود الإحالة (للاستفادة من نقاط صديقك)</span>
         <input
           id={referralId}
+          name="referralCode"
           aria-labelledby={`${referralId}-label`}
           value={referralCode}
           onChange={(e) => setReferralCode(e.target.value.toUpperCase())}

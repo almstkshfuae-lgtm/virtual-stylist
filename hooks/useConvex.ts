@@ -94,25 +94,16 @@ export function useBookmarkedStores(userId: string | null) {
  */
 export function useLoyalty(userId: string | null) {
   if (!isConvexEnabled) {
+    const disabledResult = Promise.resolve(null);
     return {
       account: null,
       settings: null,
       ledger: [],
-      ensureCustomer: async () => {
-        throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
-      },
-      loginWithEmail: async () => {
-        throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
-      },
-      issueMonthly: async () => {
-        throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
-      },
-      spendPoints: async () => {
-        throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
-      },
-      adjustPoints: async () => {
-        throw new Error("Convex codegen missing loyalty api. Run `npx convex dev`.");
-      },
+      ensureCustomer: async () => disabledResult,
+      loginWithEmail: async () => disabledResult,
+      issueMonthly: async () => disabledResult,
+      spendPoints: async () => disabledResult,
+      adjustPoints: async () => disabledResult,
     };
   }
   const data = useQuery(
@@ -147,9 +138,7 @@ export function useLoyalty(userId: string | null) {
 export function useFashionInsights(userId: string | null) {
   if (!isConvexEnabled) {
     return {
-      logInsight: async () => {
-        throw new Error("Convex codegen missing insights api. Run `npx convex dev`.");
-      },
+      logInsight: async () => Promise.resolve(null),
     };
   }
   const logInsight = useMutation(api.insights.logFashionInsight);

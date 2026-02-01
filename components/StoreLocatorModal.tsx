@@ -120,6 +120,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
                     {t('storeLocator.manualLocationLabel')}
                 </label>
                 <input 
+                    name="manualLocation"
                     type="text" 
                     value={manualLocation}
                     onChange={(e) => setManualLocation(e.target.value)}

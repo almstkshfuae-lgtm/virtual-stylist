@@ -207,6 +207,10 @@ const App: React.FC = () => {
   );
 
   const handleRestoreAccount = async (email: string, name?: string, referralCode?: string) => {
+    if (!isConvexEnabled) {
+      setError('Account login requires a configured Convex backend (set VITE_CONVEX_URL).');
+      return;
+    }
     if (!loginWithEmail || !email.trim()) return;
     setIsAuthLoading(true);
     try {

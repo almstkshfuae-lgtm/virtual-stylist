@@ -183,7 +183,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
   return (
     <div className="landing-shell min-h-screen w-full overflow-x-hidden">
         {/* Header Actions */}
-        <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex flex-col gap-2 rounded-3xl border border-white/70 bg-white/80 dark:border-white/10 dark:bg-slate-900/80 backdrop-blur-md p-2 sm:p-3 shadow-[0_18px_45px_rgba(15,15,15,0.2)]">
+        <div className="pointer-events-none fixed top-4 left-2 right-2 sm:top-6 sm:left-auto sm:right-6 z-40 max-w-[calc(100vw-1rem)] sm:max-w-none flex flex-col gap-2 rounded-3xl border border-white/70 bg-white/80 dark:border-white/10 dark:bg-slate-900/80 backdrop-blur-md p-2 sm:p-3 shadow-[0_18px_45px_rgba(15,15,15,0.2)] [&>*]:pointer-events-auto">
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -206,6 +206,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
             </button>
             <div className="flex items-center gap-1 rounded-full border border-white/60 bg-white/80 px-2 py-1 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
               <input
+                name="restoreEmail"
                 type="email"
                 placeholder="you@example.com"
                 value={restoreEmail}
@@ -213,6 +214,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                 className="w-32 rounded-full border border-gray-200 bg-white px-3 py-1 text-[0.7rem] text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
               />
               <input
+                name="restoreName"
                 type="text"
                 placeholder="اسم اختياري"
                 value={restoreName}
@@ -418,6 +420,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                   </p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     <input
+                      name="signupName"
                       type="text"
                       placeholder="اسمك"
                       value={signupName}
@@ -425,6 +428,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                       className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
                     />
                     <input
+                      name="signupEmail"
                       type="email"
                       placeholder="you@example.com"
                       value={signupEmail}
@@ -432,6 +436,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                       className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
                     />
                     <input
+                      name="signupReferralCode"
                       type="text"
                       placeholder="كود إحالة (اختياري)"
                       value={signupReferral}

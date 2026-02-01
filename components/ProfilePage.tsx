@@ -221,6 +221,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <input
                     id={inviteEmailId}
+                    name="inviteEmail"
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}

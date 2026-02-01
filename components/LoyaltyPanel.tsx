@@ -251,6 +251,7 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
             <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 id={inviteEmailId}
+                name="inviteEmail"
                 type="email"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}

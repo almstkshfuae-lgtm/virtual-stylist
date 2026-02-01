@@ -21,6 +21,7 @@ const Field = ({
   <label className="flex flex-col gap-1 text-xs font-semibold text-gray-700 dark:text-gray-200">
     {label}
     <input
+      name="loyaltyTestField"
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}

@@ -145,6 +145,7 @@ If deployment fails:
 | **Build fails with "Module not found"** | Run `npm install` locally, ensure `package.json` is committed. |
 | **Deployment stuck** | Wait 5-10 minutes. If still stuck, cancel and redeploy from the Vercel dashboard. |
 | **App works locally but not on Vercel** | Check that `API_KEY` is set in Vercel (Settings → Environment Variables). |
+| **`instrument...js` warning about Zustand default export** | This script is injected by Vercel deployment tooling (not your bundle). In Vercel dashboard, disable Preview Toolbar/Comments for previews, and turn off Speed Insights/Web Analytics if enabled for this project. |
 
 ---
 

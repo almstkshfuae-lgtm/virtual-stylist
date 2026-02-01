@@ -130,6 +130,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <form onSubmit={handleSend} className="flex items-center gap-2">
             <input
+              name="chatMessage"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}

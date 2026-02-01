@@ -131,6 +131,7 @@ export const ItemCollection: React.FC<ItemCollectionProps> = ({
                     <span className="text-xs mt-1">{t('main.addItem')}</span>
                 </button>
                 <input
+                    name="collectionImageUpload"
                     type="file"
                     ref={fileInputRef}
                     className="hidden"

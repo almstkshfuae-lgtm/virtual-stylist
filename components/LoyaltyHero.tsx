@@ -26,7 +26,7 @@ export const LoyaltyHero: React.FC<LoyaltyHeroProps> = ({ userId }) => {
   useEffect(() => {
     if (!userId) return;
     ensureCustomer({ userId }).catch(() => {
-      // ignore; loyalty hook handles missing codegen during dev
+      // ignore; loyalty hook gracefully no-ops when Convex is unavailable
     });
   }, [ensureCustomer, userId]);
 
