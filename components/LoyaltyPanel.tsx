@@ -85,12 +85,14 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
   }, [account?.referralCode, origin]);
 
   const sendInvite = () => {
-    if (!referralLink || !inviteEmail.trim()) return;
+    const trimmedEmail = inviteEmail.trim();
+    if (!referralLink || !trimmedEmail) return;
     const subject = encodeURIComponent('انضم إلي منسق الأزياء الافتراضي');
     const body = encodeURIComponent(
       `جرّب منسق الأزياء الافتراضي واحصل على نقاط مكافأة باستخدام رابط الإحالة الخاص بي:\n${referralLink}`
     );
-    window.location.href = `mailto:${inviteEmail.trim()}?subject=${subject}&body=${body}`;
+    const encodedEmail = encodeURIComponent(trimmedEmail);
+    window.location.href = `mailto:${encodedEmail}?subject=${subject}&body=${body}`;
   };
 
   const copyReferralLink = async () => {
