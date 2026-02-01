@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { ApiRequest, ApiResponse } from './vercelTypes';
 
 const safeJsonParse = (value: string) => {
   try {
@@ -16,7 +16,7 @@ const ALLOWED_MODELS = new Set([
   'gemini-3-pro-preview'
 ]);
 
-const requireAuth = (req: VercelRequest) => {
+const requireAuth = (req: ApiRequest) => {
   const expected = process.env.API_SECRET || process.env.VERCEL_API_SECRET;
   if (!expected) return false;
   const header = req.headers.authorization || '';
@@ -41,7 +41,7 @@ const sanitizePayload = (payload: any) => {
   return allowed;
 };
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
