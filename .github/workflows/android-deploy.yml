@@ -1,5 +1,8 @@
 name: Android - Build AAB and Upload to Google Play
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main, master ]
