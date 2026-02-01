@@ -10,7 +10,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1YsOrqPoGzy7ZluonQ12x5Q
 
 ## Run Locally
 
-**Prerequisites:**  Node.js (v18+)
+**Prerequisites:**  Node.js (v20.19+ or v22.12+)
 
 ### Quick Start (with API Proxy)
 

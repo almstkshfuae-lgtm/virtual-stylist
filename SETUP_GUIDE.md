@@ -109,7 +109,7 @@ types.ts             # TypeScript type definitions
 ## 📱 Android App Setup (React Native / Capacitor)
 
 ### Prerequisites for Android Development
-- **Node.js**: v18+ (already installed)
+- **Node.js**: v20.19+ or v22.12+
 - **Java Development Kit (JDK)**: 11 or higher
 - **Android SDK**: API 24 or higher
 - **Android Studio**: Latest version recommended
