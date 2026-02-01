@@ -118,7 +118,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
     const subject = 'انضم إلي منسق الأزياء الافتراضي';
     const body = `مرحباً! جرّب منسق الأزياء الافتراضي واحصل على نقاط مكافأة باستخدام رابط الإحالة الخاص بي:\n${referralLink}`;
     const params = new URLSearchParams({ subject, body });
-    window.location.href = `mailto:${safeEmail}?${params.toString()}`;
+    const encodedEmail = encodeURIComponent(safeEmail);
+    window.location.href = `mailto:${encodedEmail}?${params.toString()}`;
   };
 
   const referralPoints = settings?.referralRewardPoints ?? 500;
