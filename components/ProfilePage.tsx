@@ -108,18 +108,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
     if (!emailPattern.test(trimmed)) {
       return null;
     }
-    return encodeURIComponent(trimmed);
+    return trimmed;
   };
 
   const sendInvite = () => {
     if (!referralLink) return;
     const safeEmail = getSafeInviteEmail();
     if (!safeEmail) return;
-    const subject = encodeURIComponent('انضم إلي منسق الأزياء الافتراضي');
-    const body = encodeURIComponent(
-      `مرحباً! جرّب منسق الأزياء الافتراضي واحصل على نقاط مكافأة باستخدام رابط الإحالة الخاص بي:\n${referralLink}`
-    );
-    window.location.href = `mailto:${safeEmail}?subject=${subject}&body=${body}`;
+    const subject = 'انضم إلي منسق الأزياء الافتراضي';
+    const body = `مرحباً! جرّب منسق الأزياء الافتراضي واحصل على نقاط مكافأة باستخدام رابط الإحالة الخاص بي:\n${referralLink}`;
+    const params = new URLSearchParams({ subject, body });
+    window.location.href = `mailto:${safeEmail}?${params.toString()}`;
   };
 
   const referralPoints = settings?.referralRewardPoints ?? 500;

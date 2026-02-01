@@ -57,6 +57,16 @@ const loadDemoImageFile = (): Promise<File> => {
 
 const LOCAL_CUSTOMER_ID_KEY = 'virtual-stylist-customer-id';
 
+const cryptoRandomInt = (max: number) => {
+  const cryptoObj = typeof window !== 'undefined' ? window.crypto : undefined;
+  if (!cryptoObj?.getRandomValues) {
+    return Math.floor(Math.random() * max);
+  }
+  const bytes = new Uint32Array(1);
+  cryptoObj.getRandomValues(bytes);
+  return bytes[0] % max;
+};
+
 const getLocalCustomerId = () => {
   if (typeof window === 'undefined') {
     return 'virtual-stylist-visitor';
@@ -70,7 +80,7 @@ const getLocalCustomerId = () => {
   const randomId =
     typeof browserCrypto?.randomUUID === 'function'
       ? browserCrypto.randomUUID()
-      : `visitor-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
+      : `visitor-${Date.now()}-${cryptoRandomInt(1_000_000)}`;
 
   window.localStorage.setItem(LOCAL_CUSTOMER_ID_KEY, randomId);
   return randomId;
@@ -231,7 +241,7 @@ const App: React.FC = () => {
       const messages = t('main.loading.messages') as string[];
       setLoadingMessage(messages[0]);
       interval = window.setInterval(() => {
-        setLoadingMessage(messages[Math.floor(Math.random() * messages.length)]);
+        setLoadingMessage(messages[cryptoRandomInt(messages.length)]);
       }, 2500);
     }
     return () => {

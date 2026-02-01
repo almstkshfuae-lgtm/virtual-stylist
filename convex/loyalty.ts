@@ -601,10 +601,25 @@ async function rewardReferral(ctx: any, newAccount: any, referredByCodeRaw: stri
 
 async function generateUniqueReferralCode(ctx: any): Promise<string> {
   const MAX_ATTEMPTS = 5;
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+  const secureRandomBase36 = (length: number) => {
+    const cryptoObj = globalThis.crypto;
+    if (!cryptoObj?.getRandomValues) {
+      throw new Error("Secure random unavailable for referral code generation.");
+    }
+    const bytes = new Uint8Array(length);
+    cryptoObj.getRandomValues(bytes);
+    let out = "";
+    for (let i = 0; i < length; i += 1) {
+      out += alphabet[bytes[i] % alphabet.length];
+    }
+    return out;
+  };
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     // 8-char base36, lower-case for consistency with legacy codes.
-    const code = Math.random().toString(36).slice(2, 10).toLowerCase();
+    const code = secureRandomBase36(8);
 
     const collision = await ctx.db
       .query("customerAccounts")
