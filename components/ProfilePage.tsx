@@ -101,13 +101,25 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
     }
   };
 
+  const getSafeInviteEmail = () => {
+    const trimmed = inviteEmail.trim();
+    // Basic email validation to avoid malformed or dangerous input
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmed)) {
+      return null;
+    }
+    return encodeURIComponent(trimmed);
+  };
+
   const sendInvite = () => {
-    if (!referralLink || !inviteEmail.trim()) return;
+    if (!referralLink) return;
+    const safeEmail = getSafeInviteEmail();
+    if (!safeEmail) return;
     const subject = encodeURIComponent('انضم إلي منسق الأزياء الافتراضي');
     const body = encodeURIComponent(
       `مرحباً! جرّب منسق الأزياء الافتراضي واحصل على نقاط مكافأة باستخدام رابط الإحالة الخاص بي:\n${referralLink}`
     );
-    window.location.href = `mailto:${inviteEmail.trim()}?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${safeEmail}?subject=${subject}&body=${body}`;
   };
 
   const referralPoints = settings?.referralRewardPoints ?? 500;
@@ -218,7 +230,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
                   <button
                     type="button"
                     onClick={sendInvite}
-                    disabled={!referralLink || !inviteEmail.trim()}
+                    disabled={!referralLink || !getSafeInviteEmail()}
                     className="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-pink-300"
                   >
                     إرسال الدعوة
