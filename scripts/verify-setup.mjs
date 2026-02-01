@@ -43,7 +43,7 @@ if (!apiKey) {
   console.error('❌ CRITICAL: API_KEY is too short (invalid format)');
   allGood = false;
 } else {
-  console.log(`✅ API_KEY is configured (length: ${apiKey.length} characters)`);
+  console.log('✅ API_KEY is configured');
 }
 
 
