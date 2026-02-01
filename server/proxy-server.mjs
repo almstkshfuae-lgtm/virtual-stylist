@@ -46,9 +46,9 @@ if (!API_KEY) {
   console.error('\n   Get your key from: https://aistudio.google.com/apikey\n');
   process.exit(1);
 } else {
-  const masked = API_KEY.substring(0, 8) + '...' + API_KEY.substring(API_KEY.length - 4);
-  console.log(`✓ API_KEY loaded successfully (${masked})`);
+  console.log('✓ API_KEY loaded successfully');
 }
+
 
 app.get('/', (req, res) => {
   res.json({
