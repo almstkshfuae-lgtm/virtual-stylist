@@ -91,6 +91,7 @@ const App: React.FC = () => {
   const location = useLocation();
   const [collection, setCollection] = useState<ClothingItem[]>([]);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
+  const selectedItem = selectedItemIndex !== null ? collection[selectedItemIndex] : null;
   const [outfits, setOutfits] = useState<(Outfit | null)[]>([]);
   const [combinationResults, setCombinationResults] = useState<CombinationResult[]>([]);
   const [combinationSelection, setCombinationSelection] = useState<number[]>([]);
@@ -660,7 +661,6 @@ const App: React.FC = () => {
     }
   }, [handleGenerateOutfits]);
 
-  const selectedItem = selectedItemIndex !== null ? collection[selectedItemIndex] : null;
   const hasStylePreferences = selectedStyles.length > 0;
   const canGenerateSingle = Boolean(selectedItem && hasStylePreferences && !isLoading);
   const canGenerateCombine = !isLoading && combinationSelection.length >= 2;
