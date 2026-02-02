@@ -63,7 +63,10 @@ const callProxy = async (model: string, payload: any) => {
     });
     if (!res.ok) {
         if (res.status === 401) {
-            throw new Error('Proxy error: 401 Unauthorized. Set matching API_SECRET (server) and VITE_API_SECRET (client).');
+            const hint = apiSecret
+                ? 'Set matching API_SECRET (server) and VITE_API_SECRET (client).'
+                : 'Set VITE_API_SECRET (client) to match API_SECRET (server), then rebuild/redeploy.';
+            throw new Error(`Proxy error: 401 Unauthorized. ${hint}`);
         }
         const details = await readProxyErrorMessage(res);
         if (res.status === 500) {

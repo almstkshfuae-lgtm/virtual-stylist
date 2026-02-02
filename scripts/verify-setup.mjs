@@ -35,6 +35,7 @@ if (fs.existsSync(envPath)) {
 
 const apiKey = process.env.API_KEY;
 const apiSecret = process.env.API_SECRET || process.env.VERCEL_API_SECRET;
+const viteApiSecret = process.env.VITE_API_SECRET;
 if (!apiKey) {
   console.error('❌ CRITICAL: API_KEY not set in .env.local');
   console.error('   Add this line to .env.local:');
@@ -59,6 +60,19 @@ if (!apiSecret) {
 } else {
   const maskedSecret = apiSecret.substring(0, 4) + '...' + apiSecret.substring(apiSecret.length - 4);
   console.log(`✅ API_SECRET is configured (${maskedSecret})`);
+}
+
+if (!viteApiSecret) {
+  console.error('❌ CRITICAL: VITE_API_SECRET not set in .env.local');
+  console.error('   Add this line to .env.local:');
+  console.error('   VITE_API_SECRET=your_long_random_secret');
+  allGood = false;
+} else if (viteApiSecret !== apiSecret) {
+  console.error('❌ CRITICAL: VITE_API_SECRET does not match API_SECRET');
+  console.error('   Use the exact same value for both variables.');
+  allGood = false;
+} else {
+  console.log('✅ VITE_API_SECRET matches API_SECRET');
 }
 
 
@@ -100,6 +114,6 @@ if (allGood) {
   process.exit(0);
 } else {
   console.error('\n❌ Configuration issues detected. Please fix the above errors.\n');
-  console.error('Quick fix: Make sure .env.local has valid API_KEY and API_SECRET values\n');
+  console.error('Quick fix: Make sure .env.local has valid API_KEY, API_SECRET, and matching VITE_API_SECRET values\n');
   process.exit(1);
 }

@@ -5,8 +5,9 @@ import { LanguageSelector } from './LanguageSelector';
 import { ThemeToggle } from './ThemeToggle';
 import { TranslationKey } from '../i18n/translations';
 import { motion } from 'framer-motion';
-import { ArrowRight, ArrowDown, Sparkles, Shuffle, Globe, MessageCircle, MapPin, Upload, Gift, User } from 'lucide-react';
+import { ArrowRight, ArrowDown, Sparkles, Shuffle, Globe, MessageCircle, MapPin, Upload, Gift, User, Menu, X } from 'lucide-react';
 import { useLoyalty } from '../hooks/useConvex';
+import logoImage from '../VIRTUAL_STYLIST_LOGO.png';
 
 import { LoyaltyHero } from './LoyaltyHero';
 import CustomerProfileForm from './CustomerProfileForm';
@@ -89,6 +90,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
   const [signupReferral, setSignupReferral] = React.useState('');
   const [signupError, setSignupError] = React.useState<string | null>(null);
   const [isSignupLoading, setIsSignupLoading] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const scrollToFeatures = () => {
@@ -117,10 +119,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
   }, []);
 
   const handleProfileClick = useCallback(() => {
+    setIsMobileMenuOpen(false);
     scrollToSection('landing-profile-form');
   }, [scrollToSection]);
 
   const handleReferralClick = useCallback(() => {
+    setIsMobileMenuOpen(false);
     scrollToSection('landing-referral-target');
   }, [scrollToSection]);
 
@@ -211,14 +215,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
 
   return (
     <main className="landing-shell min-h-screen w-full overflow-x-hidden">
-        <header className="landing-header-panel pointer-events-none fixed top-3 left-2 right-2 sm:top-6 sm:left-auto sm:right-6 z-40 max-w-[calc(100vw-1rem)] sm:max-w-none max-h-[calc(100vh-1.5rem)] overflow-y-auto flex flex-col gap-2 rounded-3xl border border-white/70 bg-white/85 text-slate-800 dark:border-white/10 dark:bg-slate-900/85 dark:text-slate-100 backdrop-blur-md p-2 sm:p-3 shadow-[0_18px_45px_rgba(15,15,15,0.2)] [&>*]:pointer-events-auto">
-          <div className="landing-header-row grid grid-cols-1 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2">
-            <nav className="flex flex-wrap items-center gap-2" aria-label="Quick actions">
-              <button
-                type="button"
-                onClick={handleProfileClick}
-                className={navButtonClass(false)}
-              >
+        <header className="fixed inset-x-0 top-0 z-40 border-b border-white/70 bg-white/85 text-slate-800 backdrop-blur-md dark:border-white/10 dark:bg-slate-900/85 dark:text-slate-100">
+          <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+            <button
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className={`inline-flex items-center gap-3 rounded-xl p-1 transition hover:bg-white/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 dark:hover:bg-slate-800/60 ${
+                isRtl ? 'flex-row-reverse text-right' : 'text-left'
+              }`}
+              aria-label={t('landing.header.homeAria')}
+            >
+              <img src={logoImage} alt={t('landing.header.logoAlt')} className="h-10 w-10 rounded-lg object-cover sm:h-12 sm:w-12" />
+              <span className={`flex flex-col ${isRtl ? 'items-end' : 'items-start'} leading-tight`}>
+                <span className={`text-sm font-black text-slate-900 dark:text-white ${isRtl ? '' : 'uppercase tracking-[0.2em]'}`}>
+                  {t('header.titlePart1')}
+                </span>
+                <span className={`text-xs font-semibold text-[color:var(--landing-rose)] ${isRtl ? '' : 'uppercase tracking-[0.35em]'}`}>
+                  {t('header.titlePart2')}
+                </span>
+              </span>
+            </button>
+
+            <nav className="hidden items-center gap-2 md:flex" aria-label={t('landing.header.primaryNavAria')}>
+              <button type="button" onClick={scrollToFeatures} className={navButtonClass(false)}>
+                {t('landing.features.title')}
+              </button>
+              <button type="button" onClick={handleProfileClick} className={`${navButtonClass(false)} ${isRtl ? 'flex-row-reverse' : ''}`}>
                 <User className="h-4 w-4" aria-hidden="true" />
                 <span>{profileLabel}</span>
               </button>
@@ -228,92 +250,207 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                 disabled={!isConvexEnabled}
                 aria-disabled={!isConvexEnabled}
                 title={isConvexEnabled ? referralLabel : referralUnavailableLabel}
-                className={navButtonClass(!isConvexEnabled)}
+                className={`${navButtonClass(!isConvexEnabled)} ${isRtl ? 'flex-row-reverse' : ''}`}
               >
-                  <Gift className="h-4 w-4" aria-hidden="true" />
-                  <span>{referralLabel}</span>
+                <Gift className="h-4 w-4" aria-hidden="true" />
+                <span>{referralLabel}</span>
               </button>
             </nav>
-            <form
-              className="landing-restore-row flex flex-wrap items-center gap-2 rounded-2xl border border-white/60 bg-white/85 px-2 py-2 shadow-sm dark:border-white/10 dark:bg-slate-900/70"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void handleRestore();
-              }}
-              aria-describedby={restoreError ? 'landing-restore-error' : undefined}
-            >
-              <label htmlFor="restore-email" className="sr-only">
-                {t('landing.restore.emailPlaceholder')}
-              </label>
-              <input
-                id="restore-email"
-                name="restoreEmail"
-                type="email"
-                autoComplete="email"
-                aria-invalid={isRestoreEmailInvalid}
-                placeholder={t('landing.restore.emailPlaceholder')}
-                value={restoreEmail}
-                onChange={(e) => setRestoreEmail(e.target.value)}
-                className="min-w-[10rem] max-[360px]:min-w-0 max-[360px]:w-full flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-              />
-              <label htmlFor="restore-name" className="sr-only">
-                {t('landing.restore.namePlaceholder')}
-              </label>
-              <input
-                id="restore-name"
-                name="restoreName"
-                type="text"
-                autoComplete="name"
-                placeholder={t('landing.restore.namePlaceholder')}
-                value={restoreName}
-                onChange={(e) => setRestoreName(e.target.value)}
-                className="hidden md:block min-w-[9rem] max-[360px]:min-w-0 max-[360px]:w-full flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-              />
+
+            <div className="hidden items-center gap-2 md:flex">
+              <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm dark:border-white/20 dark:bg-gray-900/70 dark:text-white">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white">
+                  {userInitial}
+                </span>
+                <div className="flex flex-col leading-tight">
+                  <span className="text-xs font-semibold text-gray-900 dark:text-white">{userName}</span>
+                  <span className="text-[0.7rem] text-gray-700 dark:text-gray-200">{userPoints}</span>
+                </div>
+              </div>
+              <ThemeToggle />
+              <LanguageSelector />
               <button
-                type="submit"
-                disabled={restoreLoading || !restoreEmailTrimmed}
-                className="rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-xs sm:text-sm font-semibold text-gray-800 hover:border-pink-400 hover:text-pink-700 disabled:cursor-not-allowed disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:border-pink-500 dark:hover:text-pink-200 max-[360px]:w-full"
+                type="button"
+                onClick={onGetStarted}
+                className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white shadow-[0_10px_25px_rgba(140,35,64,0.35)] transition hover:bg-brand/90"
               >
-                {restoreLoading ? t('landing.restore.loading') : t('landing.restore.action')}
+                {t('landing.juliana.cta')}
+                <ArrowRight className={`h-4 w-4 ${isRtl ? 'rotate-180' : ''}`} />
               </button>
-            </form>
+            </div>
+
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/50 bg-white/80 text-slate-900 shadow-sm transition hover:bg-white md:hidden dark:border-white/20 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:bg-slate-700"
+              aria-label={isMobileMenuOpen ? t('landing.header.closeMenu') : t('landing.header.openMenu')}
+              aria-expanded={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
+
+          <div className="hidden border-t border-white/60 px-4 py-2 dark:border-white/10 md:block">
+            <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-2">
+              <form
+                className="flex flex-1 flex-wrap items-center gap-2"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleRestore();
+                }}
+                aria-describedby={restoreError ? 'landing-restore-error' : undefined}
+              >
+                <label htmlFor="restore-email-desktop" className="sr-only">
+                  {t('landing.restore.emailPlaceholder')}
+                </label>
+                <input
+                  id="restore-email-desktop"
+                  name="restoreEmailDesktop"
+                  type="email"
+                  autoComplete="email"
+                  aria-invalid={isRestoreEmailInvalid}
+                  placeholder={t('landing.restore.emailPlaceholder')}
+                  value={restoreEmail}
+                  onChange={(e) => setRestoreEmail(e.target.value)}
+                  className="min-w-[12rem] flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                />
+                <label htmlFor="restore-name-desktop" className="sr-only">
+                  {t('landing.restore.namePlaceholder')}
+                </label>
+                <input
+                  id="restore-name-desktop"
+                  name="restoreNameDesktop"
+                  type="text"
+                  autoComplete="name"
+                  placeholder={t('landing.restore.namePlaceholder')}
+                  value={restoreName}
+                  onChange={(e) => setRestoreName(e.target.value)}
+                  className="min-w-[10rem] flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                />
+                <button
+                  type="submit"
+                  disabled={restoreLoading || !restoreEmailTrimmed}
+                  className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {restoreLoading ? t('landing.restore.loading') : t('landing.restore.action')}
+                </button>
+              </form>
+              <span className="text-xs text-gray-700 dark:text-gray-200">{referralStatus}</span>
+            </div>
             {!restoreError && restoreHelperText && (
-              <p className="px-1 text-xs text-gray-600 dark:text-gray-300" aria-live="polite">
+              <p className="mx-auto mt-1 w-full max-w-6xl text-xs text-gray-600 dark:text-gray-300" aria-live="polite">
                 {restoreHelperText}
               </p>
             )}
+            {restoreError && (
+              <p id="landing-restore-error" className="mx-auto mt-1 w-full max-w-6xl text-xs text-red-600 dark:text-red-300">{restoreError}</p>
+            )}
           </div>
-          <aside className="flex flex-wrap items-center gap-2" aria-label="Account summary">
-            <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm dark:border-white/20 dark:bg-gray-900/70 dark:text-white">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white">
-                {userInitial}
-              </span>
-              <div className="flex flex-col leading-tight">
-                <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                  {userName}
-                </span>
-                <span className="text-[0.7rem] text-gray-700 dark:text-gray-200">
-                  {userPoints}
-                </span>
+
+          {isMobileMenuOpen && (
+            <div className="border-t border-white/70 bg-white/90 px-4 pb-4 pt-3 shadow-lg dark:border-white/10 dark:bg-slate-900/90 md:hidden">
+              <div className="mx-auto flex max-w-6xl flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    scrollToFeatures();
+                  }}
+                  className={navButtonClass(false)}
+                >
+                  {t('landing.features.title')}
+                </button>
+                <button type="button" onClick={handleProfileClick} className={`${navButtonClass(false)} ${isRtl ? 'flex-row-reverse' : ''}`}>
+                  <User className="h-4 w-4" aria-hidden="true" />
+                  <span>{profileLabel}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReferralClick}
+                  disabled={!isConvexEnabled}
+                  aria-disabled={!isConvexEnabled}
+                  title={isConvexEnabled ? referralLabel : referralUnavailableLabel}
+                  className={`${navButtonClass(!isConvexEnabled)} ${isRtl ? 'flex-row-reverse' : ''}`}
+                >
+                  <Gift className="h-4 w-4" aria-hidden="true" />
+                  <span>{referralLabel}</span>
+                </button>
+                <form
+                  className="mt-2 flex flex-col gap-2 rounded-2xl border border-white/60 bg-white/85 p-3 shadow-sm dark:border-white/10 dark:bg-slate-900/70"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void handleRestore();
+                  }}
+                  aria-describedby={restoreError ? 'landing-restore-error' : undefined}
+                >
+                  <label htmlFor="restore-email" className="sr-only">
+                    {t('landing.restore.emailPlaceholder')}
+                  </label>
+                  <input
+                    id="restore-email"
+                    name="restoreEmail"
+                    type="email"
+                    autoComplete="email"
+                    aria-invalid={isRestoreEmailInvalid}
+                    placeholder={t('landing.restore.emailPlaceholder')}
+                    value={restoreEmail}
+                    onChange={(e) => setRestoreEmail(e.target.value)}
+                    className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                  />
+                  <label htmlFor="restore-name" className="sr-only">
+                    {t('landing.restore.namePlaceholder')}
+                  </label>
+                  <input
+                    id="restore-name"
+                    name="restoreName"
+                    type="text"
+                    autoComplete="name"
+                    placeholder={t('landing.restore.namePlaceholder')}
+                    value={restoreName}
+                    onChange={(e) => setRestoreName(e.target.value)}
+                    className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                  />
+                  <button
+                    type="submit"
+                    disabled={restoreLoading || !restoreEmailTrimmed}
+                    className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {restoreLoading ? t('landing.restore.loading') : t('landing.restore.action')}
+                  </button>
+                </form>
+                {!restoreError && restoreHelperText && (
+                  <p className="text-xs text-gray-600 dark:text-gray-300" aria-live="polite">
+                    {restoreHelperText}
+                  </p>
+                )}
+                {restoreError && (
+                  <p id="landing-restore-error" className="text-xs text-red-600 dark:text-red-300">{restoreError}</p>
+                )}
+                <div className="mt-1 flex items-center gap-2">
+                  <ThemeToggle />
+                  <LanguageSelector />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      onGetStarted();
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-brand/90"
+                  >
+                    {t('landing.juliana.cta')}
+                    <ArrowRight className={`h-4 w-4 ${isRtl ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-700 dark:text-gray-200">{referralStatus}</p>
               </div>
             </div>
-            <span className="text-xs text-gray-700 dark:text-gray-200">
-              {referralStatus}
-            </span>
-          </aside>
-          {restoreError && (
-            <p id="landing-restore-error" className="px-1 text-xs text-red-600 dark:text-red-300">{restoreError}</p>
           )}
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <ThemeToggle />
-            <LanguageSelector />
-          </div>
         </header>
         
         {/* Hero Section */}
         <section
           aria-labelledby="landing-hero-title"
-        className="landing-hero relative w-full overflow-hidden pt-48 sm:pt-36 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 min-h-[70vh] lg:min-h-[75vh]"
+        className="landing-hero relative w-full overflow-hidden pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 min-h-[70vh] lg:min-h-[75vh]"
         >
             <span className="landing-hello" aria-hidden="true">
               {t('landing.hello')}

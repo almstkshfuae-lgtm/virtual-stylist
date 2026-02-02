@@ -26,6 +26,8 @@ The `.env.local` file is created. Add your Gemini API key:
 
 ```
 API_KEY=your_gemini_api_key_here
+API_SECRET=your_long_random_secret_here
+VITE_API_SECRET=your_long_random_secret_here
 ```
 
 **Get your API key:**

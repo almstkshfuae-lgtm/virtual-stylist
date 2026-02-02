@@ -22,6 +22,8 @@ View your app in AI Studio: https://ai.studio/apps/drive/1YsOrqPoGzy7ZluonQ12x5Q
 2. **Set your API key** in [.env.local](.env.local):
    ```
    API_KEY=your-google-ai-studio-key
+   API_SECRET=your-long-random-secret
+   VITE_API_SECRET=your-long-random-secret
    ```
 
 3. **Start the API proxy** (Terminal 1):

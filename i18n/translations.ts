@@ -19,6 +19,11 @@ const en = {
       profile: "Profile",
       referral: "Referral",
       referralUnavailable: "Referral program coming soon",
+      homeAria: "Virtual Stylist home",
+      logoAlt: "Virtual Stylist logo",
+      primaryNavAria: "Primary navigation",
+      openMenu: "Open menu",
+      closeMenu: "Close menu",
       guest: "Guest",
       pointsLabel: "{{points}} pts",
       pointsUnknown: "Points pending",
@@ -167,6 +172,7 @@ const en = {
     welcome: "Hi! I'm your AI fashion assistant. Ask me anything about styling or trends!",
     placeholder: "Ask a fashion question...",
     askingAbout: "Asking about:",
+    open: "Open chat",
     close: "Close chat"
   },
   bodyShape: {
@@ -269,6 +275,11 @@ const ar = {
       profile: "الملف الشخصي",
       referral: "إحالة",
       referralUnavailable: "برنامج الإحالة قيد الإعداد",
+      homeAria: "الصفحة الرئيسية لمنسق الأزياء الافتراضي",
+      logoAlt: "شعار منسق الأزياء الافتراضي",
+      primaryNavAria: "التنقل الرئيسي",
+      openMenu: "فتح القائمة",
+      closeMenu: "إغلاق القائمة",
       guest: "زائر",
       pointsLabel: "{{points}} نقطة",
       pointsUnknown: "النقاط قيد الانتظار",
@@ -417,6 +428,7 @@ const ar = {
     welcome: "أهلاً بك! أنا مساعدك الشخصي للأناقة. اسألني عن أي نصيحة أو صيحة تهمك.",
     placeholder: "اكتب سؤالك هنا...",
     askingAbout: "بخصوص:",
+    open: "افتح الدردشة",
     close: "إغلاق الدردشة"
   },
   bodyShape: {
@@ -519,6 +531,11 @@ const fr = {
       profile: "Profil",
       referral: "Parrainage",
       referralUnavailable: "Programme de parrainage bientôt disponible",
+      homeAria: "Accueil Virtual Stylist",
+      logoAlt: "Logo Virtual Stylist",
+      primaryNavAria: "Navigation principale",
+      openMenu: "Ouvrir le menu",
+      closeMenu: "Fermer le menu",
       guest: "Invité",
       pointsLabel: "{{points}} pts",
       pointsUnknown: "Points en attente",
@@ -667,6 +684,7 @@ const fr = {
     welcome: "Bonjour ! Je suis votre assistant de mode IA. Demandez-moi n'importe quoi sur le style ou les tendances !",
     placeholder: "Posez une question sur la mode...",
     askingAbout: "Question sur :",
+    open: "Ouvrir le chat",
     close: "Fermer le chat"
   },
   bodyShape: {
@@ -769,6 +787,11 @@ const ru = {
       profile: "Профиль",
       referral: "Реферальная программа",
       referralUnavailable: "Реферальная программа скоро появится",
+      homeAria: "Главная Virtual Stylist",
+      logoAlt: "Логотип Virtual Stylist",
+      primaryNavAria: "Основная навигация",
+      openMenu: "Открыть меню",
+      closeMenu: "Закрыть меню",
       guest: "Гость",
       pointsLabel: "{{points}} баллов",
       pointsUnknown: "Баллы ожидают начисления",
@@ -917,6 +940,7 @@ const ru = {
     welcome: "Привет! Я ваш ИИ-помощник по моде. Спрашивайте меня о чем угодно, касающемся стиля или трендов!",
     placeholder: "Задайте вопрос о моде...",
     askingAbout: "Вопрос о:",
+    open: "Открыть чат",
     close: "Закрыть чат"
   },
   bodyShape: {
@@ -1019,6 +1043,11 @@ const nl = {
       profile: "Profiel",
       referral: "Doorverwijzing",
       referralUnavailable: "Doorverwijzingsprogramma binnenkort beschikbaar",
+      homeAria: "Virtual Stylist startpagina",
+      logoAlt: "Virtual Stylist logo",
+      primaryNavAria: "Primaire navigatie",
+      openMenu: "Menu openen",
+      closeMenu: "Menu sluiten",
       guest: "Gast",
       pointsLabel: "{{points}} pts",
       pointsUnknown: "Punten in afwachting",
@@ -1167,6 +1196,7 @@ const nl = {
     welcome: "Hoi! Ik ben je AI-modeassistent. Vraag me alles over styling of trends!",
     placeholder: "Stel een modevraag...",
     askingAbout: "Vraag over:",
+    open: "Chat openen",
     close: "Chat sluiten"
   },
   bodyShape: {

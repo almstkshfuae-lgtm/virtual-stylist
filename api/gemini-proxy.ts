@@ -290,11 +290,7 @@ const takeRateLimit = (key: string, limit: number): RateLimitResult => {
   };
 };
 
-const requireAuth = (req: ApiRequest) => {
-  const expected = process.env.API_SECRET || process.env.VERCEL_API_SECRET;
-  if (!expected) return false;
-  return extractBearerToken(req) === expected;
-};
+const getExpectedSecret = () => process.env.API_SECRET || process.env.VERCEL_API_SECRET;
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   const start = Date.now();
@@ -307,7 +303,16 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return;
   }
 
-  if (!requireAuth(req)) {
+  const expectedSecret = getExpectedSecret();
+  if (!expectedSecret) {
+    logEvent('proxy.error.config', { requestId, clientIp, error: 'api_secret_missing' });
+    res.status(500).json({
+      error: 'API secret not configured on server',
+    });
+    return;
+  }
+
+  if (extractBearerToken(req) !== expectedSecret) {
     const unauthLimit = takeRateLimit(`unauth:${clientIp}`, RATE_LIMIT_MAX_UNAUTH);
     applyRateLimitHeaders(res, RATE_LIMIT_MAX_UNAUTH, unauthLimit);
     logEvent('proxy.rejected.unauthorized', {

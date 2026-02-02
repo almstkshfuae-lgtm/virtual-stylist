@@ -35,6 +35,8 @@ Your app is now in GitHub with a Vercel deployment workflow. You have two option
 1. In the import dialog, you'll see **"Environment Variables"** section
 2. Add these variables (all environments: Production, Preview, Development):
    - `API_KEY=<your-google-genai-key>`
+   - `API_SECRET=<long-random-shared-secret>`
+   - `VITE_API_SECRET=<same-value-as-API_SECRET>`
    - `VITE_CONVEX_URL=https://chatty-reindeer-62.convex.cloud`
    - `CONVEX_DEPLOYMENT=dev:chatty-reindeer-62`
    - `VITE_CONVEX_SITE_URL=https://chatty-reindeer-62.convex.site`
@@ -142,6 +144,7 @@ If deployment fails:
 | Issue | Solution |
 |-------|----------|
 | **"API key not valid"** | Check the `API_KEY` env var in Vercel project settings. Verify it matches your `.env.local`. |
+| **`/api/gemini-proxy` returns `401 Unauthorized`** | Set `API_SECRET` and `VITE_API_SECRET` to the exact same value in Vercel, then redeploy so `VITE_API_SECRET` is embedded into the client bundle. |
 | **Build fails with "Module not found"** | Run `npm install` locally, ensure `package.json` is committed. |
 | **Deployment stuck** | Wait 5-10 minutes. If still stuck, cancel and redeploy from the Vercel dashboard. |
 | **App works locally but not on Vercel** | Check that `API_KEY` is set in Vercel (Settings → Environment Variables). |

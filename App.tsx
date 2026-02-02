@@ -101,6 +101,7 @@ const App: React.FC = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const { t, language } = useTranslation();
+  const isRtl = language === 'ar';
   
   const [styleProfile, setStyleProfile] = useState<StyleProfile>({ liked: [], disliked: [] });
   const [ratedOutfits, setRatedOutfits] = useState<Record<string, 'liked' | 'disliked'>>({});
@@ -664,6 +665,12 @@ const App: React.FC = () => {
   const hasStylePreferences = selectedStyles.length > 0;
   const canGenerateSingle = Boolean(selectedItem && hasStylePreferences && !isLoading);
   const canGenerateCombine = !isLoading && combinationSelection.length >= 2;
+  const chatButtonPosition = isRtl
+    ? 'bottom-4 left-4 sm:bottom-6 sm:left-6'
+    : 'bottom-4 right-4 sm:bottom-6 sm:right-6';
+  const paywallPosition = isRtl
+    ? 'inset-x-3 bottom-3 sm:inset-x-auto sm:left-6 sm:bottom-6'
+    : 'inset-x-3 bottom-3 sm:inset-x-auto sm:right-6 sm:bottom-6';
 
   if (!hasStarted && collection.length === 0) {
     return (
@@ -908,12 +915,12 @@ const App: React.FC = () => {
         </a>
       </div>
     </footer>
-       <button 
+      <button 
         onClick={() => setIsChatOpen(true)} 
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-pink-500 text-white p-3 sm:p-4 rounded-full shadow-lg hover:bg-pink-600 transition-transform transform hover:scale-110 z-20"
-        aria-label="Open Fashion Chat"
+        className={`fixed ${chatButtonPosition} bg-pink-500 text-white p-3 sm:p-4 rounded-full shadow-lg hover:bg-pink-600 transition-transform transform hover:scale-110 z-20`}
+        aria-label={t('chat.open')}
         >
-            <ChatBubbleIcon className="w-6 h-6 sm:w-8 sm:h-8"/>
+            <ChatBubbleIcon className={`w-6 h-6 sm:w-8 sm:h-8 ${isRtl ? 'rotate-180' : ''}`}/>
       </button>
 
       <Chatbot
@@ -936,7 +943,7 @@ const App: React.FC = () => {
         <aside
           role="status"
           aria-live="polite"
-          className="fixed inset-x-3 bottom-3 sm:inset-x-auto sm:right-6 sm:bottom-6 z-40 w-auto sm:w-[24rem]"
+          className={`fixed ${paywallPosition} z-40 w-auto sm:w-[24rem]`}
         >
           <div className="rounded-2xl border border-pink-200/70 bg-white/95 p-5 text-center shadow-2xl dark:border-pink-500/30 dark:bg-slate-900/95">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">انتهى رصيد النقاط</h3>

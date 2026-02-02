@@ -18,7 +18,8 @@ interface ProfilePageProps {
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const isRtl = language === 'ar';
   const { account, settings, ledger, ensureCustomer } = useLoyalty(userId);
   const [savedOutfits, setSavedOutfits] = useState<ValidOutfit[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -116,6 +117,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
   const monthlyPoints = settings?.monthlyPoints ?? 300;
   const referralQrAlt = t('profilePage.referralQrAlt');
   const isInviteEmailInvalid = inviteEmail.trim().length > 0 && !getSafeInviteEmail();
+  const formatPoints = (value: number) =>
+    t('landing.header.pointsLabel', { points: value.toLocaleString(language) });
 
   const handleBack = () => {
     navigate('/');
@@ -135,16 +138,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
       aria-labelledby="profile-page-title"
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-6 pt-10">
-        <header className="flex items-center gap-3">
+        <header className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse text-right' : ''}`}>
           <button
             onClick={handleBack}
-            className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-sm font-semibold text-gray-700 shadow-sm hover:border-pink-400 hover:text-pink-600 dark:border-slate-800 dark:bg-slate-900 dark:text-gray-200"
+            className={`inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-sm font-semibold text-gray-700 shadow-sm hover:border-pink-400 hover:text-pink-600 dark:border-slate-800 dark:bg-slate-900 dark:text-gray-200 ${isRtl ? 'flex-row-reverse' : ''}`}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className={`h-4 w-4 ${isRtl ? 'rotate-180' : ''}`} />
             {t('landing.header.profile')}
           </button>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            الصفحة الشخصية · {account?.email || '—'}
+          <span className="text-xs text-gray-500 dark:text-gray-400" dir="auto">
+            {isRtl ? `${account?.email || '—'} · الصفحة الشخصية` : `Profile · ${account?.email || '—'}`}
           </span>
         </header>
 
@@ -154,7 +157,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
         >
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-pink-500">Profile</p>
+              <p className={`text-xs font-semibold text-pink-500 ${isRtl ? '' : 'uppercase tracking-[0.35em]'}`}>
+                {t('landing.header.profile')}
+              </p>
               <h1 id="profile-page-title" className="text-3xl font-black text-gray-900 dark:text-white">
                 {account?.name || t('landing.header.guest')}
               </h1>
@@ -164,11 +169,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
             </div>
             <div className="flex items-center gap-3">
               <div className="rounded-2xl border border-pink-100 bg-pink-50 px-4 py-3 text-sm font-semibold text-pink-700 dark:border-pink-700/50 dark:bg-pink-900/30 dark:text-pink-100">
-                {account ? `${account.pointsBalance.toLocaleString()} pts` : '0 pts'}
-                <span className="ml-2 text-xs text-pink-500 dark:text-pink-200">الرصيد</span>
+                {formatPoints(account ? account.pointsBalance : 0)}
+                <span className={`${isRtl ? 'mr-2' : 'ml-2'} text-xs text-pink-500 dark:text-pink-200`}>الرصيد</span>
               </div>
               <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-900/30 dark:text-emerald-100">
-                {account?.monthlyIssuedFor ? 'محدّث' : 'انتظار'} · {monthlyPoints} pts
+                {account?.monthlyIssuedFor ? 'محدّث' : 'انتظار'} · {formatPoints(monthlyPoints)}
               </div>
             </div>
           </div>
