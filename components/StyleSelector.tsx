@@ -35,6 +35,7 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({ selectedStyles, on
   };
 
   const selectedCount = selectedStyles.length;
+  const maxReached = selectedCount >= MAX_STYLES;
 
   return (
     <div className="p-4 bg-white rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
@@ -44,6 +45,11 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({ selectedStyles, on
             ({t('styleSelector.selectionCount', { selected: selectedCount, max: MAX_STYLES })})
         </span>
       </p>
+      {maxReached && (
+        <p className="mt-2 text-xs text-amber-700 dark:text-amber-300" aria-live="polite">
+          {t('styleSelector.maxReached', `You reached the limit of ${MAX_STYLES} styles. Remove one to add another.`)}
+        </p>
+      )}
       <div className="flex flex-wrap gap-2 mt-2">
         {STYLE_KEYS.map((styleKey) => {
           const isSelected = selectedStyles.includes(styleKey);

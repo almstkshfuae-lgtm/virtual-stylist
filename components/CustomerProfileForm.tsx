@@ -38,6 +38,12 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!userId || !ensureCustomer) return;
+    const trimmedEmail = email.trim();
+    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setStatus('error');
+      setErrorMsg(t('landing.profileForm.invalidEmail'));
+      return;
+    }
     setStatus('saving');
     setErrorMsg(null);
 
@@ -45,7 +51,7 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
       await ensureCustomer({
         userId,
         name: name.trim() || undefined,
-        email: email.trim() || undefined,
+        email: trimmedEmail || undefined,
         referredByCode: referralCode.trim() || undefined,
       });
       setStatus('saved');
@@ -64,10 +70,10 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
     >
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] sm:tracking-[0.25em] text-gray-600 dark:text-gray-300">
             {t('landing.profileForm.eyebrow')}
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <p className="text-sm text-gray-700 dark:text-gray-200">
             {t('landing.profileForm.description')}
           </p>
         </div>
@@ -89,7 +95,7 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
             aria-labelledby={`${nameId}-label`}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+            className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
             placeholder={t('landing.profileForm.namePlaceholder')}
             autoComplete="name"
           />
@@ -103,7 +109,7 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+            className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
             placeholder={t('landing.profileForm.emailPlaceholder')}
             autoComplete="email"
           />
@@ -118,7 +124,7 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
           aria-labelledby={`${referralId}-label`}
           value={referralCode}
           onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-          className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+          className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
           placeholder={t('landing.profileForm.referralPlaceholder')}
           autoComplete="off"
         />

@@ -72,7 +72,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, ind
             {icon}
         </motion.div>
         <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 sm:mb-4 leading-tight">{title}</h3>
-        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed flex-grow">{description}</p>
+        <p className="text-sm sm:text-base text-slate-700 dark:text-slate-200 leading-relaxed flex-grow">{description}</p>
     </motion.div>
 );
 
@@ -132,12 +132,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
 
   const handleRestore = async () => {
     setRestoreError(null);
+    const trimmedEmail = restoreEmail.trim();
     if (!restoreEmail.trim()) {
       setRestoreError(t('landing.restore.emailRequired'));
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setRestoreError(t('landing.restore.invalidEmail'));
+      return;
+    }
     try {
-      await onRestoreAccount(restoreEmail.trim(), restoreName.trim() || undefined);
+      await onRestoreAccount(trimmedEmail, restoreName.trim() || undefined);
     } catch (error) {
       console.error('restore failed', error);
       setRestoreError(t('landing.restore.failed'));
@@ -146,14 +151,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
 
   const handleSignup = async () => {
     setSignupError(null);
-    if (!signupEmail.trim()) {
+    const trimmedEmail = signupEmail.trim();
+    if (!trimmedEmail) {
       setSignupError(t('landing.signup.emailRequired'));
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setSignupError(t('landing.signup.invalidEmail'));
       return;
     }
     setIsSignupLoading(true);
     try {
       await onRegisterAccount(
-        signupEmail.trim(),
+        trimmedEmail,
         signupName.trim() || undefined,
         signupReferral.trim() || undefined
       );
@@ -168,7 +178,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
 
   const navButtonClass = (isDisabled = false) =>
     [
-      'inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold shadow-sm transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500',
+      'inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs sm:text-sm font-semibold shadow-sm transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500',
       isDisabled
         ? 'border-white/40 bg-white/60 text-gray-500 cursor-not-allowed dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-400'
         : 'border-white/70 bg-white/90 text-gray-900 hover:border-white dark:border-gray-700 dark:bg-gray-900/70 dark:text-white dark:hover:bg-gray-800',
@@ -186,8 +196,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
   return (
     <div className="landing-shell min-h-screen w-full overflow-x-hidden">
         {/* Header Actions */}
-        <div className="pointer-events-none fixed top-4 left-2 right-2 sm:top-6 sm:left-auto sm:right-6 z-40 max-w-[calc(100vw-1rem)] sm:max-w-none flex flex-col gap-2 rounded-3xl border border-white/70 bg-white/80 dark:border-white/10 dark:bg-slate-900/80 backdrop-blur-md p-2 sm:p-3 shadow-[0_18px_45px_rgba(15,15,15,0.2)] [&>*]:pointer-events-auto">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="landing-header-panel pointer-events-none fixed top-3 left-2 right-2 sm:top-6 sm:left-auto sm:right-6 z-40 max-w-[calc(100vw-1rem)] sm:max-w-none max-h-[calc(100vh-1.5rem)] overflow-y-auto flex flex-col gap-2 rounded-3xl border border-white/70 bg-white/85 text-slate-800 dark:border-white/10 dark:bg-slate-900/85 dark:text-slate-100 backdrop-blur-md p-2 sm:p-3 shadow-[0_18px_45px_rgba(15,15,15,0.2)] [&>*]:pointer-events-auto">
+          <div className="landing-header-row grid grid-cols-1 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2">
             <button
               type="button"
               onClick={handleProfileClick}
@@ -207,14 +217,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                 <Gift className="h-4 w-4" aria-hidden="true" />
                 <span>{referralLabel}</span>
               </button>
-              <div className="flex items-center gap-1 rounded-full border border-white/60 bg-white/80 px-2 py-1 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
+              <div className="landing-restore-row flex flex-wrap items-center gap-2 rounded-2xl border border-white/60 bg-white/85 px-2 py-2 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
                 <input
                   name="restoreEmail"
                   type="email"
                   placeholder={t('landing.restore.emailPlaceholder')}
                   value={restoreEmail}
                   onChange={(e) => setRestoreEmail(e.target.value)}
-                  className="w-32 rounded-full border border-gray-200 bg-white px-3 py-1 text-[0.7rem] text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                  className="min-w-[10rem] max-[360px]:min-w-0 max-[360px]:w-full flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
                 />
                 <input
                   name="restoreName"
@@ -222,40 +232,40 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                   placeholder={t('landing.restore.namePlaceholder')}
                   value={restoreName}
                   onChange={(e) => setRestoreName(e.target.value)}
-                  className="hidden sm:block w-28 rounded-full border border-gray-200 bg-white px-3 py-1 text-[0.7rem] text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                  className="hidden md:block min-w-[9rem] max-[360px]:min-w-0 max-[360px]:w-full flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
                 />
               <button
                 type="button"
                 onClick={handleRestore}
                 disabled={restoreLoading || !restoreEmail.trim()}
-                  className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[0.7rem] font-semibold text-gray-700 hover:border-pink-400 hover:text-pink-600 disabled:cursor-not-allowed disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:border-pink-500 dark:hover:text-pink-200"
+                  className="rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-xs sm:text-sm font-semibold text-gray-800 hover:border-pink-400 hover:text-pink-700 disabled:cursor-not-allowed disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:border-pink-500 dark:hover:text-pink-200 max-[360px]:w-full"
                 >
                   {restoreLoading ? t('landing.restore.loading') : t('landing.restore.action')}
                 </button>
               </div>
             </div>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/90 px-2 py-1 text-[0.65rem] font-semibold text-gray-900 shadow-sm dark:border-white/20 dark:bg-gray-900/70 dark:text-white">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-pink-500 text-[0.65rem] font-bold text-white">
+            <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm dark:border-white/20 dark:bg-gray-900/70 dark:text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white">
                 {userInitial}
               </span>
               <div className="flex flex-col leading-tight">
-                <span className="text-[0.65rem] font-semibold text-gray-900 dark:text-white">
+                <span className="text-xs font-semibold text-gray-900 dark:text-white">
                   {userName}
                 </span>
-                <span className="text-[0.55rem] text-gray-500 dark:text-gray-300">
+                <span className="text-[0.7rem] text-gray-700 dark:text-gray-200">
                   {userPoints}
                 </span>
               </div>
             </div>
-            <span className="text-[0.65rem] text-gray-500 dark:text-gray-300">
+            <span className="text-xs text-gray-700 dark:text-gray-200">
               {referralStatus}
             </span>
           </div>
           {restoreError && (
-            <p className="text-[0.65rem] text-red-500 dark:text-red-300 px-1">{restoreError}</p>
+            <p className="px-1 text-xs text-red-600 dark:text-red-300">{restoreError}</p>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <ThemeToggle />
             <LanguageSelector />
           </div>
@@ -263,7 +273,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
         
         {/* Hero Section */}
         <section
-        className="landing-hero relative w-full overflow-hidden pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 min-h-[70vh] lg:min-h-[75vh]"
+        className="landing-hero relative w-full overflow-hidden pt-48 sm:pt-36 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 min-h-[70vh] lg:min-h-[75vh]"
         >
             <span className="landing-hello" aria-hidden="true">
               {t('landing.hello')}
@@ -302,7 +312,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                       </motion.p>
 
                       <motion.p
-                        className="text-base sm:text-lg lg:text-xl text-slate-700 dark:text-slate-200 leading-relaxed max-w-xl"
+                        className="text-base sm:text-lg lg:text-xl text-slate-800 dark:text-slate-100 leading-relaxed max-w-xl"
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.6 }}
@@ -325,7 +335,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
 
                         <motion.button
                           onClick={scrollToFeatures}
-                          className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-900/15 bg-white/80 px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm transition duration-300 hover:border-slate-900/30 hover:bg-white dark:border-white/20 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:bg-slate-800/80"
+                          className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-900/15 bg-white/80 px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm transition duration-300 hover:border-slate-900/30 hover:bg-white dark:border-white/20 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:bg-slate-800/80 w-full sm:w-auto"
                           initial={{ opacity: 0, y: 16 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.46, duration: 0.6 }}
@@ -418,7 +428,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
               >
                 <LoyaltyHero userId={userId} />
                 <div className="mt-6 rounded-3xl border border-pink-100 bg-pink-50/80 p-5 shadow-lg dark:border-pink-700/40 dark:bg-pink-900/20">
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-pink-700 dark:text-pink-200">
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.3em] text-pink-800 dark:text-pink-100">
                     {t('landing.signup.intro')}
                   </p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -428,7 +438,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                       placeholder={t('landing.signup.namePlaceholder')}
                       value={signupName}
                       onChange={(e) => setSignupName(e.target.value)}
-                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
                     />
                     <input
                       name="signupEmail"
@@ -436,7 +446,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                       placeholder={t('landing.signup.emailPlaceholder')}
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
-                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
                     />
                     <input
                       name="signupReferralCode"
@@ -444,11 +454,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                       placeholder={t('landing.signup.referralPlaceholder')}
                       value={signupReferral}
                       onChange={(e) => setSignupReferral(e.target.value)}
-                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40 sm:col-span-2"
+                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40 sm:col-span-2"
                     />
                   </div>
                   {signupError && (
-                    <p className="mt-2 text-xs font-semibold text-red-500">{signupError}</p>
+                    <p className="mt-2 text-sm font-semibold text-red-600 dark:text-red-300">{signupError}</p>
                   )}
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <button

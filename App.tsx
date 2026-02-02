@@ -390,6 +390,28 @@ const App: React.FC = () => {
       setIsTrendLoading(false);
     }
   }, [selectedItemIndex, collection, language]);
+
+  const handleGenerateClick = useCallback(() => {
+    if (!selectedItem) {
+      setError(
+        t(
+          'workflow.selectItemFirst',
+          'Select an item from your collection before generating outfits.'
+        )
+      );
+      return;
+    }
+    if (selectedStyles.length === 0) {
+      setError(
+        t(
+          'workflow.selectStylesFirst',
+          'Select at least one style preference before generating outfits.'
+        )
+      );
+      return;
+    }
+    void handleGenerateOutfits(selectedItem.file, selectedStyles);
+  }, [handleGenerateOutfits, selectedItem, selectedStyles, t]);
   
   const handleCombineItems = useCallback(async () => {
     if (combinationSelection.length < 2) {
@@ -639,6 +661,9 @@ const App: React.FC = () => {
   }, [handleGenerateOutfits]);
 
   const selectedItem = selectedItemIndex !== null ? collection[selectedItemIndex] : null;
+  const hasStylePreferences = selectedStyles.length > 0;
+  const canGenerateSingle = Boolean(selectedItem && hasStylePreferences && !isLoading);
+  const canGenerateCombine = !isLoading && combinationSelection.length >= 2;
 
   if (!hasStarted && collection.length === 0) {
     return (
@@ -657,19 +682,19 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-slate-900 font-sans">
-      <header className="p-4 border-b border-gray-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="container mx-auto max-w-6xl flex justify-between items-center">
+    <div className="app-shell min-h-screen bg-gray-100 dark:bg-slate-900 font-sans">
+      <header className="app-header p-4 border-b border-gray-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
+        <div className="container mx-auto max-w-6xl flex flex-wrap justify-between items-center gap-2">
           <div onClick={resetApp} className="cursor-pointer group">
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 tracking-tight transition-colors group-hover:text-pink-500">
               {t('header.titlePart1')} <span className="text-pink-500 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors">{t('header.titlePart2')}</span>
             </h1>
           </div>
-          <div className='flex items-center gap-4'>
+          <div className='flex flex-wrap items-center justify-end gap-2 sm:gap-4'>
             {isConvexEnabled && (
               <button
                 onClick={scrollToLoyalty}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
                 aria-label="Profile & loyalty"
               >
                 <span>{t('landing.header.profile')}</span>
@@ -677,7 +702,7 @@ const App: React.FC = () => {
             )}
             <button 
                 onClick={resetApp} 
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
                 aria-label={t('header.startOver')}
             >
                 <RestartIcon className="w-4 h-4"/>
@@ -689,13 +714,37 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="container mx-auto max-w-6xl p-4 md:p-8">
+      <main className="app-main container mx-auto max-w-6xl p-4 md:p-8">
         {collection.length === 0 ? (
           <ImageUploader onImageUpload={handleImageUpload} />
         ) : (
           <div className="flex flex-col md:flex-row-reverse gap-8">
             <div className="md:w-1/3 space-y-4">
               <div className="space-y-4 sticky top-24">
+                <section className="rounded-2xl border border-pink-200/70 bg-pink-50/70 p-4 dark:border-pink-500/30 dark:bg-pink-900/10">
+                  <h2 className="text-sm font-semibold text-pink-800 dark:text-pink-200">
+                    {t('workflow.onboardingTitle', 'Quick start')}
+                  </h2>
+                  <ol className="mt-2 space-y-2 text-sm">
+                    <li className={`flex items-center gap-2 ${collection.length > 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-600 dark:text-gray-300'}`}>
+                      <span aria-hidden="true">{collection.length > 0 ? '✓' : '1.'}</span>
+                      <span>{t('workflow.stepUpload', 'Upload at least one clothing photo')}</span>
+                    </li>
+                    <li className={`flex items-center gap-2 ${selectedItem ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-600 dark:text-gray-300'}`}>
+                      <span aria-hidden="true">{selectedItem ? '✓' : '2.'}</span>
+                      <span>{t('workflow.stepSelectItem', 'Select the item you want styled')}</span>
+                    </li>
+                    <li className={`flex items-center gap-2 ${hasStylePreferences ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-600 dark:text-gray-300'}`}>
+                      <span aria-hidden="true">{hasStylePreferences ? '✓' : '3.'}</span>
+                      <span>{t('workflow.stepPreferences', 'Choose your style preferences')}</span>
+                    </li>
+                    <li className={`flex items-center gap-2 ${outfits.length > 0 || combinationResults.length > 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-600 dark:text-gray-300'}`}>
+                      <span aria-hidden="true">{outfits.length > 0 || combinationResults.length > 0 ? '✓' : '4.'}</span>
+                      <span>{t('workflow.stepGenerate', 'Generate recommendations and review results')}</span>
+                    </li>
+                  </ol>
+                </section>
+
                 <ItemCollection 
                     items={collection}
                     selection={viewMode === 'single' ? (selectedItemIndex !== null ? [selectedItemIndex] : []) : combinationSelection}
@@ -712,21 +761,31 @@ const App: React.FC = () => {
                     <BodyShapeSelector selectedShape={bodyShape} onShapeChange={setBodyShape} />
                     <StyleSelector selectedStyles={selectedStyles} onStylesChange={setSelectedStyles} />
                     <button
-                      onClick={() => handleGenerateOutfits(selectedItem.file, selectedStyles)}
-                      disabled={isLoading || selectedStyles.length === 0}
+                      onClick={handleGenerateClick}
+                      disabled={!canGenerateSingle}
                       className="w-full flex items-center justify-between p-6 bg-pink-500 text-white font-semibold rounded-2xl shadow-md hover:bg-pink-600 transition-all duration-300 disabled:bg-pink-300 disabled:cursor-not-allowed transform hover:scale-105"
                     >
                       <span className="text-xl">{isLoading ? t('main.styling') : t('main.generate')}</span>
                       <SparklesIcon className="w-10 h-10" />
                     </button>
+                    {!hasStylePreferences && (
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        {t('workflow.stylesPrompt', 'Select at least one style to unlock recommendations.')}
+                      </p>
+                    )}
                     <button
                         onClick={handleAnalyzeTrends}
-                        disabled={isTrendLoading}
+                        disabled={isTrendLoading || !selectedItem}
                         className="w-full flex items-center justify-between p-6 bg-white text-cyan-600 dark:bg-slate-800 dark:text-cyan-400 font-semibold rounded-2xl shadow-md border-2 border-gray-200 dark:border-slate-700 hover:bg-cyan-50 dark:hover:bg-slate-700 transition-all duration-300 disabled:bg-gray-100 disabled:cursor-not-allowed transform hover:scale-105"
                     >
                         <span className="text-xl">{isTrendLoading ? t('trends.loading') : t('trends.button')}</span>
                         <GlobeIcon className="w-10 h-10" />
                     </button>
+                    {!selectedItem && (
+                      <p className="text-xs text-gray-600 dark:text-gray-300">
+                        {t('workflow.selectItemPrompt', 'Select an item to analyze trends.')}
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -734,12 +793,17 @@ const App: React.FC = () => {
                     <div className="mt-4">
                         <button
                             onClick={handleCombineItems}
-                            disabled={isLoading || combinationSelection.length < 2}
+                            disabled={!canGenerateCombine}
                             className="w-full flex items-center justify-between p-6 bg-indigo-300 dark:bg-indigo-400 text-white font-semibold rounded-2xl shadow-lg transition-all duration-300 disabled:bg-indigo-300/50 disabled:cursor-not-allowed transform hover:scale-105 disabled:hover:scale-100 disabled:shadow-md"
                         >
                             <span className="text-xl text-start">{isLoading ? t('main.combining') : t('main.combine')}</span>
                             <PlusMinusIcon className="w-12 h-12 text-white/80" />
                         </button>
+                        {combinationSelection.length < 2 && (
+                          <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                            {t('workflow.combinePrompt', 'Choose at least two items to find matching combinations.')}
+                          </p>
+                        )}
                     </div>
                 )}
 
@@ -748,7 +812,7 @@ const App: React.FC = () => {
             
             <div className="md:w-2/3">
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 dark:bg-red-900/20 dark:border-red-500/30 dark:text-red-300 px-4 py-3 rounded-lg mb-4" role="alert">
+                    <div className="bg-red-100 border border-red-400 text-red-700 dark:bg-red-900/20 dark:border-red-500/30 dark:text-red-300 px-4 py-3 rounded-lg mb-4" role="alert" aria-live="assertive">
                     <strong className="font-bold">{t('main.error.title')}</strong>
                     <span className="block sm:inline ms-2">{error}</span>
                     </div>
@@ -843,10 +907,10 @@ const App: React.FC = () => {
     </footer>
        <button 
         onClick={() => setIsChatOpen(true)} 
-        className="fixed bottom-6 right-6 bg-pink-500 text-white p-4 rounded-full shadow-lg hover:bg-pink-600 transition-transform transform hover:scale-110 z-20"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-pink-500 text-white p-3 sm:p-4 rounded-full shadow-lg hover:bg-pink-600 transition-transform transform hover:scale-110 z-20"
         aria-label="Open Fashion Chat"
         >
-            <ChatBubbleIcon className="w-8 h-8"/>
+            <ChatBubbleIcon className="w-6 h-6 sm:w-8 sm:h-8"/>
       </button>
 
       <Chatbot
