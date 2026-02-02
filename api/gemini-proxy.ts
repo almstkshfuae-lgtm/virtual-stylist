@@ -209,7 +209,7 @@ const sanitizePayload = (payload: unknown): ValidationResult<{ contents: CleanCo
       topP: clampNumber(configObj.topP, 0.95, 0, 1),
       topK: Math.round(clampNumber(configObj.topK, 40, 1, 200)),
     };
-    if (responseMimeType && ['application/json', 'text/plain'].includes(responseMimeType)) {
+    if (responseMimeType === 'application/json' || responseMimeType === 'text/plain') {
       config.responseMimeType = responseMimeType;
     }
   }
