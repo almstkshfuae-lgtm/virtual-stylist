@@ -21,6 +21,35 @@ const proxyUrl = apiBaseUrl
     ? `${apiBaseUrl.replace(/\/+$/, '')}/api/gemini-proxy`
     : '/api/gemini-proxy';
 
+const readProxyErrorMessage = async (res: Response) => {
+  const contentType = res.headers.get('content-type') || '';
+  try {
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      if (data && typeof data === 'object') {
+        const errorValue = (data as any).error || (data as any).message;
+        if (typeof errorValue === 'string' && errorValue.trim()) {
+          return errorValue.trim();
+        }
+      }
+    }
+  } catch {
+    // fall through to text
+  }
+
+  try {
+    const text = (await res.text()).trim();
+    if (text) return text;
+  } catch {
+    // ignore
+  }
+
+  if (res.status === 500) {
+    return 'Internal server error. Ensure the server proxy is running and has a valid Gemini API key (API_KEY).';
+  }
+  return `Request failed with status ${res.status}.`;
+};
+
 const callProxy = async (model: string, payload: any) => {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (apiSecret) {
@@ -33,11 +62,16 @@ const callProxy = async (model: string, payload: any) => {
         body: JSON.stringify({ model, payload }),
     });
     if (!res.ok) {
-        const text = await res.text();
         if (res.status === 401) {
             throw new Error('Proxy error: 401 Unauthorized. Set matching API_SECRET (server) and VITE_API_SECRET (client).');
         }
-        throw new Error(`Proxy error: ${res.status} ${text}`);
+        const details = await readProxyErrorMessage(res);
+        if (res.status === 500) {
+          throw new Error(
+            `Proxy error: 500 ${details} (If deployed on Vercel, set API_KEY in project env vars and redeploy.)`
+          );
+        }
+        throw new Error(`Proxy error: ${res.status} ${details}`);
     }
     return res.json();
 };

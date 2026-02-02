@@ -7,6 +7,7 @@ import { LanguageProvider } from './i18n/LanguageContext';
 import { ThemeProvider } from './theme/ThemeContext';
 import { ConvexProviderWrapper } from './components/ConvexProviderWrapper';
 import { BrowserRouter } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -16,15 +17,16 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <ConvexProviderWrapper>
-        <ThemeProvider>
-          <LanguageProvider>
-            <App />
-          </LanguageProvider>
-        </ThemeProvider>
-      </ConvexProviderWrapper>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ConvexProviderWrapper>
+          <ThemeProvider>
+            <LanguageProvider>
+              <App />
+            </LanguageProvider>
+          </ThemeProvider>
+        </ConvexProviderWrapper>
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );
-
