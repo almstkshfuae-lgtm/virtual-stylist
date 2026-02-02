@@ -48,6 +48,9 @@ type RateLimitResult = {
   resetAtMs: number;
 };
 
+const isAllowedRole = (value: string): value is CleanContent['role'] =>
+  value === 'user' || value === 'model' || value === 'system';
+
 const asObject = (value: unknown): Record<string, unknown> | null =>
   typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
 
@@ -149,7 +152,7 @@ const sanitizeContent = (raw: unknown): ValidationResult<CleanContent> => {
   }
 
   const role = cleanString(obj.role, 10);
-  if (role && role !== 'user' && role !== 'model' && role !== 'system') {
+  if (role && !isAllowedRole(role)) {
     return { error: 'content.role is invalid' };
   }
 
