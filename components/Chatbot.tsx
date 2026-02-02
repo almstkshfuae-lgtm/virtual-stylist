@@ -101,7 +101,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
         <div className="flex-1 p-4 overflow-y-auto">
           {selectedItemImage && (
             <div className="mb-4 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-              <img src={selectedItemImage} alt="Selected item" className="w-10 h-10 rounded-md object-cover" />
+              <img src={selectedItemImage} alt="Selected item" loading="lazy" decoding="async" className="w-10 h-10 rounded-md object-cover" />
               <span>{t('chat.askingAbout')}</span>
             </div>
           )}

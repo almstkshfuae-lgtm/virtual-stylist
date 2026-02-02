@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     build: {
+      minify: 'esbuild',
+      cssMinify: 'esbuild',
+      target: 'es2020',
       rollupOptions: {
         external: ['./api/**'],
         input: {

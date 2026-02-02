@@ -246,7 +246,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
             <div className="flex items-center justify-center rounded-2xl border border-gray-100 bg-white/70 p-4 text-xs text-gray-500 dark:border-slate-800 dark:bg-slate-900/60">
               {qrSrc ? (
                 <div className="flex flex-col items-center gap-2">
-                  <img src={qrSrc} alt="Referral QR" className="h-32 w-32" />
+                  <img src={qrSrc} alt="Referral QR" loading="lazy" decoding="async" className="h-32 w-32" />
                   <span className="text-[11px] text-gray-500 dark:text-gray-400">امسح لتحصل على النقاط</span>
                 </div>
               ) : (
@@ -268,12 +268,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
               </p>
             ) : (
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {savedOutfits.map((outfit) => (
+                {savedOutfits.map((outfit, index) => (
                   <figure
                     key={outfit.imageUrl}
                     className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
                   >
-                    <img src={outfit.imageUrl} alt={outfit.title} className="h-40 w-full object-cover" />
+                    <img
+                      src={outfit.imageUrl}
+                      alt={outfit.title}
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      decoding="async"
+                      className="h-40 w-full object-cover"
+                    />
                     <figcaption className="p-3">
                       <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
                         {outfit.title}

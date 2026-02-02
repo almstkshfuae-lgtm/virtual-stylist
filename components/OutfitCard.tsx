@@ -93,7 +93,14 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl dark:border dark:border-gray-700 animate-fade-in-stagger" style={{ animationDelay }}>
       <div className="md:flex">
         <div className="md:flex-shrink-0 md:w-1/2 overflow-hidden">
-          <img className="h-64 w-full object-cover md:h-full animate-image-scale origin-center" src={outfit.imageUrl} alt={outfit.title} />
+          <img
+            className="h-64 w-full object-cover md:h-full animate-image-scale origin-center"
+            src={outfit.imageUrl}
+            alt={outfit.title}
+            loading={index === 0 ? 'eager' : 'lazy'}
+            fetchPriority={index === 0 ? 'high' : 'low'}
+            decoding="async"
+          />
         </div>
         <div className="p-6 md:w-1/2 flex flex-col justify-between">
           <div>
@@ -111,7 +118,7 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
             {outfit.iconUrl && outfit.keyAccessory && (
               <div className="mt-3 pt-3 border-t dark:border-gray-700 flex items-center justify-between gap-3 text-sm text-gray-700 dark:text-gray-300">
                 <div className="flex items-center gap-3">
-                    <img src={outfit.iconUrl} alt={outfit.keyAccessory} className="w-8 h-8 object-contain bg-gray-50 dark:bg-gray-700 rounded-full p-1" />
+                    <img src={outfit.iconUrl} alt={outfit.keyAccessory} loading="lazy" decoding="async" className="w-8 h-8 object-contain bg-gray-50 dark:bg-gray-700 rounded-full p-1" />
                     <div>
                     <p className="font-semibold text-gray-500 dark:text-gray-400">{t('main.suggestedAccessory')}:</p>
                     <p>{outfit.keyAccessory}</p>

@@ -23,6 +23,8 @@ export const CombinationCard: React.FC<CombinationCardProps> = ({ result, allIte
                             key={index} 
                             src={item.url} 
                             alt={`Item ${result.itemIndices[index]}`}
+                            loading="lazy"
+                            decoding="async"
                             className="w-20 h-20 object-cover rounded-md border dark:border-gray-700"
                         />
                     ))}
@@ -30,7 +32,7 @@ export const CombinationCard: React.FC<CombinationCardProps> = ({ result, allIte
                 <p className="mt-2 text-gray-600 dark:text-gray-300">{result.description}</p>
                 {result.iconUrl && result.keyAccessory && (
                     <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-                        <img src={result.iconUrl} alt={result.keyAccessory} className="w-8 h-8 object-contain bg-gray-50 dark:bg-gray-700 rounded-full p-1"/>
+                        <img src={result.iconUrl} alt={result.keyAccessory} loading="lazy" decoding="async" className="w-8 h-8 object-contain bg-gray-50 dark:bg-gray-700 rounded-full p-1"/>
                         <div>
                             <p className="font-semibold text-gray-500 dark:text-gray-400">{t('main.suggestedAccessory')}:</p>
                             <p>{result.keyAccessory}</p>

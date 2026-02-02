@@ -129,7 +129,7 @@ export const LoyaltyHero: React.FC<LoyaltyHeroProps> = ({ userId }) => {
         </div>
         {qrSrc && (
           <div className="flex items-center justify-center rounded-3xl border border-gray-100 bg-white/80 p-4 text-xs text-gray-500 dark:border-slate-800 dark:bg-slate-900/40">
-            <img src={qrSrc} alt={t('landing.loyalty.qrAlt')} className="h-32 w-32" />
+            <img src={qrSrc} alt={t('landing.loyalty.qrAlt')} loading="lazy" decoding="async" className="h-32 w-32" />
           </div>
         )}
       </div>
