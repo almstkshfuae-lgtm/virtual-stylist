@@ -71,7 +71,7 @@ const callProxy = async (model: string, payload: any) => {
         const details = await readProxyErrorMessage(res);
         if (res.status === 500) {
           throw new Error(
-            `Proxy error: 500 ${details} (If deployed on Vercel, set API_KEY in project env vars and redeploy.)`
+            `Proxy error: 500 ${details} (Set API_KEY and API_SECRET on the server, set VITE_API_SECRET to the same value on the client, then rebuild/redeploy.)`
           );
         }
         throw new Error(`Proxy error: ${res.status} ${details}`);

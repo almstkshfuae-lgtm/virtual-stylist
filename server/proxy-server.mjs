@@ -34,7 +34,10 @@ app.use((req, res, next) => {
 });
 
 const API_KEY = process.env.API_KEY;
-const API_SECRET = process.env.API_SECRET || process.env.VERCEL_API_SECRET;
+const API_SECRET =
+  process.env.API_SECRET ||
+  process.env.VERCEL_API_SECRET ||
+  process.env.VITE_API_SECRET;
 if (!API_KEY) {
   console.error('❌ CRITICAL ERROR: API_KEY not loaded from .env.local');
   console.error(`   Expected file at: ${envPath}`);
@@ -294,8 +297,8 @@ app.post('/api/gemini-proxy', async (req, res) => {
     });
   }
 
-  if (!API_SECRET) {
-    console.error('❌ CRITICAL: API_SECRET missing. Set API_SECRET in .env.local');
+if (!API_SECRET) {
+  console.error('❌ CRITICAL: API_SECRET missing. Set API_SECRET (or VITE_API_SECRET) in .env.local');
     return res.status(500).json({ error: 'API secret not configured on server' });
   }
 

@@ -19,13 +19,16 @@ app.use((req, res, next) => {
 });
 
 const API_KEY = process.env.API_KEY;
-const API_SECRET = process.env.API_SECRET || process.env.VERCEL_API_SECRET;
+const API_SECRET =
+  process.env.API_SECRET ||
+  process.env.VERCEL_API_SECRET ||
+  process.env.VITE_API_SECRET;
 if (!API_KEY) {
   console.error('❌ CRITICAL: API_KEY not set in .env.local — proxy will exit.');
   process.exit(1);
 }
 if (!API_SECRET) {
-  console.error('❌ CRITICAL: API_SECRET not set. Add API_SECRET to .env.local to start the proxy.');
+  console.error('❌ CRITICAL: API_SECRET not set. Add API_SECRET (or VITE_API_SECRET) to .env.local to start the proxy.');
   process.exit(1);
 }
 
