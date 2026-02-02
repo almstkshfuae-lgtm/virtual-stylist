@@ -4,6 +4,10 @@ import { translations, TranslationKey } from './translations';
 
 type Language = 'en' | 'ar' | 'fr' | 'ru' | 'nl';
 type LanguageDirection = 'ltr' | 'rtl';
+const LANGUAGE_STORAGE_KEY = 'virtual-stylist-language';
+
+const isLanguage = (value: string): value is Language =>
+  value === 'en' || value === 'ar' || value === 'fr' || value === 'ru' || value === 'nl';
 
 interface LanguageContextType {
   language: Language;
@@ -14,12 +18,18 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === 'undefined') return 'en';
+    const saved = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    if (saved && isLanguage(saved)) return saved;
+    return 'en';
+  });
 
   useEffect(() => {
     const dir: LanguageDirection = language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = language;
     document.documentElement.dir = dir;
+    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
   }, [language]);
 
   const t = useCallback((key: string, options?: string | Record<string, string|number>): any => {

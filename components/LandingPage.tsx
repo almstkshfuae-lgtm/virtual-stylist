@@ -97,8 +97,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
   const referralLabel = t('landing.header.referral');
   const referralUnavailableLabel = t('landing.header.referralUnavailable');
 
+  const pointsFormatter = React.useMemo(() => new Intl.NumberFormat(language), [language]);
   const userName = account?.name ?? t('landing.header.guest');
-  const userPoints = account ? `${account.pointsBalance.toLocaleString()} pts` : t('landing.header.pointsUnknown');
+  const userPoints = account
+    ? t('landing.header.pointsLabel', { points: pointsFormatter.format(account.pointsBalance) })
+    : t('landing.header.pointsUnknown');
   const referralStatus = account?.referralCode
     ? t('landing.header.referralActive')
     : t('landing.header.referralPending');
@@ -130,21 +133,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
   const handleRestore = async () => {
     setRestoreError(null);
     if (!restoreEmail.trim()) {
-      setRestoreError('أدخل بريدك لاستعادة حسابك.');
+      setRestoreError(t('landing.restore.emailRequired'));
       return;
     }
     try {
       await onRestoreAccount(restoreEmail.trim(), restoreName.trim() || undefined);
     } catch (error) {
       console.error('restore failed', error);
-      setRestoreError('تعذر استعادة الحساب. حاول لاحقاً.');
+      setRestoreError(t('landing.restore.failed'));
     }
   };
 
   const handleSignup = async () => {
     setSignupError(null);
     if (!signupEmail.trim()) {
-      setSignupError('أدخل بريدك للحصول على النقاط.');
+      setSignupError(t('landing.signup.emailRequired'));
       return;
     }
     setIsSignupLoading(true);
@@ -157,7 +160,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
       setSignupError(null);
     } catch (error) {
       console.error('signup failed', error);
-      setSignupError('تعذر التسجيل حالياً. حاول لاحقاً.');
+      setSignupError(t('landing.signup.failed'));
     } finally {
       setIsSignupLoading(false);
     }
@@ -201,36 +204,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
               title={isConvexEnabled ? referralLabel : referralUnavailableLabel}
               className={navButtonClass(!isConvexEnabled)}
             >
-              <Gift className="h-4 w-4" aria-hidden="true" />
-              <span>{referralLabel}</span>
-            </button>
-            <div className="flex items-center gap-1 rounded-full border border-white/60 bg-white/80 px-2 py-1 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
-              <input
-                name="restoreEmail"
-                type="email"
-                placeholder="you@example.com"
-                value={restoreEmail}
-                onChange={(e) => setRestoreEmail(e.target.value)}
-                className="w-32 rounded-full border border-gray-200 bg-white px-3 py-1 text-[0.7rem] text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-              />
-              <input
-                name="restoreName"
-                type="text"
-                placeholder="اسم اختياري"
-                value={restoreName}
-                onChange={(e) => setRestoreName(e.target.value)}
-                className="hidden sm:block w-28 rounded-full border border-gray-200 bg-white px-3 py-1 text-[0.7rem] text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-              />
+                <Gift className="h-4 w-4" aria-hidden="true" />
+                <span>{referralLabel}</span>
+              </button>
+              <div className="flex items-center gap-1 rounded-full border border-white/60 bg-white/80 px-2 py-1 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
+                <input
+                  name="restoreEmail"
+                  type="email"
+                  placeholder={t('landing.restore.emailPlaceholder')}
+                  value={restoreEmail}
+                  onChange={(e) => setRestoreEmail(e.target.value)}
+                  className="w-32 rounded-full border border-gray-200 bg-white px-3 py-1 text-[0.7rem] text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                />
+                <input
+                  name="restoreName"
+                  type="text"
+                  placeholder={t('landing.restore.namePlaceholder')}
+                  value={restoreName}
+                  onChange={(e) => setRestoreName(e.target.value)}
+                  className="hidden sm:block w-28 rounded-full border border-gray-200 bg-white px-3 py-1 text-[0.7rem] text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                />
               <button
                 type="button"
                 onClick={handleRestore}
                 disabled={restoreLoading || !restoreEmail.trim()}
-                className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[0.7rem] font-semibold text-gray-700 hover:border-pink-400 hover:text-pink-600 disabled:cursor-not-allowed disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:border-pink-500 dark:hover:text-pink-200"
-              >
-                {restoreLoading ? '...' : 'استعادة'}
-              </button>
+                  className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-[0.7rem] font-semibold text-gray-700 hover:border-pink-400 hover:text-pink-600 disabled:cursor-not-allowed disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:border-pink-500 dark:hover:text-pink-200"
+                >
+                  {restoreLoading ? t('landing.restore.loading') : t('landing.restore.action')}
+                </button>
+              </div>
             </div>
-          </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/90 px-2 py-1 text-[0.65rem] font-semibold text-gray-900 shadow-sm dark:border-white/20 dark:bg-gray-900/70 dark:text-white">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-pink-500 text-[0.65rem] font-bold text-white">
@@ -416,13 +419,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                 <LoyaltyHero userId={userId} />
                 <div className="mt-6 rounded-3xl border border-pink-100 bg-pink-50/80 p-5 shadow-lg dark:border-pink-700/40 dark:bg-pink-900/20">
                   <p className="text-xs font-semibold uppercase tracking-[0.3em] text-pink-700 dark:text-pink-200">
-                    مستخدم جديد؟ سجّل لتحصل على النقاط فوراً
+                    {t('landing.signup.intro')}
                   </p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     <input
                       name="signupName"
                       type="text"
-                      placeholder="اسمك"
+                      placeholder={t('landing.signup.namePlaceholder')}
                       value={signupName}
                       onChange={(e) => setSignupName(e.target.value)}
                       className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
@@ -430,7 +433,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                     <input
                       name="signupEmail"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder={t('landing.signup.emailPlaceholder')}
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
                       className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
@@ -438,7 +441,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                     <input
                       name="signupReferralCode"
                       type="text"
-                      placeholder="كود إحالة (اختياري)"
+                      placeholder={t('landing.signup.referralPlaceholder')}
                       value={signupReferral}
                       onChange={(e) => setSignupReferral(e.target.value)}
                       className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40 sm:col-span-2"
@@ -454,10 +457,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                       disabled={isSignupLoading || !signupEmail.trim()}
                       className="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-pink-300"
                     >
-                      {isSignupLoading ? '...' : 'سجّل واحصل على النقاط'}
+                      {isSignupLoading ? t('landing.signup.loading') : t('landing.signup.submit')}
                     </button>
                     <span className="text-xs text-pink-700/80 dark:text-pink-200">
-                      نقاط التسجيل + الترحيب تصلك فوراً، والإحالة تكافئكما معاً.
+                      {t('landing.signup.hint')}
                     </span>
                   </div>
                 </div>
@@ -473,10 +476,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
           >
             <div className="max-w-5xl mx-auto space-y-4">
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">
-                أكمل ملفك الشخصي واحصل على نقاطك الآن
+                {t('landing.profileSection.title')}
               </h2>
               <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
-                أدخل الاسم والبريد وكود الإحالة (إن وجد) لتحصل على مكافأة التسجيل والترحيب وتفعيل الإحالة فوراً.
+                {t('landing.profileSection.subtitle')}
               </p>
               <CustomerProfileForm userId={userId} />
             </div>
@@ -532,10 +535,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                     <button
                         onClick={onGetStarted}
                         className="inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-white font-bold text-base sm:text-lg rounded-full sm:rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95 bg-brand hover:bg-brand/90"
-                        aria-label="Get started with Virtual Stylist"
+                        aria-label={t('landing.cta.ariaLabel')}
                     >
                         {t('landing.juliana.cta')}
-                        <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <ArrowRight className={`w-5 h-5 sm:w-6 sm:h-6 ${isRtl ? 'transform rotate-180' : ''}`} />
                     </button>
                 </motion.div>
             </div>

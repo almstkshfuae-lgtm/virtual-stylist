@@ -1,8 +1,9 @@
-import assert from "node:assert/strict";
-import test from "node:test";
-import { addPoints, _test } from "../convex/loyalty";
+import * as assert from "node:assert/strict";
+import { test } from "node:test";
+import { _test } from "../convex/loyalty.ts";
 
 type Doc = Record<string, any> & { _id?: string };
+const addPoints = _test.addPoints;
 
 const createMockCtx = (seed: Record<string, Doc[]> = {}) => {
   const store = new Map<string, Doc>();

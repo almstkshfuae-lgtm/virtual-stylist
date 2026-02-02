@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useId } from 'react';
 import { useLoyalty } from '../hooks/useConvex';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface CustomerProfileFormProps {
   userId: string;
@@ -7,6 +8,7 @@ interface CustomerProfileFormProps {
 
 export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId }) => {
   const { account, ensureCustomer } = useLoyalty(userId);
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [referralCode, setReferralCode] = useState('');
@@ -51,7 +53,7 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
     } catch (error: any) {
       console.error('Failed to save customer profile', error);
       setStatus('error');
-      setErrorMsg(error?.message ?? 'لم نتمكن من حفظ بياناتك. حاول مرة أخرى.');
+      setErrorMsg(error?.message ?? t('landing.profileForm.errorFallback'));
     }
   };
 
@@ -63,10 +65,10 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400">
-            ملف العميل
+            {t('landing.profileForm.eyebrow')}
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-300">
-            احفظ الاسم والبريد وكود الإحالة لتحصل على نقاطك فوراً.
+            {t('landing.profileForm.description')}
           </p>
         </div>
         <button
@@ -74,13 +76,13 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
           disabled={status === 'saving' || !isDirty}
           className="rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-pink-300"
         >
-          {status === 'saving' ? 'جاري الحفظ...' : 'حفظ البيانات'}
+          {status === 'saving' ? t('landing.profileForm.saving') : t('landing.profileForm.save')}
         </button>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label htmlFor={nameId} className="flex flex-col gap-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
-          <span id={`${nameId}-label`}>الاسم</span>
+          <span id={`${nameId}-label`}>{t('landing.profileForm.nameLabel')}</span>
           <input
             id={nameId}
             name="name"
@@ -88,12 +90,12 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-            placeholder="اكتب اسمك"
+            placeholder={t('landing.profileForm.namePlaceholder')}
             autoComplete="name"
           />
         </label>
         <label htmlFor={emailId} className="flex flex-col gap-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
-          <span id={`${emailId}-label`}>البريد الإلكتروني</span>
+          <span id={`${emailId}-label`}>{t('landing.profileForm.emailLabel')}</span>
           <input
             id={emailId}
             name="email"
@@ -102,14 +104,14 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-            placeholder="you@example.com"
+            placeholder={t('landing.profileForm.emailPlaceholder')}
             autoComplete="email"
           />
         </label>
       </div>
 
       <label htmlFor={referralId} className="flex flex-col gap-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
-        <span id={`${referralId}-label`}>كود الإحالة (للاستفادة من نقاط صديقك)</span>
+        <span id={`${referralId}-label`}>{t('landing.profileForm.referralLabel')}</span>
         <input
           id={referralId}
           name="referralCode"
@@ -117,19 +119,19 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
           value={referralCode}
           onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
           className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-          placeholder="مثال: ABC12345"
+          placeholder={t('landing.profileForm.referralPlaceholder')}
           autoComplete="off"
         />
       </label>
 
       <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
         <span className="rounded-full bg-pink-50 px-3 py-1 font-semibold text-pink-700 dark:bg-pink-900/30 dark:text-pink-200">
-          مكافأة التسجيل + الترحيب
+          {t('landing.profileForm.rewardSignup')}
         </span>
         <span className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
-          تفعيل الإحالة يمنحك نقاطاً فورية
+          {t('landing.profileForm.rewardReferral')}
         </span>
-        {status === 'saved' && <span className="text-emerald-600 font-semibold">تم الحفظ وإصدار النقاط 🎉</span>}
+        {status === 'saved' && <span className="text-emerald-600 font-semibold">{t('landing.profileForm.saved')}</span>}
         {status === 'error' && <span className="text-red-500 font-semibold">{errorMsg}</span>}
       </div>
     </form>

@@ -20,6 +20,7 @@ const en = {
       referral: "Referral",
       referralUnavailable: "Referral program coming soon",
       guest: "Guest",
+      pointsLabel: "{{points}} pts",
       pointsUnknown: "Points pending",
       referralActive: "Referral active",
       referralPending: "Referral pending"
@@ -39,6 +40,67 @@ const en = {
       chat: { title: "Expert Advice", desc: "Chat with our AI fashion expert for personalized tips." },
       local: { title: "Shop Local", desc: "Find nearby stores carrying the items you love." },
       closet: { title: "Digital Closet", desc: "Organize and visualize your wardrobe digitally." }
+    },
+    restore: {
+      emailRequired: "Enter your email to restore your account.",
+      failed: "We couldn't restore your account. Please try again later.",
+      emailPlaceholder: "you@example.com",
+      namePlaceholder: "Optional name",
+      action: "Restore",
+      loading: "..."
+    },
+    signup: {
+      intro: "New user? Sign up to get points instantly",
+      namePlaceholder: "Your name",
+      emailPlaceholder: "you@example.com",
+      referralPlaceholder: "Referral code (optional)",
+      emailRequired: "Enter your email to get points.",
+      failed: "Signup is unavailable right now. Please try again later.",
+      submit: "Sign up and get points",
+      loading: "...",
+      hint: "Signup and welcome points are credited instantly, and referrals reward you both."
+    },
+    profileSection: {
+      title: "Complete your profile and claim your points now",
+      subtitle: "Enter your name, email, and referral code (if any) to get signup and welcome rewards instantly."
+    },
+    cta: {
+      ariaLabel: "Get started with Virtual Stylist"
+    },
+    profileForm: {
+      eyebrow: "Customer profile",
+      description: "Save your name, email, and referral code to receive your points instantly.",
+      save: "Save details",
+      saving: "Saving...",
+      nameLabel: "Name",
+      emailLabel: "Email",
+      referralLabel: "Referral code (to claim your friend's points)",
+      namePlaceholder: "Enter your name",
+      emailPlaceholder: "you@example.com",
+      referralPlaceholder: "Example: ABC12345",
+      rewardSignup: "Signup + welcome reward",
+      rewardReferral: "Referral activation grants instant points",
+      saved: "Saved and points issued 🎉",
+      errorFallback: "We couldn't save your details. Please try again."
+    },
+    loyalty: {
+      eyebrow: "Loyalty overview",
+      title: "Points & referral",
+      profileFallback: "Your profile",
+      emailFallback: "No email yet",
+      balance: "Balance",
+      monthlyPoints: "Monthly points",
+      signup: "Signup",
+      welcomePackage: "Welcome package",
+      awarded: "Awarded",
+      pending: "Pending",
+      referralLink: "Referral link",
+      collectPointsHint: "Collect points by signing up",
+      bothEarn: "Both referrer and friend earn {{points}} pts",
+      copyLink: "Copy link",
+      linkCopied: "Link copied",
+      referralCodePending: "Referral code pending",
+      qrAlt: "Referral QR code"
     }
   },
   uploader: {
@@ -200,6 +262,7 @@ const ar = {
       referral: "إحالة",
       referralUnavailable: "برنامج الإحالة قيد الإعداد",
       guest: "زائر",
+      pointsLabel: "{{points}} نقطة",
       pointsUnknown: "النقاط قيد الانتظار",
       referralActive: "برنامج الإحالة جاهز",
       referralPending: "برنامج الإحالة قيد الانتظار"
@@ -219,6 +282,67 @@ const ar = {
       chat: { title: "نصيحة الخبراء", desc: "دردش مع خبير الأزياء الذكي للحصول على نصائح مخصصة." },
       local: { title: "تسوق محلياً", desc: "اعثر على متاجر قريبة تبيع القطع التي تحبها." },
       closet: { title: "خزانة رقمية", desc: "نظم وتخيل خزانتك رقمياً." }
+    },
+    restore: {
+      emailRequired: "أدخل بريدك لاستعادة حسابك.",
+      failed: "تعذر استعادة الحساب. حاول لاحقاً.",
+      emailPlaceholder: "you@example.com",
+      namePlaceholder: "اسم اختياري",
+      action: "استعادة",
+      loading: "..."
+    },
+    signup: {
+      intro: "مستخدم جديد؟ سجّل لتحصل على النقاط فوراً",
+      namePlaceholder: "اسمك",
+      emailPlaceholder: "you@example.com",
+      referralPlaceholder: "كود إحالة (اختياري)",
+      emailRequired: "أدخل بريدك للحصول على النقاط.",
+      failed: "تعذر التسجيل حالياً. حاول لاحقاً.",
+      submit: "سجّل واحصل على النقاط",
+      loading: "...",
+      hint: "نقاط التسجيل + الترحيب تصلك فوراً، والإحالة تكافئكما معاً."
+    },
+    profileSection: {
+      title: "أكمل ملفك الشخصي واحصل على نقاطك الآن",
+      subtitle: "أدخل الاسم والبريد وكود الإحالة (إن وجد) لتحصل على مكافأة التسجيل والترحيب وتفعيل الإحالة فوراً."
+    },
+    cta: {
+      ariaLabel: "ابدأ استخدام منسق الأزياء الافتراضي"
+    },
+    profileForm: {
+      eyebrow: "ملف العميل",
+      description: "احفظ الاسم والبريد وكود الإحالة لتحصل على نقاطك فوراً.",
+      save: "حفظ البيانات",
+      saving: "جاري الحفظ...",
+      nameLabel: "الاسم",
+      emailLabel: "البريد الإلكتروني",
+      referralLabel: "كود الإحالة (للاستفادة من نقاط صديقك)",
+      namePlaceholder: "اكتب اسمك",
+      emailPlaceholder: "you@example.com",
+      referralPlaceholder: "مثال: ABC12345",
+      rewardSignup: "مكافأة التسجيل + الترحيب",
+      rewardReferral: "تفعيل الإحالة يمنحك نقاطاً فورية",
+      saved: "تم الحفظ وإصدار النقاط 🎉",
+      errorFallback: "لم نتمكن من حفظ بياناتك. حاول مرة أخرى."
+    },
+    loyalty: {
+      eyebrow: "نظرة عامة على الولاء",
+      title: "النقاط والإحالة",
+      profileFallback: "ملفك الشخصي",
+      emailFallback: "لا يوجد بريد بعد",
+      balance: "الرصيد",
+      monthlyPoints: "النقاط الشهرية",
+      signup: "التسجيل",
+      welcomePackage: "باقة الترحيب",
+      awarded: "تم منحها",
+      pending: "قيد الانتظار",
+      referralLink: "رابط الإحالة",
+      collectPointsHint: "اجمع النقاط عبر التسجيل",
+      bothEarn: "أنت وصديقك تكسبان {{points}} نقطة",
+      copyLink: "نسخ الرابط",
+      linkCopied: "تم نسخ الرابط",
+      referralCodePending: "كود الإحالة قيد التجهيز",
+      qrAlt: "رمز QR للإحالة"
     }
   },
   uploader: {
@@ -380,6 +504,7 @@ const fr = {
       referral: "Parrainage",
       referralUnavailable: "Programme de parrainage bientôt disponible",
       guest: "Invité",
+      pointsLabel: "{{points}} pts",
       pointsUnknown: "Points en attente",
       referralActive: "Parrainage actif",
       referralPending: "Parrainage en attente"
@@ -399,6 +524,67 @@ const fr = {
       chat: { title: "Conseils d'experts", desc: "Discutez avec notre expert mode IA pour des conseils personnalisés." },
       local: { title: "Achetez local", desc: "Trouvez des magasins à proximité vendant les articles que vous aimez." },
       closet: { title: "Garde-robe numérique", desc: "Organisez et visualisez votre garde-robe numériquement." }
+    },
+    restore: {
+      emailRequired: "Saisissez votre e-mail pour restaurer votre compte.",
+      failed: "Impossible de restaurer le compte. Veuillez réessayer plus tard.",
+      emailPlaceholder: "you@example.com",
+      namePlaceholder: "Nom facultatif",
+      action: "Restaurer",
+      loading: "..."
+    },
+    signup: {
+      intro: "Nouveau ? Inscrivez-vous pour recevoir des points immédiatement",
+      namePlaceholder: "Votre nom",
+      emailPlaceholder: "you@example.com",
+      referralPlaceholder: "Code parrain (facultatif)",
+      emailRequired: "Saisissez votre e-mail pour recevoir des points.",
+      failed: "Inscription indisponible pour le moment. Réessayez plus tard.",
+      submit: "S'inscrire et recevoir des points",
+      loading: "...",
+      hint: "Les points d'inscription et de bienvenue sont crédités instantanément, et le parrainage récompense les deux."
+    },
+    profileSection: {
+      title: "Complétez votre profil et obtenez vos points maintenant",
+      subtitle: "Entrez votre nom, e-mail et code de parrainage (si disponible) pour recevoir immédiatement les bonus d'inscription et de bienvenue."
+    },
+    cta: {
+      ariaLabel: "Commencer avec Virtual Stylist"
+    },
+    profileForm: {
+      eyebrow: "Profil client",
+      description: "Enregistrez votre nom, e-mail et code de parrainage pour recevoir vos points immédiatement.",
+      save: "Enregistrer",
+      saving: "Enregistrement...",
+      nameLabel: "Nom",
+      emailLabel: "E-mail",
+      referralLabel: "Code de parrainage (pour réclamer les points de votre ami)",
+      namePlaceholder: "Entrez votre nom",
+      emailPlaceholder: "you@example.com",
+      referralPlaceholder: "Exemple : ABC12345",
+      rewardSignup: "Bonus inscription + bienvenue",
+      rewardReferral: "L'activation du parrainage accorde des points immédiats",
+      saved: "Enregistré et points attribués 🎉",
+      errorFallback: "Impossible d'enregistrer vos données. Veuillez réessayer."
+    },
+    loyalty: {
+      eyebrow: "Aperçu fidélité",
+      title: "Points et parrainage",
+      profileFallback: "Votre profil",
+      emailFallback: "Pas encore d'e-mail",
+      balance: "Solde",
+      monthlyPoints: "Points mensuels",
+      signup: "Inscription",
+      welcomePackage: "Pack de bienvenue",
+      awarded: "Attribué",
+      pending: "En attente",
+      referralLink: "Lien de parrainage",
+      collectPointsHint: "Cumulez des points en vous inscrivant",
+      bothEarn: "Le parrain et l'ami reçoivent {{points}} pts",
+      copyLink: "Copier le lien",
+      linkCopied: "Lien copié",
+      referralCodePending: "Code de parrainage en attente",
+      qrAlt: "Code QR de parrainage"
     }
   },
   uploader: {
@@ -560,6 +746,7 @@ const ru = {
       referral: "Реферальная программа",
       referralUnavailable: "Реферальная программа скоро появится",
       guest: "Гость",
+      pointsLabel: "{{points}} баллов",
       pointsUnknown: "Баллы ожидают начисления",
       referralActive: "Реферал активен",
       referralPending: "Реферал в ожидании"
@@ -579,6 +766,67 @@ const ru = {
       chat: { title: "Советы эксперта", desc: "Общайтесь с нашим ИИ-экспертом для получения персональных советов." },
       local: { title: "Покупайте рядом", desc: "Находите ближайшие магазины с вещами, которые вам нравятся." },
       closet: { title: "Цифровой гардероб", desc: "Организуйте и визуализируйте свой гардероб в цифровом виде." }
+    },
+    restore: {
+      emailRequired: "Введите e-mail для восстановления аккаунта.",
+      failed: "Не удалось восстановить аккаунт. Попробуйте позже.",
+      emailPlaceholder: "you@example.com",
+      namePlaceholder: "Имя (необязательно)",
+      action: "Восстановить",
+      loading: "..."
+    },
+    signup: {
+      intro: "Новый пользователь? Зарегистрируйтесь и получите баллы сразу",
+      namePlaceholder: "Ваше имя",
+      emailPlaceholder: "you@example.com",
+      referralPlaceholder: "Реферальный код (необязательно)",
+      emailRequired: "Введите e-mail, чтобы получить баллы.",
+      failed: "Сейчас регистрация недоступна. Попробуйте позже.",
+      submit: "Зарегистрироваться и получить баллы",
+      loading: "...",
+      hint: "Баллы за регистрацию и приветствие начисляются сразу, а реферал дает награду вам обоим."
+    },
+    profileSection: {
+      title: "Заполните профиль и получите баллы сейчас",
+      subtitle: "Введите имя, e-mail и реферальный код (если есть), чтобы сразу получить бонусы за регистрацию и приветствие."
+    },
+    cta: {
+      ariaLabel: "Начать с Virtual Stylist"
+    },
+    profileForm: {
+      eyebrow: "Профиль клиента",
+      description: "Сохраните имя, e-mail и реферальный код, чтобы получить баллы мгновенно.",
+      save: "Сохранить данные",
+      saving: "Сохранение...",
+      nameLabel: "Имя",
+      emailLabel: "E-mail",
+      referralLabel: "Реферальный код (чтобы получить баллы друга)",
+      namePlaceholder: "Введите имя",
+      emailPlaceholder: "you@example.com",
+      referralPlaceholder: "Пример: ABC12345",
+      rewardSignup: "Бонус за регистрацию + приветствие",
+      rewardReferral: "Активация реферала дает мгновенные баллы",
+      saved: "Сохранено, баллы начислены 🎉",
+      errorFallback: "Не удалось сохранить данные. Попробуйте еще раз."
+    },
+    loyalty: {
+      eyebrow: "Обзор лояльности",
+      title: "Баллы и реферал",
+      profileFallback: "Ваш профиль",
+      emailFallback: "E-mail пока нет",
+      balance: "Баланс",
+      monthlyPoints: "Ежемесячные баллы",
+      signup: "Регистрация",
+      welcomePackage: "Приветственный пакет",
+      awarded: "Начислено",
+      pending: "В ожидании",
+      referralLink: "Реферальная ссылка",
+      collectPointsHint: "Получайте баллы за регистрацию",
+      bothEarn: "Реферер и друг получают по {{points}} баллов",
+      copyLink: "Копировать ссылку",
+      linkCopied: "Ссылка скопирована",
+      referralCodePending: "Реферальный код в ожидании",
+      qrAlt: "QR-код реферала"
     }
   },
   uploader: {
@@ -740,6 +988,7 @@ const nl = {
       referral: "Doorverwijzing",
       referralUnavailable: "Doorverwijzingsprogramma binnenkort beschikbaar",
       guest: "Gast",
+      pointsLabel: "{{points}} pts",
       pointsUnknown: "Punten in afwachting",
       referralActive: "Doorverwijzing actief",
       referralPending: "Doorverwijzing in afwachting"
@@ -759,6 +1008,67 @@ const nl = {
       chat: { title: "Expertadvies", desc: "Chat met onze AI-mode-expert voor gepersonaliseerde tips." },
       local: { title: "Winkel Lokaal", desc: "Vind winkels in de buurt die de items verkopen waar u van houdt." },
       closet: { title: "Digitale Garderobe", desc: "Organiseer en visualiseer uw garderobe digitaal." }
+    },
+    restore: {
+      emailRequired: "Voer je e-mail in om je account te herstellen.",
+      failed: "Account herstellen is mislukt. Probeer het later opnieuw.",
+      emailPlaceholder: "you@example.com",
+      namePlaceholder: "Optionele naam",
+      action: "Herstellen",
+      loading: "..."
+    },
+    signup: {
+      intro: "Nieuwe gebruiker? Meld je aan en ontvang direct punten",
+      namePlaceholder: "Jouw naam",
+      emailPlaceholder: "you@example.com",
+      referralPlaceholder: "Doorverwijzingscode (optioneel)",
+      emailRequired: "Voer je e-mail in om punten te krijgen.",
+      failed: "Aanmelden is nu niet beschikbaar. Probeer het later opnieuw.",
+      submit: "Aanmelden en punten krijgen",
+      loading: "...",
+      hint: "Aanmeld- en welkomstpunten worden direct toegekend, en doorverwijzing beloont jullie allebei."
+    },
+    profileSection: {
+      title: "Vul je profiel in en claim nu je punten",
+      subtitle: "Voer je naam, e-mail en doorverwijzingscode (indien aanwezig) in om direct aanmeld- en welkomstbeloningen te ontvangen."
+    },
+    cta: {
+      ariaLabel: "Aan de slag met Virtual Stylist"
+    },
+    profileForm: {
+      eyebrow: "Klantprofiel",
+      description: "Sla je naam, e-mail en doorverwijzingscode op om direct punten te ontvangen.",
+      save: "Gegevens opslaan",
+      saving: "Opslaan...",
+      nameLabel: "Naam",
+      emailLabel: "E-mail",
+      referralLabel: "Doorverwijzingscode (om de punten van je vriend te claimen)",
+      namePlaceholder: "Voer je naam in",
+      emailPlaceholder: "you@example.com",
+      referralPlaceholder: "Voorbeeld: ABC12345",
+      rewardSignup: "Aanmeld- + welkomstbeloning",
+      rewardReferral: "Doorverwijzing activeren geeft direct punten",
+      saved: "Opgeslagen en punten uitgegeven 🎉",
+      errorFallback: "We konden je gegevens niet opslaan. Probeer het opnieuw."
+    },
+    loyalty: {
+      eyebrow: "Loyaliteitsoverzicht",
+      title: "Punten en doorverwijzing",
+      profileFallback: "Jouw profiel",
+      emailFallback: "Nog geen e-mail",
+      balance: "Saldo",
+      monthlyPoints: "Maandelijkse punten",
+      signup: "Aanmelden",
+      welcomePackage: "Welkomstpakket",
+      awarded: "Toegekend",
+      pending: "In afwachting",
+      referralLink: "Doorverwijzingslink",
+      collectPointsHint: "Verzamel punten door je aan te melden",
+      bothEarn: "Zowel verwijzer als vriend verdienen {{points}} pts",
+      copyLink: "Link kopiëren",
+      linkCopied: "Link gekopieerd",
+      referralCodePending: "Doorverwijzingscode in afwachting",
+      qrAlt: "Doorverwijzing QR-code"
     }
   },
   uploader: {

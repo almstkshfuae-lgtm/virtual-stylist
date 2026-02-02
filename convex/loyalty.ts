@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query } from "./_generated/server.js";
 
 const DEFAULT_PROGRAM_SLUG = "default";
 
@@ -17,7 +17,7 @@ const requireUser = async (ctx: any, userId?: string) => {
 
 // Helper to create a stable month key (YYYY-MM)
 const monthKey = () => {
-  const now = new Date();
+  const now = new Date(Date.now());
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(
     2,
     "0"
@@ -26,7 +26,7 @@ const monthKey = () => {
 
 // Helper to create daily key (YYYY-MM-DD)
 const dayKey = () => {
-  const now = new Date();
+  const now = new Date(Date.now());
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(
     2,
     "0"
@@ -116,7 +116,6 @@ export const getOrCreateCustomer = mutation({
 
     const referralCode = await generateUniqueReferralCode(ctx);
     const now = Date.now();
-    const month = monthKey();
 
     const accountId = await ctx.db.insert("customerAccounts", {
       userId: args.userId,
@@ -598,7 +597,7 @@ async function rewardReferral(ctx: any, newAccount: any, referredByCodeRaw: stri
   // Prevent self-referrals.
   const referrer = await ctx.db
     .query("customerAccounts")
-    .withIndex("by_referralCode", (q) => q.eq("referralCode", referredByCode))
+    .withIndex("by_referralCode", (q: any) => q.eq("referralCode", referredByCode))
     .first();
 
   if (!referrer || referrer.userId === newAccount.userId) {
@@ -615,13 +614,13 @@ async function rewardReferral(ctx: any, newAccount: any, referredByCodeRaw: stri
 
   const existingByKey = await ctx.db
     .query("referrals")
-    .withIndex("by_idempotencyKey", (q) => q.eq("idempotencyKey", referralKey))
+    .withIndex("by_idempotencyKey", (q: any) => q.eq("idempotencyKey", referralKey))
     .first();
   if (existingByKey) return;
 
   const existing = await ctx.db
     .query("referrals")
-    .withIndex("by_referrer_referee", (q) =>
+    .withIndex("by_referrer_referee", (q: any) =>
       q.eq("referrerUserId", referrer.userId).eq("refereeUserId", newAccount.userId)
     )
     .first();
