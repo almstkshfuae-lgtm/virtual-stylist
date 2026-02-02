@@ -96,7 +96,7 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
           <img
             className="h-64 w-full object-cover md:h-full animate-image-scale origin-center"
             src={outfit.imageUrl}
-            alt={outfit.title}
+            alt={`Generated outfit preview: ${outfit.title}`}
             loading={index === 0 ? 'eager' : 'lazy'}
             fetchPriority={index === 0 ? 'high' : 'low'}
             decoding="async"
@@ -118,7 +118,7 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
             {outfit.iconUrl && outfit.keyAccessory && (
               <div className="mt-3 pt-3 border-t dark:border-gray-700 flex items-center justify-between gap-3 text-sm text-gray-700 dark:text-gray-300">
                 <div className="flex items-center gap-3">
-                    <img src={outfit.iconUrl} alt={outfit.keyAccessory} loading="lazy" decoding="async" className="w-8 h-8 object-contain bg-gray-50 dark:bg-gray-700 rounded-full p-1" />
+                    <img src={outfit.iconUrl} alt={`Accessory icon: ${outfit.keyAccessory}`} loading="lazy" decoding="async" className="w-8 h-8 object-contain bg-gray-50 dark:bg-gray-700 rounded-full p-1" />
                     <div>
                     <p className="font-semibold text-gray-500 dark:text-gray-400">{t('main.suggestedAccessory')}:</p>
                     <p>{outfit.keyAccessory}</p>

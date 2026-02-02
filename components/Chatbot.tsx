@@ -1,11 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import DOMPurify from 'dompurify';
-import { marked } from 'marked';
 import { useTranslation } from '../i18n/LanguageContext';
 import { ChatMessage } from '../types';
 import { SendIcon } from './icons/SendIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
+import { sanitizeMarkdownToHtml } from '../lib/security';
 
 interface ChatbotProps {
   isOpen: boolean;
@@ -23,7 +22,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
   const dialogRef = useRef<HTMLDivElement>(null);
 
   const renderMarkdown = (text: string) => ({
-    __html: DOMPurify.sanitize(marked.parse(text, { breaks: true })),
+    __html: sanitizeMarkdownToHtml(text),
   });
 
   const scrollToBottom = () => {
@@ -80,7 +79,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
         role="dialog"
         aria-modal="true"
         aria-labelledby="chat-title"
-        className="w-full max-sm:h-[70vh] max-sm:max-h-[calc(100vh-5rem)] sm:w-96 h-[60vh] sm:h-[32rem] bg-white dark:bg-gray-800 rounded-2xl sm:rounded-xl shadow-2xl flex flex-col transition-transform duration-300 transform origin-bottom-right pb-[env(safe-area-inset-bottom,8px)] focus:outline-none"
+        className="w-full max-sm:h-[62vh] max-sm:max-h-[calc(100vh-6rem)] sm:w-96 h-[58vh] sm:h-[32rem] bg-white dark:bg-gray-800 rounded-2xl sm:rounded-xl shadow-2xl flex flex-col transition-transform duration-300 transform origin-bottom-right pb-[env(safe-area-inset-bottom,8px)] focus:outline-none"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
@@ -101,7 +100,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
         <div className="flex-1 p-4 overflow-y-auto">
           {selectedItemImage && (
             <div className="mb-4 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-              <img src={selectedItemImage} alt="Selected item" loading="lazy" decoding="async" className="w-10 h-10 rounded-md object-cover" />
+              <img src={selectedItemImage} alt="Selected clothing item preview" loading="lazy" decoding="async" className="w-10 h-10 rounded-md object-cover" />
               <span>{t('chat.askingAbout')}</span>
             </div>
           )}

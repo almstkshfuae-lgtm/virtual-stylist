@@ -57,13 +57,14 @@ interface FeatureCardProps {
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, index }) => (
-    <motion.div
+    <motion.article
         className="group relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-6 sm:p-8 shadow-[0_24px_45px_rgba(15,15,15,0.08)] transition-all duration-300 hover:-translate-y-2 dark:border-white/10 dark:bg-slate-900/70 dark:shadow-[0_24px_45px_rgba(0,0,0,0.4)] flex flex-col items-start text-start h-full"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.2 }}
         transition={{ delay: index * 0.1, duration: 0.5 }}
         whileHover={{ y: -8 }}
+        aria-labelledby={`feature-card-title-${index}`}
     >
         <motion.div 
             className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-5 sm:mb-6 text-[color:var(--landing-rose)] bg-[linear-gradient(135deg,rgba(194,91,62,0.18),rgba(31,78,61,0.18))] dark:bg-[linear-gradient(135deg,rgba(226,122,85,0.2),rgba(127,208,184,0.18))] group-hover:scale-110 transition-transform duration-300"
@@ -71,9 +72,9 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, ind
         >
             {icon}
         </motion.div>
-        <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 sm:mb-4 leading-tight">{title}</h3>
+        <h3 id={`feature-card-title-${index}`} className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 sm:mb-4 leading-tight">{title}</h3>
         <p className="text-sm sm:text-base text-slate-700 dark:text-slate-200 leading-relaxed flex-grow">{description}</p>
-    </motion.div>
+    </motion.article>
 );
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, onRestoreAccount, restoreLoading, onRegisterAccount }) => {
@@ -194,7 +195,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
   ];
 
   return (
-    <div className="landing-shell min-h-screen w-full overflow-x-hidden">
+    <main className="landing-shell min-h-screen w-full overflow-x-hidden">
         {/* Header Actions */}
         <div className="landing-header-panel pointer-events-none fixed top-3 left-2 right-2 sm:top-6 sm:left-auto sm:right-6 z-40 max-w-[calc(100vw-1rem)] sm:max-w-none max-h-[calc(100vh-1.5rem)] overflow-y-auto flex flex-col gap-2 rounded-3xl border border-white/70 bg-white/85 text-slate-800 dark:border-white/10 dark:bg-slate-900/85 dark:text-slate-100 backdrop-blur-md p-2 sm:p-3 shadow-[0_18px_45px_rgba(15,15,15,0.2)] [&>*]:pointer-events-auto">
           <div className="landing-header-row grid grid-cols-1 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2">
@@ -273,6 +274,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
         
         {/* Hero Section */}
         <section
+          aria-labelledby="landing-hero-title"
         className="landing-hero relative w-full overflow-hidden pt-48 sm:pt-36 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 min-h-[70vh] lg:min-h-[75vh]"
         >
             <span className="landing-hello" aria-hidden="true">
@@ -294,6 +296,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                       </motion.span>
 
                       <motion.h1
+                        id="landing-hero-title"
                         className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight text-slate-900 dark:text-slate-100"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -482,10 +485,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
         {isConvexEnabled && (
           <section
             id="landing-profile-form"
+            aria-labelledby="landing-profile-title"
             className="relative z-10 w-full py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-white/85 dark:bg-slate-900/70"
           >
             <div className="max-w-5xl mx-auto space-y-4">
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">
+              <h2 id="landing-profile-title" className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">
                 {t('landing.profileSection.title')}
               </h2>
               <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
@@ -498,6 +502,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
 
         <section 
             id="landing-features" 
+            aria-labelledby="landing-features-title"
             className="relative z-10 w-full py-16 sm:py-20 md:py-28 px-4 sm:px-6 lg:px-8 bg-white/80 dark:bg-slate-900/70 transition-colors duration-300 scroll-mt-10"
         >
             <div className="max-w-6xl mx-auto">
@@ -509,7 +514,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 leading-tight">
+                    <h2 id="landing-features-title" className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 leading-tight">
                         {t('landing.features.title')}
                     </h2>
                     <div className="w-16 h-1 bg-brand rounded-full mx-auto mb-6 sm:mb-8" />
@@ -553,6 +558,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                 </motion.div>
             </div>
         </section>
-    </div>
+    </main>
   );
 };

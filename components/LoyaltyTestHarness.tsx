@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useLoyalty } from '../hooks/useConvex';
+import { sanitizeHref } from '../lib/security';
 
 interface LoyaltyTestHarnessProps {
   userId: string;
@@ -47,6 +48,7 @@ export const LoyaltyTestHarness: React.FC<LoyaltyTestHarnessProps> = ({ userId }
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://virtual-stylist.ai';
     return account?.referralCode ? `${origin}/?ref=${account.referralCode}` : '';
   }, [account?.referralCode]);
+  const safeReferralLink = useMemo(() => sanitizeHref(referralLink), [referralLink]);
 
   const run = async (fn: () => Promise<any>, label: string) => {
     setStatus(`Running: ${label}`);
@@ -105,11 +107,11 @@ export const LoyaltyTestHarness: React.FC<LoyaltyTestHarnessProps> = ({ userId }
           إصدار نقاط الشهر
         </button>
         <a
-          href={referralLink || '#'}
+          href={safeReferralLink || '#'}
           target="_blank"
-          rel="noreferrer"
-          className={`rounded-full px-4 py-2 text-sm font-semibold ${referralLink ? 'text-emerald-700 bg-emerald-50 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200' : 'text-gray-400 border border-gray-200 cursor-not-allowed'}`}
-          aria-disabled={!referralLink}
+          rel="noopener noreferrer"
+          className={`rounded-full px-4 py-2 text-sm font-semibold ${safeReferralLink ? 'text-emerald-700 bg-emerald-50 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200' : 'text-gray-400 border border-gray-200 cursor-not-allowed'}`}
+          aria-disabled={!safeReferralLink}
         >
           رابط إحالتك
         </a>

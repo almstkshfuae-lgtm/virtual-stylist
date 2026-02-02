@@ -5,6 +5,7 @@ import { MapPinIcon } from './icons/MapPinIcon';
 import { SendIcon } from './icons/SendIcon';
 import { CopyIcon } from './icons/CopyIcon';
 import { GlobeIcon } from './icons/GlobeIcon';
+import { sanitizeHref } from '../lib/security';
 
 interface StoreLocatorModalProps {
   isOpen: boolean;
@@ -85,7 +86,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
 
   return (
     <div 
-        className="fixed inset-0 bg-black/30 dark:bg-black/50 z-30 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/20 dark:bg-black/35 z-30 flex items-end sm:items-center justify-center p-2 sm:p-4"
         onClick={onClose}
     >
       <div 
@@ -93,7 +94,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
         role="dialog"
         aria-modal="true"
         aria-labelledby="store-locator-title"
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col animate-fade-in-up"
+        className="bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-xl shadow-2xl w-full max-w-md h-[72vh] sm:max-h-[80vh] flex flex-col animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
     >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
@@ -160,6 +161,9 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
             {!isLoading && !error && stores.length > 0 && (
                 <div className="grid gap-3 sm:grid-cols-2">
                     {stores.map((store, index) => (
+                        (() => {
+                          const safeStoreUri = sanitizeHref(store.uri);
+                          return (
                         <div
                           key={index}
                           className={`relative rounded-lg p-3 bg-gray-50 dark:bg-gray-700/40 transition ${
@@ -188,27 +192,32 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
                                         ? 'text-amber-700 dark:text-amber-300'
                                         : 'text-gray-800 dark:text-gray-100'
                                     }`}>{store.title}</p>
-                                    <p className="text-[11px] text-cyan-700 dark:text-cyan-300 truncate">{store.uri}</p>
+                                    <p className="text-[11px] text-cyan-700 dark:text-cyan-300 truncate">{safeStoreUri || t('storeLocator.invalidLink', 'Invalid link')}</p>
                                 </div>
                             </div>
                             <div className="mt-3 flex items-center gap-2">
-                                <a
-                                    href={store.uri}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 rounded-md bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800"
-                                >
-                                    {t('storeLocator.buttonOpen', 'Open in Maps')}
-                                </a>
+                                {safeStoreUri && (
+                                  <a
+                                      href={safeStoreUri}
+                                      target="_blank"
+                                      rel="noopener noreferrer nofollow"
+                                      className="inline-flex items-center gap-1 rounded-md bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800"
+                                  >
+                                      {t('storeLocator.buttonOpen', 'Open in Maps')}
+                                  </a>
+                                )}
                                 <button
                                     type="button"
-                                    onClick={() => handleCopy(store.uri, index)}
+                                    onClick={() => safeStoreUri && handleCopy(safeStoreUri, index)}
+                                    disabled={!safeStoreUri}
                                     className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-pink-400 hover:text-pink-600 dark:border-gray-600 dark:text-gray-200 dark:hover:border-pink-400"
                                 >
                                     <CopyIcon className="w-4 h-4" /> {copiedIndex === index ? t('storeLocator.copied', 'تم النسخ') : t('storeLocator.copy', 'نسخ الرابط')}
                                 </button>
                             </div>
                         </div>
+                          );
+                        })()
                     ))}
                 </div>
             )}

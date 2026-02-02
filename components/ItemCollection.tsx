@@ -43,7 +43,7 @@ const CollectionItem: React.FC<{
                 )}
                 <img 
                     src={item.url} 
-                    alt={`Clothing item ${index + 1}`} 
+                    alt={item.file?.name ? `Wardrobe item preview: ${item.file.name}` : `Wardrobe item ${index + 1} preview`} 
                     loading="lazy"
                     decoding="async"
                     className={`w-full h-full object-cover rounded-md border-2 border-gray-200 dark:border-gray-500 transition-opacity duration-500 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`} 

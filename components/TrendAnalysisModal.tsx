@@ -1,10 +1,9 @@
 
 import React from 'react';
-import DOMPurify from 'dompurify';
-import { marked } from 'marked';
 import { useTranslation } from '../i18n/LanguageContext';
 import { TrendAnalysisResult } from '../types';
 import { GlobeIcon } from './icons/GlobeIcon';
+import { sanitizeHref, sanitizeMarkdownToHtml } from '../lib/security';
 
 interface TrendAnalysisModalProps {
   result: TrendAnalysisResult;
@@ -13,7 +12,7 @@ interface TrendAnalysisModalProps {
 
 export const TrendAnalysisModal: React.FC<TrendAnalysisModalProps> = ({ result, onClose }) => {
   const { t } = useTranslation();
-  const sanitizedHtml = DOMPurify.sanitize(marked.parse(result.text || '', { breaks: true }));
+  const sanitizedHtml = sanitizeMarkdownToHtml(result.text || '');
   const dialogRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -48,7 +47,7 @@ export const TrendAnalysisModal: React.FC<TrendAnalysisModalProps> = ({ result, 
 
   return (
     <div 
-        className="fixed inset-0 bg-black/30 dark:bg-black/50 z-30 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/20 dark:bg-black/35 z-30 flex items-end sm:items-center justify-center p-2 sm:p-4"
         onClick={onClose}
     >
       <div 
@@ -56,7 +55,7 @@ export const TrendAnalysisModal: React.FC<TrendAnalysisModalProps> = ({ result, 
         role="dialog"
         aria-modal="true"
         aria-labelledby="trend-modal-title"
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col animate-fade-in-up focus:outline-none"
+        className="bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-xl shadow-2xl w-full max-w-2xl h-[72vh] sm:max-h-[80vh] flex flex-col animate-fade-in-up focus:outline-none"
         onClick={(e) => e.stopPropagation()}
     >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
@@ -84,17 +83,23 @@ export const TrendAnalysisModal: React.FC<TrendAnalysisModalProps> = ({ result, 
             <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                 <h4 className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">{t('trends.sources')}</h4>
                 <div className="flex flex-col gap-2">
-                    {result.sources.filter(source => source.web?.uri).map((source, index) => (
-                        <a 
+                    {result.sources
+                      .map((source, index) => {
+                        const href = sanitizeHref(source.web?.uri);
+                        if (!href) return null;
+                        return (
+                          <a 
                             key={index} 
-                            href={source.web!.uri} 
+                            href={href} 
                             target="_blank" 
-                            rel="noopener noreferrer" 
+                            rel="noopener noreferrer nofollow" 
                             className="text-sm text-cyan-600 hover:underline dark:text-cyan-400 truncate"
-                        >
-                           {source.web!.title || source.web!.uri}
-                        </a>
-                    ))}
+                          >
+                            {source.web?.title || href}
+                          </a>
+                        );
+                      })
+                      .filter(Boolean)}
                 </div>
             </div>
         )}

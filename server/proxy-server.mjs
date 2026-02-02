@@ -12,7 +12,6 @@ import fs from 'fs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const envPath = path.resolve(__dirname, '../.env.local');
 
-// Load .env.local with detailed logging
 if (fs.existsSync(envPath)) {
   console.log(`✓ Found .env.local at: ${envPath}`);
   dotenv.config({ path: envPath });
@@ -23,7 +22,6 @@ if (fs.existsSync(envPath)) {
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
-// Restrictive CORS for local dev only; default to localhost
 app.use((req, res, next) => {
   const allowOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
   res.header('Access-Control-Allow-Origin', allowOrigin);
@@ -49,6 +47,228 @@ if (!API_KEY) {
   console.log('✓ API_KEY loaded successfully');
 }
 
+const CONTROL_CHARS_REGEX = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+const BASE64_REGEX = /^[A-Za-z0-9+/=]+$/;
+const LIMITS = {
+  modelMaxLength: 64,
+  maxContents: 24,
+  maxPartsPerContent: 32,
+  maxTextLength: 20_000,
+  maxSystemInstructionLength: 12_000,
+  maxInlineDataLength: 8_000_000,
+};
+
+const ALLOWED_MODELS = new Set([
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash-image',
+  'gemini-2.5-flash',
+  'gemini-3-pro-preview'
+]);
+
+const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000);
+const RATE_LIMIT_MAX = Number(process.env.RATE_LIMIT_MAX_AUTH || 60);
+const RATE_LIMIT_MAX_UNAUTH = Number(process.env.RATE_LIMIT_MAX_UNAUTH || 20);
+const tokenBuckets = new Map();
+
+const isObject = (value) => typeof value === 'object' && value !== null;
+const rejectUnknownKeys = (obj, allowedKeys, path) => {
+  const unknown = Object.keys(obj).filter((key) => !allowedKeys.includes(key));
+  if (unknown.length > 0) {
+    return { error: `${path} contains unexpected field(s): ${unknown.join(', ')}` };
+  }
+  return { value: null };
+};
+
+const cleanString = (value, maxLength) => {
+  if (typeof value !== 'string') return null;
+  const cleaned = value.replace(CONTROL_CHARS_REGEX, '').trim();
+  if (!cleaned || cleaned.length > maxLength) return null;
+  return cleaned;
+};
+
+const clampNumber = (value, fallback, min, max) => {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return fallback;
+  return Math.min(Math.max(num, min), max);
+};
+
+const hashToken = (value) => {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16);
+};
+
+const extractClientIp = (req) => {
+  const forwardedFor = typeof req.headers['x-forwarded-for'] === 'string' ? req.headers['x-forwarded-for'] : '';
+  if (forwardedFor) return forwardedFor.split(',')[0].trim();
+  return typeof req.headers['x-real-ip'] === 'string' ? req.headers['x-real-ip'] : 'unknown';
+};
+
+const logEvent = (event, fields = {}) => {
+  console.log(JSON.stringify({ ts: new Date().toISOString(), event, ...fields }));
+};
+
+const sanitizeInlineData = (raw) => {
+  if (!isObject(raw)) return { error: 'inlineData must be an object' };
+  const unknownKeys = rejectUnknownKeys(raw, ['data', 'mimeType'], 'inlineData');
+  if (unknownKeys.error) return unknownKeys;
+
+  const mimeType = cleanString(raw.mimeType, 128);
+  if (!mimeType || !/^image\/[a-zA-Z0-9.+-]+$/.test(mimeType)) {
+    return { error: 'inlineData.mimeType must be a valid image MIME type' };
+  }
+
+  if (typeof raw.data !== 'string') {
+    return { error: 'inlineData.data must be a base64 string' };
+  }
+
+  const data = raw.data.trim();
+  if (!data || data.length > LIMITS.maxInlineDataLength || !BASE64_REGEX.test(data)) {
+    return { error: 'inlineData.data is invalid or too large' };
+  }
+
+  return { value: { data, mimeType } };
+};
+
+const sanitizePart = (raw) => {
+  if (!isObject(raw)) return { error: 'part must be an object' };
+  const unknownKeys = rejectUnknownKeys(raw, ['text', 'inlineData'], 'part');
+  if (unknownKeys.error) return unknownKeys;
+
+  const hasText = raw.text !== undefined;
+  const hasInlineData = raw.inlineData !== undefined;
+  if (hasText === hasInlineData) {
+    return { error: 'part must contain exactly one of "text" or "inlineData"' };
+  }
+
+  if (hasText) {
+    const text = cleanString(raw.text, LIMITS.maxTextLength);
+    if (!text) return { error: 'part.text is empty or too long' };
+    return { value: { text } };
+  }
+
+  if (hasInlineData) {
+    const inlineData = sanitizeInlineData(raw.inlineData);
+    if (inlineData.error) return inlineData;
+    return { value: { inlineData: inlineData.value } };
+  }
+
+  return { error: 'part must contain text or inlineData' };
+};
+
+const sanitizeContent = (raw) => {
+  if (typeof raw === 'string') {
+    const text = cleanString(raw, LIMITS.maxTextLength);
+    if (!text) return { error: 'content string is empty or too long' };
+    return { value: { parts: [{ text }] } };
+  }
+
+  if (!isObject(raw)) return { error: 'content must be a string or object' };
+  const unknownKeys = rejectUnknownKeys(raw, ['parts', 'role'], 'content');
+  if (unknownKeys.error) return unknownKeys;
+  if (!Array.isArray(raw.parts) || raw.parts.length === 0 || raw.parts.length > LIMITS.maxPartsPerContent) {
+    return { error: 'content.parts must be a non-empty array within limits' };
+  }
+
+  const parts = [];
+  for (const part of raw.parts) {
+    const cleanPart = sanitizePart(part);
+    if (cleanPart.error) return cleanPart;
+    parts.push(cleanPart.value);
+  }
+
+  const role = cleanString(raw.role, 10);
+  if (role && role !== 'user' && role !== 'model' && role !== 'system') {
+    return { error: 'content.role is invalid' };
+  }
+
+  return { value: role ? { role, parts } : { parts } };
+};
+
+const sanitizePayload = (payload) => {
+  if (!isObject(payload)) return { error: 'payload must be an object' };
+  const unknownKeys = rejectUnknownKeys(payload, ['contents', 'systemInstruction', 'config'], 'payload');
+  if (unknownKeys.error) return unknownKeys;
+  if (payload.contents === undefined) {
+    return { error: 'payload.contents is required' };
+  }
+
+  const contentsInput = Array.isArray(payload.contents) ? payload.contents : [payload.contents];
+  if (contentsInput.length === 0 || contentsInput.length > LIMITS.maxContents) {
+    return { error: 'payload.contents must be a non-empty array within limits' };
+  }
+
+  const contents = [];
+  for (const content of contentsInput) {
+    const cleanContent = sanitizeContent(content);
+    if (cleanContent.error) return cleanContent;
+    contents.push(cleanContent.value);
+  }
+
+  let systemInstruction;
+  if (payload.systemInstruction !== undefined) {
+    if (typeof payload.systemInstruction === 'string') {
+      const cleaned = cleanString(payload.systemInstruction, LIMITS.maxSystemInstructionLength);
+      if (!cleaned) return { error: 'payload.systemInstruction is invalid' };
+      systemInstruction = cleaned;
+    } else {
+      const cleanInstruction = sanitizeContent(payload.systemInstruction);
+      if (cleanInstruction.error) {
+        return { error: `payload.systemInstruction: ${cleanInstruction.error}` };
+      }
+      systemInstruction = cleanInstruction.value;
+    }
+  }
+
+  let config;
+  if (payload.config !== undefined) {
+    if (!isObject(payload.config)) {
+      return { error: 'payload.config must be an object' };
+    }
+    const unknownConfigKeys = rejectUnknownKeys(
+      payload.config,
+      ['responseMimeType', 'maxOutputTokens', 'temperature', 'topP', 'topK'],
+      'payload.config'
+    );
+    if (unknownConfigKeys.error) return unknownConfigKeys;
+
+    const responseMimeType = cleanString(payload.config.responseMimeType, 64);
+    config = {
+      maxOutputTokens: Math.round(clampNumber(payload.config.maxOutputTokens, 512, 1, 2048)),
+      temperature: clampNumber(payload.config.temperature, 0.7, 0, 1),
+      topP: clampNumber(payload.config.topP, 0.95, 0, 1),
+      topK: Math.round(clampNumber(payload.config.topK, 40, 1, 200)),
+    };
+
+    if (responseMimeType && ['application/json', 'text/plain'].includes(responseMimeType)) {
+      config.responseMimeType = responseMimeType;
+    }
+  }
+
+  return { value: { contents, systemInstruction, config } };
+};
+
+const takeRateLimit = (tokenKey, limit) => {
+  const now = Date.now();
+  const bucket = tokenBuckets.get(tokenKey) || { start: now, count: 0 };
+  if (now - bucket.start > RATE_LIMIT_WINDOW_MS) {
+    bucket.start = now;
+    bucket.count = 0;
+  }
+  bucket.count += 1;
+  tokenBuckets.set(tokenKey, bucket);
+  const resetAtMs = bucket.start + RATE_LIMIT_WINDOW_MS;
+  const retryAfterSec = Math.max(1, Math.ceil((resetAtMs - now) / 1000));
+  return {
+    limited: bucket.count > limit,
+    remaining: Math.max(0, limit - bucket.count),
+    retryAfterSec,
+    resetAtMs,
+  };
+};
 
 app.get('/', (req, res) => {
   res.json({
@@ -59,12 +279,16 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/gemini-proxy', async (req, res) => {
-  // Minimal logging to avoid leaking payloads
-  console.log('📥 Received request');
-  
+  const start = Date.now();
+  const requestId = typeof req.headers['x-request-id'] === 'string'
+    ? req.headers['x-request-id']
+    : `req_${Math.random().toString(36).slice(2, 10)}`;
+  const clientIp = extractClientIp(req);
+  logEvent('proxy.request.received', { requestId, clientIp });
+
   if (!API_KEY) {
     console.error('❌ CRITICAL: API_KEY is missing');
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'API key not configured on server',
       help: 'Set API_KEY in .env.local. Get it from https://aistudio.google.com/apikey'
     });
@@ -75,93 +299,93 @@ app.post('/api/gemini-proxy', async (req, res) => {
     return res.status(500).json({ error: 'API secret not configured on server' });
   }
 
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const authHeader = typeof req.headers.authorization === 'string' ? req.headers.authorization : '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
   if (!token || token !== API_SECRET) {
+    const unauthLimit = takeRateLimit(`unauth:${clientIp}`, RATE_LIMIT_MAX_UNAUTH);
+    res.setHeader('X-RateLimit-Limit', String(RATE_LIMIT_MAX_UNAUTH));
+    res.setHeader('X-RateLimit-Remaining', String(unauthLimit.remaining));
+    res.setHeader('X-RateLimit-Reset', String(unauthLimit.resetAtMs));
+    if (unauthLimit.limited) {
+      res.setHeader('Retry-After', String(unauthLimit.retryAfterSec));
+      logEvent('proxy.rejected.rate_limit', { requestId, clientIp, bucket: 'unauth', retryAfterSec: unauthLimit.retryAfterSec });
+      return res.status(429).json({ error: 'Too many unauthorized attempts. Try again later.' });
+    }
+    logEvent('proxy.rejected.unauthorized', { requestId, clientIp });
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  if (isRateLimited(token)) {
+  const authLimit = takeRateLimit(`auth:${clientIp}:${hashToken(token)}`, RATE_LIMIT_MAX);
+  res.setHeader('X-RateLimit-Limit', String(RATE_LIMIT_MAX));
+  res.setHeader('X-RateLimit-Remaining', String(authLimit.remaining));
+  res.setHeader('X-RateLimit-Reset', String(authLimit.resetAtMs));
+  if (authLimit.limited) {
+    res.setHeader('Retry-After', String(authLimit.retryAfterSec));
+    logEvent('proxy.rejected.rate_limit', { requestId, clientIp, bucket: 'auth', retryAfterSec: authLimit.retryAfterSec });
     return res.status(429).json({ error: 'Rate limit exceeded. Try again shortly.' });
   }
-  
-  const { model, payload } = req.body || {};
-  if (!model) {
-    return res.status(400).json({ error: 'Missing "model" in request body. Example: "gemini-2.0-flash"' });
+
+  if (!isObject(req.body)) {
+    logEvent('proxy.rejected.validation', { requestId, clientIp, reason: 'invalid_body' });
+    return res.status(400).json({ error: 'Request body must be a JSON object' });
   }
-  if (!payload) {
+  const unknownRootKeys = rejectUnknownKeys(req.body, ['model', 'payload'], 'request body');
+  if (unknownRootKeys.error) {
+    logEvent('proxy.rejected.validation', { requestId, clientIp, reason: unknownRootKeys.error });
+    return res.status(400).json({ error: unknownRootKeys.error });
+  }
+
+  const model = cleanString(req.body.model, LIMITS.modelMaxLength);
+  if (!model) {
+    logEvent('proxy.rejected.validation', { requestId, clientIp, reason: 'invalid_model' });
+    return res.status(400).json({ error: 'Invalid "model" in request body' });
+  }
+
+  if (!ALLOWED_MODELS.has(model)) {
+    logEvent('proxy.rejected.validation', { requestId, clientIp, model, reason: 'model_not_allowed' });
+    return res.status(400).json({ error: 'Model not allowed' });
+  }
+
+  if (req.body.payload === undefined) {
+    logEvent('proxy.rejected.validation', { requestId, clientIp, model, reason: 'missing_payload' });
     return res.status(400).json({ error: 'Missing "payload" in request body' });
   }
 
-const ALLOWED_MODELS = new Set([
-  'gemini-3-flash-preview',
-  'gemini-2.5-flash-image',
-  'gemini-2.5-flash',
-  'gemini-3-pro-preview'
-]);
-
-// Simple in-memory rate limiting: max 60 requests per 60s per token
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 60;
-const tokenBuckets = new Map();
-
-const isRateLimited = (tokenKey) => {
-  const now = Date.now();
-  const bucket = tokenBuckets.get(tokenKey) || { start: now, count: 0 };
-  if (now - bucket.start > RATE_LIMIT_WINDOW_MS) {
-    bucket.start = now;
-    bucket.count = 0;
+  const safePayload = sanitizePayload(req.body.payload);
+  if (safePayload.error) {
+    logEvent('proxy.rejected.validation', { requestId, clientIp, model, reason: safePayload.error });
+    return res.status(400).json({ error: safePayload.error });
   }
-  bucket.count += 1;
-  tokenBuckets.set(tokenKey, bucket);
-  return bucket.count > RATE_LIMIT_MAX;
-};
 
-const clampConfig = (config = {}) => {
-  const maxOutputTokens = Math.min(Number(config.maxOutputTokens) || 512, 2048);
-  const temperature = Math.min(Math.max(config.temperature ?? 0.7, 0), 1);
-  const topP = Math.min(Math.max(config.topP ?? 0.95, 0), 1);
-  const topK = Math.min(Math.max(config.topK ?? 40, 1), 200);
-  const responseMimeType = typeof config.responseMimeType === 'string' ? config.responseMimeType : undefined;
-  return { responseMimeType, maxOutputTokens, temperature, topP, topK };
-};
-
-// Strip tool invocations to avoid unintended external calls in dev
-const sanitizePayload = (input) => {
-  if (typeof input !== 'object' || input === null) return null;
-  const { contents, systemInstruction, config } = input;
-  return {
-    contents,
-    systemInstruction,
-    config: clampConfig(config),
+  const payloadStats = {
+    contentsCount: safePayload.value.contents.length,
+    partsCount: safePayload.value.contents.reduce((sum, item) => sum + item.parts.length, 0),
+    hasSystemInstruction: !!safePayload.value.systemInstruction,
+    hasConfig: !!safePayload.value.config,
   };
-};
-
-if (!ALLOWED_MODELS.has(model)) {
-  return res.status(400).json({ error: 'Model not allowed' });
-}
-
-const safePayload = sanitizePayload(payload);
-if (!safePayload) {
-  return res.status(400).json({ error: 'Invalid payload format' });
-}
 
   try {
-    console.log(`📤 Calling ${model}...`);
-    
+    logEvent('proxy.request.start', { requestId, clientIp, model, ...payloadStats });
+
     const ai = new GoogleGenAI({ apiKey: API_KEY });
     const result = await ai.models.generateContent({
       model,
-      ...safePayload,
+      ...safePayload.value,
     });
-    
-    console.log(`✓ Got response from ${model}`);
+
+    logEvent('proxy.request.success', { requestId, clientIp, model, durationMs: Date.now() - start });
     res.json(result);
   } catch (error) {
-    const errorMsg = error.message || String(error);
+    const errorMsg = error?.message || String(error);
     console.error(`❌ API Error (${model}):`, errorMsg);
-    
-    // Better error messages for common issues
+    logEvent('proxy.request.error', {
+      requestId,
+      clientIp,
+      model,
+      durationMs: Date.now() - start,
+      error: errorMsg,
+    });
+
     let userMessage = errorMsg;
     if (errorMsg.includes('401') || errorMsg.includes('UNAUTHENTICATED')) {
       userMessage = 'Invalid API key - check your .env.local API_KEY value';
@@ -170,8 +394,8 @@ if (!safePayload) {
     } else if (errorMsg.includes('PERMISSION_DENIED')) {
       userMessage = 'API key lacks required permissions. Regenerate it from https://aistudio.google.com/apikey';
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       error: userMessage,
       debug: process.env.NODE_ENV === 'development' ? errorMsg : undefined
     });
@@ -190,7 +414,6 @@ server.on('error', (err) => {
   process.exit(1);
 });
 
-// Global error handlers
 process.on('unhandledRejection', (reason, promise) => {
   console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
   console.error(reason instanceof Error ? reason.stack : reason);

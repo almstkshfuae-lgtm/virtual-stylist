@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Virtual Stylist AI | AI-Powered Personal Outfit Generator</title>
+    <title>AI Outfit Generator | Virtual Stylist AI</title>
     <meta
       name="description"
-      content="Upload a clothing photo and get AI-curated outfit ideas, editable flat-lays, and personalized styling tips with Virtual Stylist AI."
+      content="Upload your clothing photo, get personalized AI outfit ideas, and style your next look in minutes. Try Virtual Stylist AI now."
     />
     <meta
       name="keywords"
@@ -19,26 +19,28 @@
     />
     <link rel="canonical" href="https://virtual-stylist.ai/" />
     <meta name="theme-color" content="#111827" />
-    <meta property="og:title" content="Virtual Stylist AI | AI-Powered Personal Outfit Generator" />
+    <meta property="og:title" content="AI Outfit Generator | Virtual Stylist AI" />
     <meta
       property="og:description"
-      content="Upload a clothing photo and get AI-curated outfit ideas, editable flat-lays, and personalized styling tips with Virtual Stylist AI."
+      content="Upload your clothing photo, get personalized AI outfit ideas, and style your next look in minutes. Try Virtual Stylist AI now."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://virtual-stylist.ai/" />
     <meta property="og:site_name" content="Virtual Stylist AI" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:image" content="https://virtual-stylist.ai/hero_section_background.png" />
+    <meta property="og:image:width" content="1366" />
+    <meta property="og:image:height" content="768" />
     <meta property="og:image:alt" content="Preview of the Virtual Stylist AI experience" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:domain" content="virtual-stylist.ai" />
     <meta
       name="twitter:title"
-      content="Virtual Stylist AI | AI-Powered Personal Outfit Generator"
+      content="AI Outfit Generator | Virtual Stylist AI"
     />
     <meta
       name="twitter:description"
-      content="Upload a clothing photo and get AI-curated outfit ideas, editable flat-lays, and personalized styling tips with Virtual Stylist AI."
+      content="Upload your clothing photo, get personalized AI outfit ideas, and style your next look in minutes. Try Virtual Stylist AI now."
     />
     <meta name="twitter:image" content="https://virtual-stylist.ai/hero_section_background.png" />
     <meta name="twitter:image:alt" content="Preview of the Virtual Stylist AI experience" />
@@ -51,19 +53,82 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Virtual Stylist AI",
-        "url": "https://virtual-stylist.ai/",
-        "description":
-          "Upload a clothing photo and get AI-curated outfit ideas, editable flat-lays, and personalized styling tips with Virtual Stylist AI.",
-        "image": "https://virtual-stylist.ai/hero_section_background.png",
-        "applicationCategory": "Lifestyle",
-        "operatingSystem": "All",
-        "publisher": {
-          "@type": "Organization",
-          "name": "Virtual Stylist AI",
-          "url": "https://virtual-stylist.ai/"
-        }
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://virtual-stylist.ai/#organization",
+            "name": "Virtual Stylist AI",
+            "url": "https://virtual-stylist.ai/",
+            "logo": "https://virtual-stylist.ai/favicon.png"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://virtual-stylist.ai/#website",
+            "url": "https://virtual-stylist.ai/",
+            "name": "Virtual Stylist AI",
+            "publisher": {
+              "@id": "https://virtual-stylist.ai/#organization"
+            }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://virtual-stylist.ai/#app",
+            "name": "Virtual Stylist AI",
+            "url": "https://virtual-stylist.ai/",
+            "description": "Upload a clothing photo and get personalized AI outfit ideas, flat-lay edits, and styling guidance.",
+            "applicationCategory": "LifestyleApplication",
+            "operatingSystem": "Web",
+            "image": "https://virtual-stylist.ai/hero_section_background.png",
+            "provider": {
+              "@id": "https://virtual-stylist.ai/#organization"
+            }
+          },
+          {
+            "@type": "Service",
+            "@id": "https://virtual-stylist.ai/#service",
+            "name": "AI Personal Styling Service",
+            "serviceType": "Virtual Styling",
+            "provider": {
+              "@id": "https://virtual-stylist.ai/#organization"
+            },
+            "areaServed": "Worldwide",
+            "availableChannel": {
+              "@type": "ServiceChannel",
+              "serviceUrl": "https://virtual-stylist.ai/"
+            },
+            "hasOfferCatalog": {
+              "@type": "OfferCatalog",
+              "name": "Virtual Styling Offers",
+              "itemListElement": [
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Product",
+                    "name": "AI Outfit Recommendation",
+                    "category": "Fashion Styling"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Product",
+                    "name": "Outfit Flat-Lay Edit",
+                    "category": "Fashion Image Editing"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://virtual-stylist.ai/#stylist",
+            "name": "Juliana",
+            "jobTitle": "Virtual Stylist",
+            "worksFor": {
+              "@id": "https://virtual-stylist.ai/#organization"
+            }
+          }
+        ]
       }
     </script>
   </head>

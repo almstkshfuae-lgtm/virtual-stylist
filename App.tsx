@@ -887,10 +887,13 @@ const App: React.FC = () => {
       )}
     </main>
     {hasStarted && isConvexEnabled && (
-      <div ref={loyaltySectionRef} id="customer-profile-section" className="px-4 md:px-8 lg:px-10 mt-4 space-y-4 scroll-mt-20">
+      <section ref={loyaltySectionRef} id="customer-profile-section" aria-labelledby="customer-profile-heading" className="px-4 md:px-8 lg:px-10 mt-4 space-y-4 scroll-mt-20">
+        <h2 id="customer-profile-heading" className="sr-only">
+          {t('landing.header.profile')}
+        </h2>
         <LoyaltyPanel userId={customerId} />
         <LoyaltyTestHarness userId={customerId} />
-      </div>
+      </section>
     )}
     <footer className="text-center p-4 mt-8 text-sm text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-slate-800 space-y-2">
       <p>{t('footer.copyright')}</p>
@@ -930,27 +933,31 @@ const App: React.FC = () => {
       )}
 
       {isBlocked && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl dark:bg-slate-900">
+        <aside
+          role="status"
+          aria-live="polite"
+          className="fixed inset-x-3 bottom-3 sm:inset-x-auto sm:right-6 sm:bottom-6 z-40 w-auto sm:w-[24rem]"
+        >
+          <div className="rounded-2xl border border-pink-200/70 bg-white/95 p-5 text-center shadow-2xl dark:border-pink-500/30 dark:bg-slate-900/95">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">انتهى رصيد النقاط</h3>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               {paywallMessage || 'استهلكت كل رصيدك. اشترك لإكمال الاستخدام.'}
             </p>
-            <div className="mt-4 flex flex-col gap-2">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
               <button
                 className="rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-pink-700"
               >
                 اشترك الآن
               </button>
               <button
-                className="text-sm text-gray-500 underline"
+                className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:border-pink-400 hover:text-pink-600 dark:border-gray-700 dark:text-gray-300"
                 onClick={() => setIsBlocked(false)}
               >
-                إغلاق
+                لاحقاً
               </button>
             </div>
           </div>
-        </div>
+        </aside>
       )}
 
       {isStoreModalOpen && (
