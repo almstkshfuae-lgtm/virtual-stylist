@@ -205,7 +205,7 @@ export const OutfitCard: React.FC<OutfitCardProps> = ({ outfit, onEditImage, ind
             )}
             <div className="mt-2 min-h-[1rem]" aria-live="polite">
               {shareFeedback !== shareLabel && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">{shareFeedback}</p>
+                <p className="text-xs text-gray-700 dark:text-gray-300">{shareFeedback}</p>
               )}
             </div>
           </div>

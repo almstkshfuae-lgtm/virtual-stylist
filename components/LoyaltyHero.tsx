@@ -2,28 +2,18 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toDataURL } from 'qrcode';
 import { useLoyalty } from '../hooks/useConvex';
 import { useTranslation } from '../i18n/LanguageContext';
+import { useClipboard } from '../hooks/useClipboard';
+import { buildReferralLink } from '../lib/referral';
 
 interface LoyaltyHeroProps {
   userId: string;
 }
 
-const copyToClipboard = async (text: string) => {
-  if (typeof navigator === 'undefined' || !navigator.clipboard) return false;
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (error) {
-    console.error('Clipboard write failed', error);
-    return false;
-  }
-};
-
 export const LoyaltyHero: React.FC<LoyaltyHeroProps> = ({ userId }) => {
   const { t, language } = useTranslation();
   const { account, settings, ensureCustomer } = useLoyalty(userId);
-  const [copied, setCopied] = useState(false);
   const [qrSrc, setQrSrc] = useState<string | null>(null);
-  const [origin, setOrigin] = useState('');
+  const { state: copyState, copy } = useClipboard(2000);
   const pointsFormatter = useMemo(() => new Intl.NumberFormat(language), [language]);
 
   useEffect(() => {
@@ -33,16 +23,8 @@ export const LoyaltyHero: React.FC<LoyaltyHeroProps> = ({ userId }) => {
     });
   }, [ensureCustomer, userId]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin);
-    }
-  }, []);
-
-  const referralLink = useMemo(() => {
-    if (!account?.referralCode) return null;
-    return `${origin || 'https://virtual-stylist.ai'}/?ref=${account.referralCode}`;
-  }, [account?.referralCode, origin]);
+  const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
+  const referralLink = buildReferralLink(account?.referralCode, origin);
 
   useEffect(() => {
     if (!referralLink) {
@@ -65,11 +47,7 @@ export const LoyaltyHero: React.FC<LoyaltyHeroProps> = ({ userId }) => {
 
   const handleCopyReferral = async () => {
     if (!referralLink) return;
-    const success = await copyToClipboard(referralLink);
-    if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    await copy(referralLink);
   };
 
   if (!userId) return null;
@@ -122,10 +100,23 @@ export const LoyaltyHero: React.FC<LoyaltyHeroProps> = ({ userId }) => {
               disabled={!referralLink}
               className="rounded-full bg-pink-500 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:bg-pink-200"
             >
-              {copied ? t('landing.loyalty.linkCopied') : t('landing.loyalty.copyLink')}
+              {copyState === 'copied'
+                ? t('landing.loyalty.linkCopied')
+                : copyState === 'manual'
+                  ? t('landing.loyalty.copyManual', 'Press Ctrl+C to copy')
+                  : copyState === 'error'
+                    ? t('landing.loyalty.copyFailed', 'Copy failed')
+                  : t('landing.loyalty.copyLink')}
             </button>
             <span className="text-xs text-gray-600 dark:text-gray-300">{account?.referralCode ?? t('landing.loyalty.referralCodePending')}</span>
           </div>
+          {(copyState === 'manual' || copyState === 'error') && (
+            <p className="mt-2 text-xs text-red-600 dark:text-red-300" role="alert" aria-live="assertive">
+              {copyState === 'manual'
+                ? t('landing.loyalty.copyManualHint', 'Clipboard blocked. Text is selected; press Ctrl+C to copy.')
+                : t('landing.loyalty.copyFailedHint', 'Clipboard permission denied. Please copy manually.')}
+            </p>
+          )}
         </div>
         {qrSrc && (
           <div className="flex items-center justify-center rounded-3xl border border-gray-100 bg-white/80 p-4 text-xs text-gray-500 dark:border-slate-800 dark:bg-slate-900/40">

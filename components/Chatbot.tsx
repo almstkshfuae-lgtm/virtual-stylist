@@ -18,6 +18,7 @@ interface ChatbotProps {
 export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSendMessage, isLoading, selectedItemImage }) => {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
+  const chatInputId = 'chat-message-input';
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -128,7 +129,11 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, history, onSe
         {/* Input */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <form onSubmit={handleSend} className="flex items-center gap-2">
+            <label htmlFor={chatInputId} className="sr-only">
+              {t('chat.placeholder')}
+            </label>
             <input
+              id={chatInputId}
               name="chatMessage"
               type="text"
               value={input}

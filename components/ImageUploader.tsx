@@ -97,7 +97,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) =
                 {error}
             </p>
         )}
-        <p className="mb-4 text-xs text-gray-500 dark:text-gray-400" aria-live="polite">
+        <p className="mb-4 text-xs text-gray-600 dark:text-gray-300" aria-live="polite">
           {t('uploader.guidance', `Tip: upload clear front-view photos. Up to ${MAX_UPLOAD_FILES} images, ${MAX_FILE_SIZE_MB}MB each.`)}
         </p>
         <label
@@ -120,7 +120,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) =
                     <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
                         <span className="font-semibold">{t('uploader.cta')}</span> {t('uploader.drop')}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500">{t('uploader.info')}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">{t('uploader.info')}</p>
                 </div>
             )}
             

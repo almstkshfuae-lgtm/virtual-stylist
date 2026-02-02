@@ -83,6 +83,7 @@ export const ItemCollection: React.FC<ItemCollectionProps> = ({
 }) => {
     const { t } = useTranslation();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const fileInputId = 'collection-image-upload';
     const [removingItems, setRemovingItems] = useState<string[]>([]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,6 +134,7 @@ export const ItemCollection: React.FC<ItemCollectionProps> = ({
                     <span className="text-xs mt-1">{t('main.addItem')}</span>
                 </button>
                 <input
+                    id={fileInputId}
                     name="collectionImageUpload"
                     type="file"
                     ref={fileInputRef}
@@ -140,6 +142,9 @@ export const ItemCollection: React.FC<ItemCollectionProps> = ({
                     accept="image/*"
                     onChange={handleFileChange}
                 />
+                <label htmlFor={fileInputId} className="sr-only">
+                    {t('main.addItem')}
+                </label>
             </div>
         </div>
     );

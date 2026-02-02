@@ -21,6 +21,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
   const { t } = useTranslation();
   const [manualLocation, setManualLocation] = useState('');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copyError, setCopyError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   const GLOBAL_BRANDS = [
@@ -43,11 +44,13 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
 
   const handleCopy = async (uri: string, index: number) => {
     try {
+      setCopyError(null);
       await navigator.clipboard.writeText(uri);
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 1200);
     } catch (e) {
       setCopiedIndex(null);
+      setCopyError(t('storeLocator.copyFailed', 'Could not copy link. Please copy it manually.'));
     }
   };
 
@@ -157,6 +160,11 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
                 <div className="text-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg mb-4 text-sm">
                     {error}
                 </div>
+            )}
+            {copyError && !isLoading && (
+                <p className="mb-3 text-xs text-red-600 dark:text-red-300" role="alert" aria-live="assertive">
+                    {copyError}
+                </p>
             )}
             {!isLoading && !error && stores.length > 0 && (
                 <div className="grid gap-3 sm:grid-cols-2">

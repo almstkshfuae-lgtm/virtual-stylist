@@ -14,6 +14,7 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
   const [referralCode, setReferralCode] = useState('');
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   // Build ASCII-only ids so browser autofill/a11y tooling can reliably resolve aria-labelledby.
   const idBase = useId().replace(/[^a-zA-Z0-9_-]/g, '');
@@ -34,12 +35,13 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
       referralCode.trim() !== (account?.referredByCode ?? '')
     );
   }, [account?.email, account?.name, account?.referredByCode, email, name, referralCode]);
+  const isEmailInvalid = email.trim().length > 0 && !emailPattern.test(email.trim());
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!userId || !ensureCustomer) return;
     const trimmedEmail = email.trim();
-    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    if (trimmedEmail && !emailPattern.test(trimmedEmail)) {
       setStatus('error');
       setErrorMsg(t('landing.profileForm.invalidEmail'));
       return;
@@ -106,6 +108,8 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
             id={emailId}
             name="email"
             aria-labelledby={`${emailId}-label`}
+            aria-invalid={isEmailInvalid}
+            aria-describedby={status === 'error' && errorMsg ? `${emailId}-error` : undefined}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -138,7 +142,11 @@ export const CustomerProfileForm: React.FC<CustomerProfileFormProps> = ({ userId
           {t('landing.profileForm.rewardReferral')}
         </span>
         {status === 'saved' && <span className="text-emerald-600 font-semibold">{t('landing.profileForm.saved')}</span>}
-        {status === 'error' && <span className="text-red-500 font-semibold">{errorMsg}</span>}
+        {status === 'error' && (
+          <span id={`${emailId}-error`} className="text-red-500 font-semibold">
+            {errorMsg}
+          </span>
+        )}
       </div>
     </form>
   );

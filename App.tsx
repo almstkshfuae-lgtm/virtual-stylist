@@ -30,6 +30,7 @@ import ProfilePage from './components/ProfilePage';
 import { useLoyalty, useFashionInsights } from './hooks/useConvex';
 import { isConvexEnabled } from './lib/convexConfig';
 import { useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 
 // Lazy-load the demo image from the public assets folder.
 const DEMO_IMAGE_FILENAME = 'demo-skirt.png';
@@ -87,6 +88,7 @@ const getLocalCustomerId = () => {
 };
 
 const App: React.FC = () => {
+  const location = useLocation();
   const [collection, setCollection] = useState<ClothingItem[]>([]);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [outfits, setOutfits] = useState<(Outfit | null)[]>([]);
@@ -143,9 +145,7 @@ const App: React.FC = () => {
 
   const [savedOutfits, setSavedOutfits] = useState<ValidOutfit[]>([]);
   const [customerId, setCustomerId] = useState<string>(() => getLocalCustomerId());
-  const isProfileRoute =
-    typeof window !== 'undefined' &&
-    (window.location.pathname === '/profile' || window.location.pathname === '/profile/');
+  const isProfileRoute = location.pathname === '/profile' || location.pathname === '/profile/';
   const {
     account: loyaltyAccount,
     ensureCustomer,
@@ -895,9 +895,9 @@ const App: React.FC = () => {
         <LoyaltyTestHarness userId={customerId} />
       </section>
     )}
-    <footer className="text-center p-4 mt-8 text-sm text-gray-400 dark:text-gray-500 border-t border-gray-200 dark:border-slate-800 space-y-2">
+    <footer className="text-center p-4 mt-8 text-sm text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-slate-800 space-y-2">
       <p>{t('footer.copyright')}</p>
-      <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600 dark:text-gray-300">
         <span className="gemini3-logo" aria-hidden="true">
           Gemini
           <span className="gemini3-logo-number">3</span>

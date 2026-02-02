@@ -89,6 +89,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
   const [signupReferral, setSignupReferral] = React.useState('');
   const [signupError, setSignupError] = React.useState<string | null>(null);
   const [isSignupLoading, setIsSignupLoading] = React.useState(false);
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const scrollToFeatures = () => {
       document.getElementById('landing-features')?.scrollIntoView({ behavior: 'smooth' });
@@ -138,7 +139,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
       setRestoreError(t('landing.restore.emailRequired'));
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    if (!emailPattern.test(trimmedEmail)) {
       setRestoreError(t('landing.restore.invalidEmail'));
       return;
     }
@@ -157,7 +158,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
       setSignupError(t('landing.signup.emailRequired'));
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    if (!emailPattern.test(trimmedEmail)) {
       setSignupError(t('landing.signup.invalidEmail'));
       return;
     }
@@ -193,59 +194,96 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
     { icon: MapPin, title: 'landing.features.local.title', desc: 'landing.features.local.desc' },
     { icon: Upload, title: 'landing.features.closet.title', desc: 'landing.features.closet.desc' },
   ];
+  const restoreEmailTrimmed = restoreEmail.trim();
+  const signupEmailTrimmed = signupEmail.trim();
+  const isRestoreEmailInvalid = restoreEmailTrimmed.length > 0 && !emailPattern.test(restoreEmailTrimmed);
+  const isSignupEmailInvalid = signupEmailTrimmed.length > 0 && !emailPattern.test(signupEmailTrimmed);
+  const restoreHelperText = !restoreEmailTrimmed
+    ? t('landing.restore.emailRequired')
+    : isRestoreEmailInvalid
+      ? t('landing.restore.invalidEmail')
+      : null;
+  const signupHelperText = !signupEmailTrimmed
+    ? t('landing.signup.emailRequired')
+    : isSignupEmailInvalid
+      ? t('landing.signup.invalidEmail')
+      : null;
 
   return (
     <main className="landing-shell min-h-screen w-full overflow-x-hidden">
-        {/* Header Actions */}
-        <div className="landing-header-panel pointer-events-none fixed top-3 left-2 right-2 sm:top-6 sm:left-auto sm:right-6 z-40 max-w-[calc(100vw-1rem)] sm:max-w-none max-h-[calc(100vh-1.5rem)] overflow-y-auto flex flex-col gap-2 rounded-3xl border border-white/70 bg-white/85 text-slate-800 dark:border-white/10 dark:bg-slate-900/85 dark:text-slate-100 backdrop-blur-md p-2 sm:p-3 shadow-[0_18px_45px_rgba(15,15,15,0.2)] [&>*]:pointer-events-auto">
+        <header className="landing-header-panel pointer-events-none fixed top-3 left-2 right-2 sm:top-6 sm:left-auto sm:right-6 z-40 max-w-[calc(100vw-1rem)] sm:max-w-none max-h-[calc(100vh-1.5rem)] overflow-y-auto flex flex-col gap-2 rounded-3xl border border-white/70 bg-white/85 text-slate-800 dark:border-white/10 dark:bg-slate-900/85 dark:text-slate-100 backdrop-blur-md p-2 sm:p-3 shadow-[0_18px_45px_rgba(15,15,15,0.2)] [&>*]:pointer-events-auto">
           <div className="landing-header-row grid grid-cols-1 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2">
-            <button
-              type="button"
-              onClick={handleProfileClick}
-              className={navButtonClass(false)}
-            >
-              <User className="h-4 w-4" aria-hidden="true" />
-              <span>{profileLabel}</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleReferralClick}
-              disabled={!isConvexEnabled}
-              aria-disabled={!isConvexEnabled}
-              title={isConvexEnabled ? referralLabel : referralUnavailableLabel}
-              className={navButtonClass(!isConvexEnabled)}
-            >
-                <Gift className="h-4 w-4" aria-hidden="true" />
-                <span>{referralLabel}</span>
-              </button>
-              <div className="landing-restore-row flex flex-wrap items-center gap-2 rounded-2xl border border-white/60 bg-white/85 px-2 py-2 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
-                <input
-                  name="restoreEmail"
-                  type="email"
-                  placeholder={t('landing.restore.emailPlaceholder')}
-                  value={restoreEmail}
-                  onChange={(e) => setRestoreEmail(e.target.value)}
-                  className="min-w-[10rem] max-[360px]:min-w-0 max-[360px]:w-full flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-                />
-                <input
-                  name="restoreName"
-                  type="text"
-                  placeholder={t('landing.restore.namePlaceholder')}
-                  value={restoreName}
-                  onChange={(e) => setRestoreName(e.target.value)}
-                  className="hidden md:block min-w-[9rem] max-[360px]:min-w-0 max-[360px]:w-full flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-                />
+            <nav className="flex flex-wrap items-center gap-2" aria-label="Quick actions">
               <button
                 type="button"
-                onClick={handleRestore}
-                disabled={restoreLoading || !restoreEmail.trim()}
-                  className="rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-xs sm:text-sm font-semibold text-gray-800 hover:border-pink-400 hover:text-pink-700 disabled:cursor-not-allowed disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:border-pink-500 dark:hover:text-pink-200 max-[360px]:w-full"
-                >
-                  {restoreLoading ? t('landing.restore.loading') : t('landing.restore.action')}
-                </button>
-              </div>
-            </div>
-          <div className="flex flex-wrap items-center gap-2">
+                onClick={handleProfileClick}
+                className={navButtonClass(false)}
+              >
+                <User className="h-4 w-4" aria-hidden="true" />
+                <span>{profileLabel}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleReferralClick}
+                disabled={!isConvexEnabled}
+                aria-disabled={!isConvexEnabled}
+                title={isConvexEnabled ? referralLabel : referralUnavailableLabel}
+                className={navButtonClass(!isConvexEnabled)}
+              >
+                  <Gift className="h-4 w-4" aria-hidden="true" />
+                  <span>{referralLabel}</span>
+              </button>
+            </nav>
+            <form
+              className="landing-restore-row flex flex-wrap items-center gap-2 rounded-2xl border border-white/60 bg-white/85 px-2 py-2 shadow-sm dark:border-white/10 dark:bg-slate-900/70"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void handleRestore();
+              }}
+              aria-describedby={restoreError ? 'landing-restore-error' : undefined}
+            >
+              <label htmlFor="restore-email" className="sr-only">
+                {t('landing.restore.emailPlaceholder')}
+              </label>
+              <input
+                id="restore-email"
+                name="restoreEmail"
+                type="email"
+                autoComplete="email"
+                aria-invalid={isRestoreEmailInvalid}
+                placeholder={t('landing.restore.emailPlaceholder')}
+                value={restoreEmail}
+                onChange={(e) => setRestoreEmail(e.target.value)}
+                className="min-w-[10rem] max-[360px]:min-w-0 max-[360px]:w-full flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+              />
+              <label htmlFor="restore-name" className="sr-only">
+                {t('landing.restore.namePlaceholder')}
+              </label>
+              <input
+                id="restore-name"
+                name="restoreName"
+                type="text"
+                autoComplete="name"
+                placeholder={t('landing.restore.namePlaceholder')}
+                value={restoreName}
+                onChange={(e) => setRestoreName(e.target.value)}
+                className="hidden md:block min-w-[9rem] max-[360px]:min-w-0 max-[360px]:w-full flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+              />
+              <button
+                type="submit"
+                disabled={restoreLoading || !restoreEmailTrimmed}
+                className="rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-xs sm:text-sm font-semibold text-gray-800 hover:border-pink-400 hover:text-pink-700 disabled:cursor-not-allowed disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:border-pink-500 dark:hover:text-pink-200 max-[360px]:w-full"
+              >
+                {restoreLoading ? t('landing.restore.loading') : t('landing.restore.action')}
+              </button>
+            </form>
+            {!restoreError && restoreHelperText && (
+              <p className="px-1 text-xs text-gray-600 dark:text-gray-300" aria-live="polite">
+                {restoreHelperText}
+              </p>
+            )}
+          </div>
+          <aside className="flex flex-wrap items-center gap-2" aria-label="Account summary">
             <div className="flex items-center gap-2 rounded-full border border-white/40 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm dark:border-white/20 dark:bg-gray-900/70 dark:text-white">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500 text-xs font-bold text-white">
                 {userInitial}
@@ -262,15 +300,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
             <span className="text-xs text-gray-700 dark:text-gray-200">
               {referralStatus}
             </span>
-          </div>
+          </aside>
           {restoreError && (
-            <p className="px-1 text-xs text-red-600 dark:text-red-300">{restoreError}</p>
+            <p id="landing-restore-error" className="px-1 text-xs text-red-600 dark:text-red-300">{restoreError}</p>
           )}
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ThemeToggle />
             <LanguageSelector />
           </div>
-        </div>
+        </header>
         
         {/* Hero Section */}
         <section
@@ -325,6 +363,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
 
                       <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                         <motion.button
+                            type="button"
                             onClick={onGetStarted}
                             className="inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-white font-bold text-base sm:text-lg rounded-full shadow-[0_20px_45px_rgba(140,35,64,0.35)] transition-all duration-300 hover:shadow-[0_25px_60px_rgba(140,35,64,0.45)] hover:-translate-y-0.5 active:translate-y-0 bg-brand hover:bg-brand/90 w-full sm:w-auto"
                             initial={{ opacity: 0, y: 16 }}
@@ -337,6 +376,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                         </motion.button>
 
                         <motion.button
+                          type="button"
                           onClick={scrollToFeatures}
                           className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-900/15 bg-white/80 px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm transition duration-300 hover:border-slate-900/30 hover:bg-white dark:border-white/20 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:bg-slate-800/80 w-full sm:w-auto"
                           initial={{ opacity: 0, y: 16 }}
@@ -434,48 +474,76 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                   <p className="text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.3em] text-pink-800 dark:text-pink-100">
                     {t('landing.signup.intro')}
                   </p>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    <input
-                      name="signupName"
-                      type="text"
-                      placeholder={t('landing.signup.namePlaceholder')}
-                      value={signupName}
-                      onChange={(e) => setSignupName(e.target.value)}
-                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-                    />
-                    <input
-                      name="signupEmail"
-                      type="email"
-                      placeholder={t('landing.signup.emailPlaceholder')}
-                      value={signupEmail}
-                      onChange={(e) => setSignupEmail(e.target.value)}
-                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
-                    />
-                    <input
-                      name="signupReferralCode"
-                      type="text"
-                      placeholder={t('landing.signup.referralPlaceholder')}
-                      value={signupReferral}
-                      onChange={(e) => setSignupReferral(e.target.value)}
-                      className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40 sm:col-span-2"
-                    />
-                  </div>
-                  {signupError && (
-                    <p className="mt-2 text-sm font-semibold text-red-600 dark:text-red-300">{signupError}</p>
-                  )}
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleSignup}
-                      disabled={isSignupLoading || !signupEmail.trim()}
-                      className="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-pink-300"
-                    >
-                      {isSignupLoading ? t('landing.signup.loading') : t('landing.signup.submit')}
-                    </button>
-                    <span className="text-xs text-pink-700/80 dark:text-pink-200">
-                      {t('landing.signup.hint')}
-                    </span>
-                  </div>
+                  <form
+                    className="mt-3"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void handleSignup();
+                    }}
+                    aria-describedby={signupError ? 'landing-signup-error' : undefined}
+                  >
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <label htmlFor="signup-name" className="sr-only">
+                        {t('landing.signup.namePlaceholder')}
+                      </label>
+                      <input
+                        id="signup-name"
+                        name="signupName"
+                        type="text"
+                        autoComplete="name"
+                        placeholder={t('landing.signup.namePlaceholder')}
+                        value={signupName}
+                        onChange={(e) => setSignupName(e.target.value)}
+                        className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                      />
+                      <label htmlFor="signup-email" className="sr-only">
+                        {t('landing.signup.emailPlaceholder')}
+                      </label>
+                      <input
+                        id="signup-email"
+                        name="signupEmail"
+                        type="email"
+                        autoComplete="email"
+                        aria-invalid={isSignupEmailInvalid}
+                        placeholder={t('landing.signup.emailPlaceholder')}
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
+                      />
+                      <label htmlFor="signup-referral-code" className="sr-only">
+                        {t('landing.signup.referralPlaceholder')}
+                      </label>
+                      <input
+                        id="signup-referral-code"
+                        name="signupReferralCode"
+                        type="text"
+                        placeholder={t('landing.signup.referralPlaceholder')}
+                        value={signupReferral}
+                        onChange={(e) => setSignupReferral(e.target.value)}
+                        className="rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40 sm:col-span-2"
+                      />
+                    </div>
+                    {signupError && (
+                      <p id="landing-signup-error" className="mt-2 text-sm font-semibold text-red-600 dark:text-red-300">{signupError}</p>
+                    )}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <button
+                        type="submit"
+                        disabled={isSignupLoading || !signupEmailTrimmed}
+                        className="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-pink-300"
+                      >
+                        {isSignupLoading ? t('landing.signup.loading') : t('landing.signup.submit')}
+                      </button>
+                      <span className="text-xs text-pink-700/80 dark:text-pink-200">
+                        {t('landing.signup.hint')}
+                      </span>
+                    </div>
+                    {!signupError && signupHelperText && (
+                      <p className="mt-2 text-xs text-pink-700/90 dark:text-pink-200" aria-live="polite">
+                        {signupHelperText}
+                      </p>
+                    )}
+                  </form>
                 </div>
               </div>
             )}
@@ -548,6 +616,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
                     transition={{ duration: 0.6, delay: 0.2 }}
                 >
                     <button
+                        type="button"
                         onClick={onGetStarted}
                         className="inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 text-white font-bold text-base sm:text-lg rounded-full sm:rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95 bg-brand hover:bg-brand/90"
                         aria-label={t('landing.cta.ariaLabel')}

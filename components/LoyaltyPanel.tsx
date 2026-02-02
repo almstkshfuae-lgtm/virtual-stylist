@@ -1,7 +1,13 @@
-import React, { useEffect, useMemo, useState, useId } from 'react';
+import React, { useEffect, useState, useId } from 'react';
 import { Share2, Copy } from 'lucide-react';
 import { useLoyalty } from '../hooks/useConvex';
 import CustomerProfileForm from './CustomerProfileForm';
+import { useClipboard } from '../hooks/useClipboard';
+import {
+  buildReferralLink,
+  buildReferralInviteMailto,
+  isValidReferralEmail,
+} from '../lib/referral';
 
 const ENTRY_LABELS: Record<string, string> = {
   monthly: 'Monthly allotment',
@@ -12,8 +18,6 @@ const ENTRY_LABELS: Record<string, string> = {
   spend: 'Redemption',
   adjustment: 'Manual adjustment',
 };
-
-type CopyStatus = 'idle' | 'copied' | 'error';
 
 const formatMonthKey = (value?: string) => {
   if (!value) return 'Not issued yet';
@@ -30,12 +34,12 @@ interface LoyaltyPanelProps {
 
 export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
   const { account, settings, ledger, ensureCustomer, issueMonthly } = useLoyalty(userId);
-  const [copyStatus, setCopyStatus] = useState<CopyStatus>('idle');
-  const [copyLinkStatus, setCopyLinkStatus] = useState<CopyStatus>('idle');
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteError, setInviteError] = useState<string | null>(null);
   const inviteEmailId = useId();
   const [isIssuing, setIsIssuing] = useState(false);
-  const [origin, setOrigin] = useState('');
+  const codeClipboard = useClipboard();
+  const linkClipboard = useClipboard();
 
   useEffect(() => {
     if (!userId) return;
@@ -43,12 +47,6 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
       console.debug('Loyalty customer initialization skipped', error.message);
     });
   }, [ensureCustomer, userId]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin);
-    }
-  }, []);
 
   const handleIssueMonthly = async () => {
     if (!userId || !issueMonthly) return;
@@ -64,50 +62,37 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
 
   const copyReferralCode = async () => {
     if (!account?.referralCode) return;
-    if (typeof navigator === 'undefined' || !navigator.clipboard) {
-      setCopyStatus('error');
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(account.referralCode);
-      setCopyStatus('copied');
-      setTimeout(() => setCopyStatus('idle'), 1500);
-    } catch (error) {
-      console.error('Failed to copy referral code', error);
-      setCopyStatus('error');
-    }
+    await codeClipboard.copy(account.referralCode);
   };
 
-  const referralLink = useMemo(() => {
-    if (!account?.referralCode) return null;
-    const base = origin || 'https://virtual-stylist.ai';
-    return `${base}/?ref=${account.referralCode}`;
-  }, [account?.referralCode, origin]);
+  const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
+  const referralLink = buildReferralLink(account?.referralCode, origin);
+  const isInviteEmailInvalid =
+    inviteEmail.trim().length > 0 && !isValidReferralEmail(inviteEmail);
 
   const sendInvite = () => {
+    setInviteError(null);
     const trimmedEmail = inviteEmail.trim();
-    if (!referralLink || !trimmedEmail) return;
-    const subject = encodeURIComponent('انضم إلي منسق الأزياء الافتراضي');
-    const body = encodeURIComponent(
-      `جرّب منسق الأزياء الافتراضي واحصل على نقاط مكافأة باستخدام رابط الإحالة الخاص بي:\n${referralLink}`
-    );
-    const encodedEmail = encodeURIComponent(trimmedEmail);
-    window.location.href = `mailto:${encodedEmail}?subject=${subject}&body=${body}`;
+    if (!referralLink) return;
+    if (!trimmedEmail) {
+      setInviteError('Enter your friend email to send an invite.');
+      return;
+    }
+    if (!isValidReferralEmail(trimmedEmail)) {
+      setInviteError('Enter a valid email address (example: you@example.com).');
+      return;
+    }
+    window.location.href = buildReferralInviteMailto({
+      toEmail: trimmedEmail,
+      referralLink,
+      subject: 'انضم إلي منسق الأزياء الافتراضي',
+      message: 'جرّب منسق الأزياء الافتراضي واحصل على نقاط مكافأة باستخدام رابط الإحالة الخاص بي:',
+    });
   };
 
   const copyReferralLink = async () => {
-    if (!referralLink || typeof navigator === 'undefined' || !navigator.clipboard) {
-      setCopyLinkStatus('error');
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(referralLink);
-      setCopyLinkStatus('copied');
-      setTimeout(() => setCopyLinkStatus('idle'), 1500);
-    } catch (error) {
-      console.error('Failed to copy referral link', error);
-      setCopyLinkStatus('error');
-    }
+    if (!referralLink) return;
+    await linkClipboard.copy(referralLink);
   };
 
   const shareReferral = async () => {
@@ -208,7 +193,14 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
                 onClick={copyReferralCode}
                 className="inline-flex items-center gap-1 text-xs font-semibold uppercase text-pink-600 hover:text-pink-400"
               >
-                <Copy className="h-3.5 w-3.5" />{copyStatus === 'copied' ? 'Copied' : 'Copy'}
+                <Copy className="h-3.5 w-3.5" />
+                {codeClipboard.state === 'copied'
+                  ? 'Copied'
+                  : codeClipboard.state === 'manual'
+                    ? 'Press Ctrl+C'
+                  : codeClipboard.state === 'error'
+                    ? 'Copy failed'
+                    : 'Copy'}
               </button>
               <button
                 type="button"
@@ -216,7 +208,14 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
                 disabled={!referralLink}
                 className="inline-flex items-center gap-1 text-xs font-semibold uppercase text-pink-600 hover:text-pink-400 disabled:text-pink-300"
               >
-                <Copy className="h-3.5 w-3.5" />{copyLinkStatus === 'copied' ? 'Link copied' : 'Link'}
+                <Copy className="h-3.5 w-3.5" />
+                {linkClipboard.state === 'copied'
+                  ? 'Link copied'
+                  : linkClipboard.state === 'manual'
+                    ? 'Press Ctrl+C'
+                  : linkClipboard.state === 'error'
+                    ? 'Copy failed'
+                    : 'Link'}
               </button>
               <button
                 type="button"
@@ -234,6 +233,16 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
           <p className="text-xs text-pink-600/80 dark:text-pink-100">
             {`Both referrer and referee earn ${referralPoints} pts when a new account joins.`}
           </p>
+          {(codeClipboard.state === 'manual' ||
+            linkClipboard.state === 'manual' ||
+            codeClipboard.state === 'error' ||
+            linkClipboard.state === 'error') && (
+            <p className="mt-2 text-xs text-red-600 dark:text-red-300" role="alert" aria-live="assertive">
+              {codeClipboard.state === 'manual' || linkClipboard.state === 'manual'
+                ? 'Clipboard blocked. We selected the text for you; press Ctrl+C to copy.'
+                : 'Clipboard permission denied. Please copy manually.'}
+            </p>
+          )}
           {referralLink && (
             <a
               href={`mailto:?subject=انضم%20إلي%20منسق%20الأزياء%20الافتراضي&body=${encodeURIComponent(
@@ -248,25 +257,45 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
             <label htmlFor={inviteEmailId} className="text-xs font-semibold uppercase text-pink-700 dark:text-pink-200">
               أرسل رابط الإحالة لصديق جديد
             </label>
-            <div className="flex flex-col gap-2 sm:flex-row">
+            <form
+              className="flex flex-col gap-2 sm:flex-row"
+              onSubmit={(event) => {
+                event.preventDefault();
+                sendInvite();
+              }}
+            >
               <input
                 id={inviteEmailId}
                 name="inviteEmail"
                 type="email"
                 value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
+                onChange={(e) => {
+                  setInviteEmail(e.target.value);
+                  if (inviteError) setInviteError(null);
+                }}
+                aria-invalid={isInviteEmailInvalid}
+                aria-describedby={isInviteEmailInvalid || inviteError ? `${inviteEmailId}-error` : undefined}
                 placeholder="friend@example.com"
                 className="flex-1 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-200 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100 dark:focus:ring-pink-500/40"
               />
               <button
-                type="button"
-                onClick={sendInvite}
-                disabled={!referralLink || !inviteEmail.trim()}
+                type="submit"
+                disabled={!referralLink}
                 className="inline-flex items-center justify-center rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-pink-300"
               >
                 إرسال الدعوة
               </button>
-            </div>
+            </form>
+            {(isInviteEmailInvalid || inviteError) && (
+              <p id={`${inviteEmailId}-error`} className="text-[11px] text-red-600 dark:text-red-300" role="alert" aria-live="assertive">
+                {inviteError || 'Enter a valid email address (example: you@example.com).'}
+              </p>
+            )}
+            {!referralLink && (
+              <p className="text-[11px] text-gray-500 dark:text-gray-400" aria-live="polite">
+                Referral code pending. Create your profile first to enable invites.
+              </p>
+            )}
             <p className="text-[11px] text-pink-600/80 dark:text-pink-200">
               سيُفتح بريدك الافتراضي مع رسالة جاهزة تتضمن رابط الإحالة.
             </p>

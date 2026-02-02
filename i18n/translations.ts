@@ -106,6 +106,11 @@ const en = {
       qrAlt: "Referral QR code"
     }
   },
+  profilePage: {
+    referralQrAlt: "Referral QR code for your invite link",
+    savedOutfitAlt: "Saved outfit: {{title}}",
+    savedOutfitAltFallback: "Saved outfit {{index}}"
+  },
   uploader: {
     title: "Upload Your Clothing Items",
     subtitle: "Have items you don't know how to style? Upload their photos, and our AI stylist will create complete outfits for you.",
@@ -350,6 +355,11 @@ const ar = {
       referralCodePending: "كود الإحالة قيد التجهيز",
       qrAlt: "رمز QR للإحالة"
     }
+  },
+  profilePage: {
+    referralQrAlt: "رمز QR لرابط الإحالة الخاص بك",
+    savedOutfitAlt: "إطلالة محفوظة: {{title}}",
+    savedOutfitAltFallback: "إطلالة محفوظة رقم {{index}}"
   },
   uploader: {
     title: "قم بتحميل قطع ملابسك",
@@ -596,6 +606,11 @@ const fr = {
       qrAlt: "Code QR de parrainage"
     }
   },
+  profilePage: {
+    referralQrAlt: "Code QR de votre lien de parrainage",
+    savedOutfitAlt: "Tenue enregistrée : {{title}}",
+    savedOutfitAltFallback: "Tenue enregistrée {{index}}"
+  },
   uploader: {
     title: "Téléchargez vos vêtements",
     subtitle: "Vous avez des vêtements que vous ne savez pas comment styliser ? Téléchargez leurs photos et notre styliste IA créera des tenues complètes pour vous.",
@@ -841,6 +856,11 @@ const ru = {
       qrAlt: "QR-код реферала"
     }
   },
+  profilePage: {
+    referralQrAlt: "QR-код вашей реферальной ссылки",
+    savedOutfitAlt: "Сохраненный образ: {{title}}",
+    savedOutfitAltFallback: "Сохраненный образ {{index}}"
+  },
   uploader: {
     title: "Загрузите ваши вещи",
     subtitle: "У вас есть вещи, которые вы не знаете, как стилизовать? Загрузите их фото, и наш ИИ-стилист создаст для вас полные образы.",
@@ -1085,6 +1105,11 @@ const nl = {
       referralCodePending: "Doorverwijzingscode in afwachting",
       qrAlt: "Doorverwijzing QR-code"
     }
+  },
+  profilePage: {
+    referralQrAlt: "QR-code voor je doorverwijzingslink",
+    savedOutfitAlt: "Opgeslagen outfit: {{title}}",
+    savedOutfitAltFallback: "Opgeslagen outfit {{index}}"
   },
   uploader: {
     title: "Upload uw kledingstukken",
