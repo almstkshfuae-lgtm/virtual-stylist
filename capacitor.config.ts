@@ -1,4 +1,11 @@
-import { CapacitorConfig } from '@capacitor/cli';
+type CapacitorConfig = {
+  appId: string;
+  appName: string;
+  webDir: string;
+  server?: {
+    androidScheme?: string;
+  };
+};
 
 const config: CapacitorConfig = {
   appId: 'com.stylish.virtualstylist',

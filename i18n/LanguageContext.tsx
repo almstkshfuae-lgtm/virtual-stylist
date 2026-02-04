@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { translations, TranslationKey } from './translations';
+import { translations } from './translations';
 
 type Language = 'en' | 'ar' | 'fr' | 'ru' | 'nl';
 type LanguageDirection = 'ltr' | 'rtl';

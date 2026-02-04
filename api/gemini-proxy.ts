@@ -32,7 +32,8 @@ const RATE_LIMIT_MAX_UNAUTH = Number(process.env.RATE_LIMIT_MAX_UNAUTH || 20);
 
 type ValidationResult<T> = { value: T } | { error: string };
 type CleanPart = { text: string } | { inlineData: { data: string; mimeType: string } };
-type CleanContent = { parts: CleanPart[]; role?: 'user' | 'model' | 'system' };
+type CleanRole = 'user' | 'model' | 'system';
+type CleanContent = { parts: CleanPart[]; role?: CleanRole };
 type CleanConfig = {
   maxOutputTokens: number;
   temperature: number;
@@ -48,7 +49,7 @@ type RateLimitResult = {
   resetAtMs: number;
 };
 
-const isAllowedRole = (value: string): value is CleanContent['role'] =>
+const isAllowedRole = (value: string): value is CleanRole =>
   value === 'user' || value === 'model' || value === 'system';
 
 const asObject = (value: unknown): Record<string, unknown> | null =>
@@ -151,12 +152,15 @@ const sanitizeContent = (raw: unknown): ValidationResult<CleanContent> => {
     parts.push(cleanPart.value);
   }
 
-  const role = cleanString(obj.role, 10);
-  if (role && !isAllowedRole(role)) {
-    return { error: 'content.role is invalid' };
+  const rawRole = cleanString(obj.role, 10);
+  if (rawRole) {
+    if (!isAllowedRole(rawRole)) {
+      return { error: 'content.role is invalid' };
+    }
+    return { value: { role: rawRole, parts } };
   }
 
-  return { value: role ? { role, parts } : { parts } };
+  return { value: { parts } };
 };
 
 const sanitizePayload = (payload: unknown): ValidationResult<{ contents: CleanContent[]; systemInstruction?: string | CleanContent; config?: CleanConfig }> => {

@@ -1,8 +1,8 @@
 import { v } from "convex/values";
-import { httpAction, internalMutation, type ActionCtx } from "./_generated/server";
+import { httpAction, internalMutation, internalQuery, type ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-const requireUser = async (ctx: any) => {
+const requireUser = async (ctx: ActionCtx) => {
   const identity = await ctx.auth.getUserIdentity?.();
   if (!identity) throw new Response("Unauthorized", { status: 401 });
   return identity;
@@ -24,6 +24,19 @@ export const sendOne = internalMutation({
   },
 });
 
+export const getByAuthorInternal = internalQuery({
+  args: {
+    author: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return ctx.db
+      .query("messages")
+      .withIndex("by_author", (q) => q.eq("author", args.author))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .collect();
+  },
+});
+
 type PostMessagePayload = {
   author: string;
   body: string;
@@ -34,15 +47,8 @@ const jsonResponse = (data: unknown) =>
     headers: { "content-type": "application/json" },
   });
 
-const fetchMessagesByAuthor = (ctx: ActionCtx, author: string) =>
-  ctx.db
-    .query("messages")
-    .withIndex("by_author", (q) => q.eq("author", author))
-    .filter((q) => q.eq(q.field("deletedAt"), undefined))
-    .collect();
-
 const respondWithMessages = async (ctx: ActionCtx, author: string) => {
-  const messages = await fetchMessagesByAuthor(ctx, author);
+  const messages = await ctx.runQuery(internal.messages.getByAuthorInternal, { author });
   return jsonResponse(messages);
 };
 

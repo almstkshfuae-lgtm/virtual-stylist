@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { ValidOutfit } from '../types';
 import { EditIcon } from './icons/EditIcon';
-import { Loader } from './Loader';
 import { ShareIcon } from './icons/ShareIcon';
 import { useTranslation } from '../i18n/LanguageContext';
 import { TranslationKey } from '../i18n/translations';

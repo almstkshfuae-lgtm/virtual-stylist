@@ -13,7 +13,9 @@ export const sanitizeMarkdownToHtml = (value: string) => {
   const escaped = escapeHtml(value || '');
   const rendered = marked.parse(escaped, { breaks: true, gfm: true });
 
-  return DOMPurify.sanitize(rendered, {
+  const html = typeof rendered === 'string' ? rendered : escaped.replace(/\n/g, '<br />');
+
+  return DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
     FORBID_TAGS: ['style', 'script', 'iframe', 'object', 'embed', 'form'],
     FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick'],

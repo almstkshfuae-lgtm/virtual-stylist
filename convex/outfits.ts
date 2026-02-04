@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 
 const requireUser = async (ctx: any, userId?: string) => {
   const identity = await ctx.auth.getUserIdentity?.();
@@ -9,7 +10,8 @@ const requireUser = async (ctx: any, userId?: string) => {
 };
 
 const outfitIdArg = v.union(v.id("outfits"), v.string(), v.null());
-const asOutfitId = (id: string | null) => (id ? (id as any) : null);
+const asOutfitId = (id: Id<"outfits"> | string | null): Id<"outfits"> | null =>
+  id ? (id as Id<"outfits">) : null;
 
 // Get or create user profile
 export const getOrCreateUser = mutation({
