@@ -1,5 +1,5 @@
-import { GoogleGenAI } from '@google/genai';
-import type { ApiRequest, ApiResponse } from './vercelTypes';
+﻿import { GoogleGenAI } from '@google/genai';
+import type { ApiRequest, ApiResponse } from './vercelTypes.js';
 
 const safeJsonParse = (value: string) => {
   try {
@@ -48,7 +48,7 @@ type RateLimitResult = {
   resetAtMs: number;
 };
 
-const isAllowedRole = (value: string): value is CleanContent['role'] =>
+const isAllowedRole = (value: string): value is Exclude<CleanContent['role'], undefined> =>
   value === 'user' || value === 'model' || value === 'system';
 
 const asObject = (value: unknown): Record<string, unknown> | null =>
@@ -59,7 +59,7 @@ const rejectUnknownKeys = (
   allowedKeys: readonly string[],
   path: string
 ): ValidationResult<null> => {
-  const unknown = Object.keys(obj).filter((key) => !allowedKeys.includes(key));
+  const unknown = Object.keys(obj).filter((key) => !Array.from(allowedKeys).includes(key));
   if (unknown.length > 0) {
     return { error: `${path} contains unexpected field(s): ${unknown.join(', ')}` };
   }
@@ -151,12 +151,15 @@ const sanitizeContent = (raw: unknown): ValidationResult<CleanContent> => {
     parts.push(cleanPart.value);
   }
 
-  const role = cleanString(obj.role, 10);
-  if (role && !isAllowedRole(role)) {
+  const roleStr = cleanString(obj.role, 10);
+  if (roleStr && !isAllowedRole(roleStr)) {
     return { error: 'content.role is invalid' };
   }
 
-  return { value: role ? { role, parts } : { parts } };
+  if (roleStr && isAllowedRole(roleStr)) {
+    return { value: { role: roleStr, parts } };
+  }
+  return { value: { parts } };
 };
 
 const sanitizePayload = (payload: unknown): ValidationResult<{ contents: CleanContent[]; systemInstruction?: string | CleanContent; config?: CleanConfig }> => {
@@ -253,7 +256,7 @@ const hashToken = (value: string) => {
   return (hash >>> 0).toString(16);
 };
 
-const logEvent = (event: string, fields: Record<string, unknown>) => {
+const logEvent = (event: 'proxy.request.start' | 'proxy.request.success' | 'proxy.request.error' | 'proxy.rejected.method' | 'proxy.rejected.validation' | 'proxy.rejected.unauthorized' | 'proxy.rejected.rate_limit' | 'proxy.error.config', fields: Record<string, unknown>) => {
   const payload = { ts: new Date().toISOString(), event, ...fields };
   console.log(JSON.stringify(payload));
 };

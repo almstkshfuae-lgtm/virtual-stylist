@@ -1,0 +1,10 @@
+# Exclude API functions from frontend build
+api/**
+*.test.ts
+*.spec.ts
+scripts/
+server/
+tests/
+docs/
+.git/
+node_modules/

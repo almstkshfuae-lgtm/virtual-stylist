@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+﻿import { GoogleGenAI } from '@google/genai';
 import type { ApiRequest, ApiResponse } from './vercelTypes';
 
 const safeJsonParse = (value: string) => {

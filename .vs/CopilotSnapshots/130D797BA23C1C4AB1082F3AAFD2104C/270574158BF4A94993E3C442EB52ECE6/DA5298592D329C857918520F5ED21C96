@@ -1,5 +1,5 @@
-import { GoogleGenAI } from '@google/genai';
-import type { ApiRequest, ApiResponse } from './vercelTypes';
+﻿import { GoogleGenAI } from '@google/genai';
+import type { ApiRequest, ApiResponse } from './vercelTypes.js';
 
 const safeJsonParse = (value: string) => {
   try {
@@ -48,7 +48,7 @@ type RateLimitResult = {
   resetAtMs: number;
 };
 
-const isAllowedRole = (value: string): value is CleanContent['role'] =>
+const isAllowedRole = (value: string): value is Exclude<CleanContent['role'], undefined> =>
   value === 'user' || value === 'model' || value === 'system';
 
 const asObject = (value: unknown): Record<string, unknown> | null =>

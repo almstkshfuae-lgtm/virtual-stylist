@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+﻿import { GoogleGenAI } from '@google/genai';
 import type { ApiRequest, ApiResponse } from './vercelTypes';
 
 const safeJsonParse = (value: string) => {
@@ -48,7 +48,7 @@ type RateLimitResult = {
   resetAtMs: number;
 };
 
-const isAllowedRole = (value: string): value is CleanContent['role'] =>
+const isAllowedRole = (value: string | null | undefined): value is 'user' | 'model' | 'system' =>
   value === 'user' || value === 'model' || value === 'system';
 
 const asObject = (value: unknown): Record<string, unknown> | null =>
@@ -156,7 +156,10 @@ const sanitizeContent = (raw: unknown): ValidationResult<CleanContent> => {
     return { error: 'content.role is invalid' };
   }
 
-  return { value: role ? { role, parts } : { parts } };
+  if (isAllowedRole(role)) {
+    return { value: { role, parts } };
+  }
+  return { value: { parts } };
 };
 
 const sanitizePayload = (payload: unknown): ValidationResult<{ contents: CleanContent[]; systemInstruction?: string | CleanContent; config?: CleanConfig }> => {
