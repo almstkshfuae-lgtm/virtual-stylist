@@ -305,6 +305,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   const requestId = getHeader(req, 'x-request-id') || `req_${Math.random().toString(36).slice(2, 10)}`;
   const clientIp = extractClientIp(req);
 
+  if (req.method === 'GET') {
+    res.status(200).json({ ok: true, route: 'gemini-proxy', method: 'GET' });
+    return;
+  }
+
   if (req.method !== 'POST') {
     logEvent('proxy.rejected.method', { requestId, clientIp, method: req.method || 'unknown' });
     res.status(405).json({ error: 'Method not allowed' });
