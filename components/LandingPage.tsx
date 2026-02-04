@@ -21,35 +21,6 @@ interface LandingPageProps {
   onRegisterAccount: (email: string, name?: string, referralCode?: string) => Promise<void>;
 }
 
-const AnimatedText: React.FC<{ text: string; isRtl: boolean; className: string; style?: React.CSSProperties }> = ({ text, isRtl, className, style }) => {
-  // For RTL languages (like Arabic), splitting text by character breaks ligatures (shaping).
-  // We must render the text as a continuous block.
-  if (isRtl) {
-    return (
-      <h1 className={className} style={style}>
-        <span className="animate-letter-reveal" style={{ animationDelay: '0ms' }}>
-          {text}
-        </span>
-      </h1>
-    );
-  }
-
-  // For LTR languages, we can safely animate letter-by-letter.
-  return (
-    <h1 className={className} style={style}>
-      {text.split('').map((char, index) => (
-        <span 
-          key={index} 
-          className="animate-letter-reveal" 
-          style={{ animationDelay: `${index * 60}ms`}}
-        >
-          {char === ' ' ? '\u00A0' : char}
-        </span>
-      ))}
-    </h1>
-  );
-};
-
 interface FeatureCardProps {
     icon: React.ReactNode;
     title: string;

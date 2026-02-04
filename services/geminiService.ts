@@ -384,7 +384,7 @@ export const sendMessageToChat = async (history: ChatMessage[], language: string
         if (lastUserMessage) {
             // This is a bit of a hack since SDK doesn't directly support adding parts.
             // We find the last user message and prepend the image.
-            const userParts = lastUserMessage.parts;
+            const userParts = lastUserMessage.parts ?? [];
             // Prepend the image part and a context text
             lastUserMessage.parts = [imagePart, {text: "Refer to this image for context in your answer."}, ...userParts];
         }

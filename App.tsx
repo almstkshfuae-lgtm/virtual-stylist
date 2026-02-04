@@ -355,8 +355,6 @@ const App: React.FC = () => {
         .slice(0, 25);
       if (logInsight) {
         logInsight({
-          userId: customerId,
-          sessionId: undefined,
           styles,
           keywords,
           language,

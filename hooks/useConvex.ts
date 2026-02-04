@@ -141,6 +141,8 @@ export function useFashionInsights(userId: string | null) {
       logInsight: async () => Promise.resolve(null),
     };
   }
-  const logInsight = useMutation(api.insights.logFashionInsight);
+  const logInsightMutation = useMutation(api.insights.logFashionInsight);
+  const logInsight = (args: Omit<Parameters<typeof logInsightMutation>[0], "userId">) =>
+    logInsightMutation({ userId: userId ?? undefined, ...args });
   return { logInsight };
 }
