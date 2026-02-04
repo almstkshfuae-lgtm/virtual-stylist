@@ -1,7 +1,32 @@
 import { ReactNode, useCallback, useMemo } from 'react';
 import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react';
 
-// Modified to match WorkOS's auth hook structure
+/**
+ * REFERENCE IMPLEMENTATION: WorkOS AuthKit Integration
+ * 
+ * This component demonstrates how to integrate WorkOS AuthKit with Convex.
+ * 
+ * Usage:
+ * ```typescript
+ * import { ConvexProviderWithAuthKit } from './components/ConvexProviderWithAuthKit.reference';
+ * import { useAuth } from '@workos-inc/authkit-react';
+ * 
+ * <AuthKitProvider clientId={...}>
+ *   <ConvexProviderWithAuthKit client={convex} useAuth={useAuth}>
+ *     <App />
+ *   </ConvexProviderWithAuthKit>
+ * </AuthKitProvider>
+ * ```
+ * 
+ * Current implementation: Custom authentication (see ConvexProviderWrapper.tsx)
+ * 
+ * To migrate to WorkOS:
+ * 1. Install @workos-inc/authkit-react
+ * 2. Replace ConvexProviderWrapper.tsx with this implementation
+ * 3. Add auth.config.ts to convex/ directory
+ * 4. See docs/WORKOS_AUTH_REFERENCE.ts for Convex configuration
+ */
+
 type UseAuth = () => {
   isLoading: boolean;
   user: unknown;

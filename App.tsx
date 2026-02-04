@@ -23,7 +23,6 @@ import { PlusMinusIcon } from './components/icons/PlusMinusIcon';
 import { StyleSelector } from './components/StyleSelector';
 import { BodyShapeSelector } from './components/BodyShapeSelector';
 import { StyleProfileDisplay } from './components/StyleProfileDisplay';
-import { ConvexProviderWrapper } from './components/ConvexProviderWrapper';
 import { LoyaltyPanel } from './components/LoyaltyPanel';
 import LoyaltyTestHarness from './components/LoyaltyTestHarness';
 import ProfilePage from './components/ProfilePage';
@@ -553,7 +552,8 @@ const App: React.FC = () => {
   };
 
   const handleFindNearbyStores = useCallback(async (accessory: string) => {
-      const search = async (coords: Coordinates) => {
+      type NonNullCoordinates = Exclude<Coordinates, null>;
+      const search = async (coords: NonNullCoordinates) => {
           const key = `${accessory}::${coords.latitude.toFixed(3)},${coords.longitude.toFixed(3)}`;
           if (storeCache.current.has(key)) {
             setStoreLocations(storeCache.current.get(key) || []);
@@ -675,7 +675,7 @@ const App: React.FC = () => {
   if (!hasStarted && collection.length === 0) {
     return (
       <LandingPage
-        onGetStarted={() => setHasStarted(true)}
+        onGetStarted={handleStartDemo}
         userId={customerId}
         onRestoreAccount={handleRestoreAccount}
         restoreLoading={isAuthLoading}

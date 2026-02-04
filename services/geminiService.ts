@@ -442,9 +442,15 @@ export const findNearbyStores = async (accessory: string, location: Coordinates 
     const groundingChunks = result.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     
     const stores: StoreLocation[] = groundingChunks
-        .map((chunk: GroundingChunk) => chunk.maps)
-        .filter((maps): maps is { uri: string; title: string } => !!(maps && maps.uri && maps.title))
-        .map(maps => ({ title: maps.title, uri: maps.uri }));
+        .map((chunk: GroundingChunk): GroundingChunk['maps'] | undefined => chunk.maps)
+        .filter(
+          (maps: GroundingChunk['maps'] | undefined): maps is NonNullable<GroundingChunk['maps']> =>
+            Boolean(maps?.uri && maps?.title)
+        )
+        .map((maps: NonNullable<GroundingChunk['maps']>) => ({
+          title: maps.title!,
+          uri: maps.uri!,
+        }));
 
     if (stores.length === 0) {
         const queryLocation = typeof location === 'string'
