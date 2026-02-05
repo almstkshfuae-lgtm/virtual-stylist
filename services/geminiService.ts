@@ -97,6 +97,42 @@ const fileToGenerativePart = async (file: File) => {
   };
 };
 
+const stripCodeFences = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed.startsWith('```')) return trimmed;
+  return trimmed
+    .replace(/^```[a-zA-Z0-9_-]*\s*/m, '')
+    .replace(/```$/m, '')
+    .trim();
+};
+
+const extractLikelyJson = (value: string) => {
+  const cleaned = stripCodeFences(value).trim();
+  const firstArray = cleaned.indexOf('[');
+  const lastArray = cleaned.lastIndexOf(']');
+  if (firstArray !== -1 && lastArray !== -1 && lastArray > firstArray) {
+    return cleaned.slice(firstArray, lastArray + 1);
+  }
+  const firstObj = cleaned.indexOf('{');
+  const lastObj = cleaned.lastIndexOf('}');
+  if (firstObj !== -1 && lastObj !== -1 && lastObj > firstObj) {
+    return cleaned.slice(firstObj, lastObj + 1);
+  }
+  return cleaned;
+};
+
+const parseModelJson = (raw: string) => {
+  const candidate = extractLikelyJson(raw);
+  try {
+    return JSON.parse(candidate);
+  } catch (err) {
+    const snippet = candidate.length > 400 ? `${candidate.slice(0, 400)}…` : candidate;
+    throw new Error(
+      `Model returned invalid JSON. Please retry. Snippet: ${snippet}`
+    );
+  }
+};
+
 // Generate a simple icon for an accessory
 async function generateIconImage(prompt: string): Promise<string> {
     const model = 'gemini-2.5-flash-image';
@@ -174,7 +210,7 @@ Format the output as a JSON array of objects.`;
       console.error('Response structure:', JSON.stringify(result).substring(0, 200));
       throw new Error("Failed to generate outfit descriptions.");
   }
-  return JSON.parse(responseText.trim());
+  return parseModelJson(responseText);
 }
 
 // 2. Generate a flat-lay image based on a prompt and the original item
