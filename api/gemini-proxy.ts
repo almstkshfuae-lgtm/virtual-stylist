@@ -262,6 +262,50 @@ const logEvent = (event: string, fields: Record<string, unknown>) => {
   console.log(JSON.stringify(payload));
 };
 
+const safeStringify = (value: unknown) => {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return null;
+  }
+};
+
+const normalizeUpstreamError = (err: any) => {
+  const rawMessage = err?.message ?? String(err);
+  const message = typeof rawMessage === 'string' ? rawMessage : String(rawMessage);
+  let status = 500;
+
+  const parsed = typeof message === 'string' ? safeJsonParse(message) : null;
+  const parsedObj = asObject(parsed);
+  const innerErr = parsedObj?.error;
+
+  const numeric = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) ? value : null);
+  const candidates: Array<number | null> = [
+    numeric(err?.status),
+    numeric(err?.code),
+    numeric(err?.error?.code),
+    numeric((innerErr as any)?.code),
+    numeric(parsedObj?.code),
+  ];
+  for (const candidate of candidates) {
+    if (candidate && candidate >= 400 && candidate <= 599) {
+      status = candidate;
+      break;
+    }
+  }
+
+  const detailsObject =
+    (asObject(err?.error) as Record<string, unknown> | null) ||
+    (asObject(innerErr) as Record<string, unknown> | null) ||
+    parsedObj;
+
+  return {
+    status,
+    message,
+    details: detailsObject ? (safeStringify(detailsObject) ? detailsObject : undefined) : undefined,
+  };
+};
+
 const applyRateLimitHeaders = (res: ApiResponse, limit: number, result: RateLimitResult) => {
   const response = res as any;
   response.setHeader?.('X-RateLimit-Limit', String(limit));
@@ -450,15 +494,19 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     });
     res.status(200).json(result);
   } catch (err: any) {
-    const errorMessage = err?.message || String(err);
-    console.error('API Error:', errorMessage);
+    const normalized = normalizeUpstreamError(err);
+    console.error('API Error:', normalized.message);
     logEvent('proxy.request.error', {
       requestId,
       clientIp,
       model,
       durationMs: Date.now() - start,
-      error: errorMessage,
+      error: normalized.message,
+      upstreamStatus: normalized.status,
     });
-    res.status(500).json({ error: errorMessage });
+    res.status(normalized.status).json({
+      error: normalized.message,
+      ...(normalized.details ? { details: normalized.details } : null),
+    });
   }
 }

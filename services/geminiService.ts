@@ -28,9 +28,8 @@ const readProxyErrorMessage = async (res: Response) => {
       const data = await res.json();
       if (data && typeof data === 'object') {
         const errorValue = (data as any).error || (data as any).message;
-        if (typeof errorValue === 'string' && errorValue.trim()) {
-          return errorValue.trim();
-        }
+        if (typeof errorValue === 'string' && errorValue.trim()) return errorValue.trim();
+        if (errorValue && typeof errorValue === 'object') return JSON.stringify(errorValue);
       }
     }
   } catch {
@@ -69,11 +68,6 @@ const callProxy = async (model: string, payload: any) => {
             throw new Error(`Proxy error: 401 Unauthorized. ${hint}`);
         }
         const details = await readProxyErrorMessage(res);
-        if (res.status === 500) {
-          throw new Error(
-            `Proxy error: 500 ${details} (Set API_KEY and API_SECRET on the server, set VITE_API_SECRET to the same value on the client, then rebuild/redeploy.)`
-          );
-        }
         throw new Error(`Proxy error: ${res.status} ${details}`);
     }
     return res.json();
@@ -128,7 +122,8 @@ async function generateIconImage(prompt: string): Promise<string> {
 
 // 1. Generate outfit descriptions and image prompts for a SINGLE item
 async function getOutfitPrompts(imagePart: { inlineData: { data: string; mimeType: string; } }, styles: string[], language: string, styleProfile?: StyleProfile, bodyShape?: BodyShape) {
-  const model = "gemini-3-flash-preview";
+  // Needs to accept images + return JSON.
+  const model = "gemini-2.5-flash";
   const targetLanguage = languageMap[language] || 'English';
   const numStyles = styles.length;
   const outfitText = numStyles === 1 ? 'outfit suggestion' : 'distinct outfit suggestions';
