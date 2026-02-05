@@ -104,6 +104,7 @@ export function useLoyalty(userId: string | null) {
       issueMonthly: async () => disabledResult,
       spendPoints: async () => disabledResult,
       adjustPoints: async () => disabledResult,
+      attachPendingReferral: async () => disabledResult,
     };
   }
   const data = useQuery(
@@ -115,6 +116,7 @@ export function useLoyalty(userId: string | null) {
   const issueMonthly = useMutation(api.loyalty.issueMonthlyPoints);
   const spendPoints = useMutation(api.loyalty.spendPoints);
   const adjustPoints = useMutation(api.loyalty.adjustPoints);
+  const attachPendingReferral = useMutation(api.loyalty.attachPendingReferral);
   const getLedger = useQuery(
     api.loyalty.getLedger,
     userId ? { userId, limit: 50 } : "skip"
@@ -129,6 +131,7 @@ export function useLoyalty(userId: string | null) {
     issueMonthly,
     spendPoints,
     adjustPoints,
+    attachPendingReferral,
   };
 }
 

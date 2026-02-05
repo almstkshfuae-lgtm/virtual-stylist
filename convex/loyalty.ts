@@ -98,6 +98,7 @@ export const getOrCreateCustomer = mutation({
 
       if (needsReferral) {
         patch.referredByCode = referredByCode;
+        patch.pendingReferralCode = undefined;
         shouldPatch = true;
       }
 
@@ -123,6 +124,7 @@ export const getOrCreateCustomer = mutation({
       name: args.name,
       referralCode,
       referredByCode,
+      pendingReferralCode: undefined,
       pointsBalance: 0,
       lifetimePoints: 0,
       monthlyIssuedFor: undefined,
@@ -226,6 +228,7 @@ export const loginWithEmail = mutation({
       if (needsReferral) {
         await ctx.db.patch(existing._id, {
           referredByCode,
+          pendingReferralCode: undefined,
           updatedAt: Date.now(),
         });
         await rewardReferral(ctx, { ...existing, referredByCode }, referredByCode, settings);
@@ -234,6 +237,7 @@ export const loginWithEmail = mutation({
       return {
         account: await ctx.db.get(existing._id),
         settings,
+        status: "existing",
       };
     }
 
@@ -296,7 +300,7 @@ export const loginWithEmail = mutation({
       await rewardReferral(ctx, account, referredByCode, settings);
     }
 
-    return { account: await ctx.db.get(accountId), settings };
+    return { account: await ctx.db.get(accountId), settings, status: "created" };
   },
 });
 
@@ -394,6 +398,37 @@ export const issueMonthlyPoints = mutation({
   },
 });
 
+export const attachPendingReferral = mutation({
+  args: {
+    userId: v.string(),
+    referralCode: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireUser(ctx, args.userId);
+    const code = normalizeCode(args.referralCode);
+    if (!code) {
+      return { status: "invalid_code" };
+    }
+    const settings = await ensureProgramSettingsDoc(ctx);
+    const account = await findOrBootstrapAccount(ctx, args.userId, settings);
+    if (account.referredByCode || account.pendingReferralCode === code) {
+      return { status: "already_set" };
+    }
+    const referrer = await ctx.db
+      .query("customerAccounts")
+      .withIndex("by_referralCode", (q: any) => q.eq("referralCode", code))
+      .first();
+    if (!referrer || referrer.userId === account.userId) {
+      return { status: "invalid_referrer" };
+    }
+    await ctx.db.patch(account._id, {
+      pendingReferralCode: code,
+      updatedAt: Date.now(),
+    });
+    return { status: "attached" };
+  },
+});
+
 // List recent ledger entries for transparency.
 export const getLedger = query({
   args: { userId: v.string(), limit: v.optional(v.number()) },
@@ -481,10 +516,11 @@ async function findOrBootstrapAccount(ctx: any, userId: string, settings: any) {
 
   const referralCode = await generateUniqueReferralCode(ctx);
   const now = Date.now();
-  const accountId = await ctx.db.insert("customerAccounts", {
-    userId,
-    referralCode,
-    pointsBalance: 0,
+    const accountId = await ctx.db.insert("customerAccounts", {
+      userId,
+      referralCode,
+      pendingReferralCode: undefined,
+      pointsBalance: 0,
     lifetimePoints: 0,
     monthlyIssuedFor: undefined,
     trialStartAt: now,

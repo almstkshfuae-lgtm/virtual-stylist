@@ -119,6 +119,7 @@ export default defineSchema({
     name: v.optional(v.string()),
     referralCode: v.string(),
     referredByCode: v.optional(v.string()),
+    pendingReferralCode: v.optional(v.string()),
     pointsBalance: v.number(),
     lifetimePoints: v.number(),
     monthlyIssuedFor: v.optional(v.string()), // YYYY-MM string

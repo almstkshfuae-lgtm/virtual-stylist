@@ -18,7 +18,9 @@ interface LandingPageProps {
   userId: string;
   onRestoreAccount: (email: string, name?: string) => Promise<void>;
   restoreLoading: boolean;
-  onRegisterAccount: (email: string, name?: string, referralCode?: string) => Promise<void>;
+  onSignUp: (email: string, name?: string, referralCode?: string) => Promise<void>;
+  pendingReferralCode?: string | null;
+  onReferralClaimed?: () => void;
 }
 
 interface FeatureCardProps {
@@ -49,7 +51,15 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, ind
     </motion.article>
 );
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, onRestoreAccount, restoreLoading, onRegisterAccount }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({
+  onGetStarted,
+  userId,
+  onRestoreAccount,
+  restoreLoading,
+  onSignUp,
+  pendingReferralCode,
+  onReferralClaimed,
+}) => {
   const { t, language } = useTranslation();
   const isRtl = language === 'ar';
   const { account, ensureCustomer } = useLoyalty(userId);
@@ -139,15 +149,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
     }
     setIsSignupLoading(true);
     try {
-      await onRegisterAccount(
+      const referralToSend = signupReferral.trim() || pendingReferralCode;
+      await onSignUp(
         trimmedEmail,
         signupName.trim() || undefined,
-        signupReferral.trim() || undefined
+        referralToSend || undefined
       );
       setSignupError(null);
-    } catch (error) {
+      if (referralToSend) {
+        onReferralClaimed?.();
+      }
+    } catch (error: any) {
       console.error('signup failed', error);
-      setSignupError(t('landing.signup.failed'));
+      setSignupError(error?.message ?? t('landing.signup.failed'));
     } finally {
       setIsSignupLoading(false);
     }
@@ -183,6 +197,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, userId, 
     : isSignupEmailInvalid
       ? t('landing.signup.invalidEmail')
       : null;
+
+  React.useEffect(() => {
+    if (!pendingReferralCode) return;
+    setSignupReferral((prev) => (prev.trim() ? prev : pendingReferralCode));
+  }, [pendingReferralCode]);
 
   return (
     <main className="landing-shell min-h-screen w-full overflow-x-hidden">

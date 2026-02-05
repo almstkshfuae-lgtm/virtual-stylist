@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useId } from 'react';
 import { toDataURL } from 'qrcode';
-import { Copy, Share2, ArrowLeft } from 'lucide-react';
+import { Copy, Share2, ArrowLeft, LogOut } from 'lucide-react';
 import { useLoyalty } from '../hooks/useConvex';
 import { useTranslation } from '../i18n/LanguageContext';
 import type { ValidOutfit } from '../types';
@@ -14,9 +14,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface ProfilePageProps {
   userId: string;
+  onLogout?: () => void;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ userId, onLogout }) => {
   const navigate = useNavigate();
   const { t, language } = useTranslation();
   const isRtl = language === 'ar';
@@ -139,13 +140,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-6 pt-10">
         <header className={`flex items-center gap-3 ${isRtl ? 'flex-row-reverse text-right' : ''}`}>
-          <button
-            onClick={handleBack}
-            className={`inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-sm font-semibold text-gray-700 shadow-sm hover:border-pink-400 hover:text-pink-600 dark:border-slate-800 dark:bg-slate-900 dark:text-gray-200 ${isRtl ? 'flex-row-reverse' : ''}`}
-          >
-            <ArrowLeft className={`h-4 w-4 ${isRtl ? 'rotate-180' : ''}`} />
-            {t('landing.header.profile')}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleBack}
+              className={`inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-sm font-semibold text-gray-700 shadow-sm hover:border-pink-400 hover:text-pink-600 dark:border-slate-800 dark:bg-slate-900 dark:text-gray-200 ${isRtl ? 'flex-row-reverse' : ''}`}
+            >
+              <ArrowLeft className={`h-4 w-4 ${isRtl ? 'rotate-180' : ''}`} />
+              {t('landing.header.profile')}
+            </button>
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-3 py-1 text-sm font-semibold text-gray-700 shadow-sm hover:border-rose-400 hover:bg-rose-50 hover:text-rose-600 dark:border-slate-800 dark:bg-slate-900 dark:text-gray-200 dark:hover:border-rose-500 dark:hover:bg-rose-900/40"
+              >
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+                {t('profilePage.logout')}
+              </button>
+            )}
+          </div>
           <span className="text-xs text-gray-500 dark:text-gray-400" dir="auto">
             {isRtl ? `${account?.email || '—'} · الصفحة الشخصية` : `Profile · ${account?.email || '—'}`}
           </span>

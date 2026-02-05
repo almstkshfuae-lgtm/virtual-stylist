@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { ImageUploader } from './components/ImageUploader';
 import { OutfitCard } from './components/OutfitCard';
 import { Loader } from './components/Loader';
@@ -28,8 +28,8 @@ import LoyaltyTestHarness from './components/LoyaltyTestHarness';
 import ProfilePage from './components/ProfilePage';
 import { useLoyalty, useFashionInsights } from './hooks/useConvex';
 import { convexUrl, isConvexEnabled } from './lib/convexConfig';
-import { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { readReferralFromSearch, loadPendingReferralCode, storePendingReferralCode } from './lib/referral';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // Lazy-load the demo image from the public assets folder.
 const DEMO_IMAGE_FILENAME = 'demo-skirt.png';
@@ -146,18 +146,36 @@ const App: React.FC = () => {
 
   const [savedOutfits, setSavedOutfits] = useState<ValidOutfit[]>([]);
   const [customerId, setCustomerId] = useState<string>(() => getLocalCustomerId());
+  const [pendingReferralCode, setPendingReferralCode] = useState<string | null>(() => loadPendingReferralCode());
   const isProfileRoute = location.pathname === '/profile' || location.pathname === '/profile/';
+  const navigate = useNavigate();
   const {
     account: loyaltyAccount,
     ensureCustomer,
     spendPoints,
     loginWithEmail,
+    attachPendingReferral,
   } = useLoyalty(customerId);
   const { logInsight } = useFashionInsights(customerId);
   const [isBlocked, setIsBlocked] = useState(false);
   const [paywallMessage, setPaywallMessage] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const convexConfigured = Boolean(convexUrl);
+  const clearPendingReferralCode = useCallback(() => {
+    setPendingReferralCode(null);
+    storePendingReferralCode(null);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const referral = readReferralFromSearch(window.location.search);
+    if (!referral) return;
+    setPendingReferralCode(referral);
+    storePendingReferralCode(referral);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('ref');
+    window.history.replaceState(null, '', url.toString());
+  }, []);
 
 
   useEffect(() => {
@@ -221,6 +239,9 @@ const App: React.FC = () => {
         name: name?.trim() || undefined,
         referredByCode: referralCode?.trim() || undefined,
       });
+      if (referralCode) {
+        clearPendingReferralCode();
+      }
       const newUserId = result?.account?.userId;
       if (newUserId) {
         setCustomerId(newUserId);
@@ -231,6 +252,36 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Auth login failed', error);
       setError(t('auth.loginFailedEmail'));
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleSignUp = async (email: string, name?: string, referralCode?: string) => {
+    if (!isConvexEnabled) {
+      throw new Error('Account creation requires a configured Convex backend (set VITE_CONVEX_URL).');
+    }
+    if (!loginWithEmail || !email.trim()) return;
+    setIsAuthLoading(true);
+    try {
+      const result = await loginWithEmail({
+        email: email.trim(),
+        name: name?.trim() || undefined,
+        referredByCode: referralCode?.trim() || undefined,
+      });
+      if (referralCode) {
+        clearPendingReferralCode();
+      }
+      if (result?.status === 'existing') {
+        throw new Error(t('landing.signup.emailExists'));
+      }
+      const newUserId = result?.account?.userId;
+      if (newUserId) {
+        setCustomerId(newUserId);
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(LOCAL_CUSTOMER_ID_KEY, newUserId);
+        }
+      }
     } finally {
       setIsAuthLoading(false);
     }
@@ -268,6 +319,18 @@ const App: React.FC = () => {
       console.error("Failed to load saved outfits", e);
     }
   }, []);
+
+  useEffect(() => {
+    if (!pendingReferralCode || !attachPendingReferral || !customerId) {
+      return;
+    }
+    void attachPendingReferral({
+      userId: customerId,
+      referralCode: pendingReferralCode,
+    }).catch((error) => {
+      console.debug('Failed to attach pending referral', error?.message ?? error);
+    });
+  }, [attachPendingReferral, customerId, pendingReferralCode]);
 
   const handleToggleSaveOutfit = (outfit: ValidOutfit) => {
     setSavedOutfits(prev => {
@@ -638,6 +701,19 @@ const App: React.FC = () => {
     setRatedOutfits({});
   }
 
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(LOCAL_CUSTOMER_ID_KEY);
+    }
+    clearPendingReferralCode();
+    setIsBlocked(false);
+    setPaywallMessage(null);
+    resetApp();
+    const freshId = getLocalCustomerId();
+    setCustomerId(freshId);
+    navigate('/', { replace: true });
+  };
+
   const handleStartDemo = useCallback(async () => {
     setHasStarted(true);
     setIsLoading(true);
@@ -673,18 +749,20 @@ const App: React.FC = () => {
 
   if (!hasStarted && collection.length === 0) {
     return (
-      <LandingPage
-        onGetStarted={handleStartDemo}
-        userId={customerId}
-        onRestoreAccount={handleRestoreAccount}
-        restoreLoading={isAuthLoading}
-        onRegisterAccount={handleRestoreAccount}
-      />
+    <LandingPage
+      onGetStarted={handleStartDemo}
+      userId={customerId}
+      onRestoreAccount={handleRestoreAccount}
+      restoreLoading={isAuthLoading}
+      onSignUp={handleSignUp}
+      pendingReferralCode={pendingReferralCode}
+      onReferralClaimed={clearPendingReferralCode}
+    />
     );
   }
 
   if (isProfileRoute) {
-    return <ProfilePage userId={customerId} />;
+    return <ProfilePage userId={customerId} onLogout={handleLogout} />;
   }
 
   return (

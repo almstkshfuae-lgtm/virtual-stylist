@@ -62,6 +62,7 @@ const en = {
       referralPlaceholder: "Referral code (optional)",
       emailRequired: "Enter your email to get points.",
       invalidEmail: "Enter a valid email address (example: you@example.com).",
+      emailExists: "This email is already registered—restore your account instead.",
       failed: "Signup is unavailable right now. Please try again later.",
       submit: "Sign up and get points",
       loading: "...",
@@ -114,7 +115,8 @@ const en = {
   profilePage: {
     referralQrAlt: "Referral QR code for your invite link",
     savedOutfitAlt: "Saved outfit: {{title}}",
-    savedOutfitAltFallback: "Saved outfit {{index}}"
+    savedOutfitAltFallback: "Saved outfit {{index}}",
+    logout: "Logout"
   },
   uploader: {
     title: "Upload Your Clothing Items",
@@ -318,6 +320,7 @@ const ar = {
       referralPlaceholder: "كود إحالة (اختياري)",
       emailRequired: "أدخل بريدك للحصول على النقاط.",
       invalidEmail: "أدخل بريداً إلكترونياً صحيحاً (مثال: you@example.com).",
+      emailExists: "هذا البريد مُسجل بالفعل. استخدم الاستعادة بدلاً من ذلك.",
       failed: "تعذر التسجيل حالياً. حاول لاحقاً.",
       submit: "سجّل واحصل على النقاط",
       loading: "...",
@@ -370,7 +373,8 @@ const ar = {
   profilePage: {
     referralQrAlt: "رمز QR لرابط الإحالة الخاص بك",
     savedOutfitAlt: "إطلالة محفوظة: {{title}}",
-    savedOutfitAltFallback: "إطلالة محفوظة رقم {{index}}"
+    savedOutfitAltFallback: "إطلالة محفوظة رقم {{index}}",
+    logout: "تسجيل الخروج"
   },
   uploader: {
     title: "قم بتحميل قطع ملابسك",
@@ -574,6 +578,7 @@ const fr = {
       referralPlaceholder: "Code parrain (facultatif)",
       emailRequired: "Saisissez votre e-mail pour recevoir des points.",
       invalidEmail: "Saisissez une adresse e-mail valide (exemple : you@example.com).",
+      emailExists: "Cet e-mail est déjà utilisé. Restaurez votre compte pour continuer.",
       failed: "Inscription indisponible pour le moment. Réessayez plus tard.",
       submit: "S'inscrire et recevoir des points",
       loading: "...",
@@ -626,7 +631,8 @@ const fr = {
   profilePage: {
     referralQrAlt: "Code QR de votre lien de parrainage",
     savedOutfitAlt: "Tenue enregistrée : {{title}}",
-    savedOutfitAltFallback: "Tenue enregistrée {{index}}"
+    savedOutfitAltFallback: "Tenue enregistrée {{index}}",
+    logout: "Se déconnecter"
   },
   uploader: {
     title: "Téléchargez vos vêtements",
@@ -830,6 +836,7 @@ const ru = {
       referralPlaceholder: "Реферальный код (необязательно)",
       emailRequired: "Введите e-mail, чтобы получить баллы.",
       invalidEmail: "Введите корректный e-mail (пример: you@example.com).",
+      emailExists: "Этот адрес уже зарегистрирован. Восстановите аккаунт, чтобы продолжить.",
       failed: "Сейчас регистрация недоступна. Попробуйте позже.",
       submit: "Зарегистрироваться и получить баллы",
       loading: "...",
@@ -882,7 +889,8 @@ const ru = {
   profilePage: {
     referralQrAlt: "QR-код вашей реферальной ссылки",
     savedOutfitAlt: "Сохраненный образ: {{title}}",
-    savedOutfitAltFallback: "Сохраненный образ {{index}}"
+    savedOutfitAltFallback: "Сохраненный образ {{index}}",
+    logout: "Выйти"
   },
   uploader: {
     title: "Загрузите ваши вещи",
@@ -1086,6 +1094,7 @@ const nl = {
       referralPlaceholder: "Doorverwijzingscode (optioneel)",
       emailRequired: "Voer je e-mail in om punten te krijgen.",
       invalidEmail: "Voer een geldig e-mailadres in (voorbeeld: you@example.com).",
+      emailExists: "Dit e-mailadres is al geregistreerd. Gebruik het herstelformulier.",
       failed: "Aanmelden is nu niet beschikbaar. Probeer het later opnieuw.",
       submit: "Aanmelden en punten krijgen",
       loading: "...",
@@ -1138,7 +1147,8 @@ const nl = {
   profilePage: {
     referralQrAlt: "QR-code voor je doorverwijzingslink",
     savedOutfitAlt: "Opgeslagen outfit: {{title}}",
-    savedOutfitAltFallback: "Opgeslagen outfit {{index}}"
+    savedOutfitAltFallback: "Opgeslagen outfit {{index}}",
+    logout: "Afmelden"
   },
   uploader: {
     title: "Upload uw kledingstukken",
