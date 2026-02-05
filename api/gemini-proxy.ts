@@ -295,10 +295,10 @@ const takeRateLimit = (key: string, limit: number): RateLimitResult => {
 };
 
 const getExpectedSecret = () =>
-  process.env.API_SECRET ||
-  process.env.VERCEL_API_SECRET ||
+  (process.env.API_SECRET || '').trim() ||
+  (process.env.VERCEL_API_SECRET || '').trim() ||
   // Allow using the client secret for dev/previews when set in Vercel
-  process.env.VITE_API_SECRET;
+  (process.env.VITE_API_SECRET || '').trim();
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   const start = Date.now();
@@ -313,9 +313,20 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
   const expectedSecret = getExpectedSecret();
   if (!expectedSecret) {
-    logEvent('proxy.error.config', { requestId, clientIp, error: 'api_secret_missing' });
+    logEvent('proxy.error.config', {
+      requestId,
+      clientIp,
+      error: 'api_secret_missing',
+      vercelEnv: (process.env.VERCEL_ENV || '').trim() || undefined,
+      nodeEnv: (process.env.NODE_ENV || '').trim() || undefined,
+      hasApiSecret: Boolean((process.env.API_SECRET || '').trim()),
+      hasVercelApiSecret: Boolean((process.env.VERCEL_API_SECRET || '').trim()),
+      hasViteApiSecret: Boolean((process.env.VITE_API_SECRET || '').trim()),
+    });
     res.status(500).json({
-      error: 'API secret not configured on server. Set API_SECRET (or VITE_API_SECRET) and redeploy.',
+      error:
+        'API secret not configured on server. Set API_SECRET (recommended) or VERCEL_API_SECRET in Vercel env vars ' +
+        '(Production/Preview as needed), redeploy, and set VITE_API_SECRET to the same value on the client.',
     });
     return;
   }
