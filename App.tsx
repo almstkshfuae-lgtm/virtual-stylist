@@ -27,7 +27,7 @@ import { LoyaltyPanel } from './components/LoyaltyPanel';
 import LoyaltyTestHarness from './components/LoyaltyTestHarness';
 import ProfilePage from './components/ProfilePage';
 import { useLoyalty, useFashionInsights } from './hooks/useConvex';
-import { isConvexEnabled } from './lib/convexConfig';
+import { convexUrl, isConvexEnabled } from './lib/convexConfig';
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -157,6 +157,7 @@ const App: React.FC = () => {
   const [isBlocked, setIsBlocked] = useState(false);
   const [paywallMessage, setPaywallMessage] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const convexConfigured = Boolean(convexUrl);
 
 
   useEffect(() => {
@@ -696,14 +697,17 @@ const App: React.FC = () => {
             </h1>
           </div>
           <div className='flex flex-wrap items-center justify-end gap-2 sm:gap-4'>
-            {isConvexEnabled && (
-              <button
-                onClick={scrollToLoyalty}
-                className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
-                aria-label="Profile & loyalty"
-              >
-                <span>{t('landing.header.profile')}</span>
-              </button>
+            <button
+              onClick={scrollToLoyalty}
+              className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
+              aria-label="Profile & loyalty"
+            >
+              <span>{t('landing.header.profile')}</span>
+            </button>
+            {!convexConfigured && (
+              <span className="hidden rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-800 lowercase sm:inline-flex dark:border-amber-500 dark:bg-amber-900/20 dark:text-amber-200">
+                Convex config needed
+              </span>
             )}
             <button 
                 onClick={resetApp} 
@@ -891,13 +895,27 @@ const App: React.FC = () => {
           </div>
       )}
     </main>
-    {hasStarted && isConvexEnabled && (
+    {hasStarted && (
       <section ref={loyaltySectionRef} id="customer-profile-section" aria-labelledby="customer-profile-heading" className="px-4 md:px-8 lg:px-10 mt-4 space-y-4 scroll-mt-20">
         <h2 id="customer-profile-heading" className="sr-only">
           {t('landing.header.profile')}
         </h2>
+        {!convexConfigured && (
+          <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 shadow-sm dark:border-amber-500 dark:bg-amber-900/30 dark:text-amber-100">
+            <p className="font-semibold">Convex backend not configured</p>
+            <p className="mt-1 text-justify text-[13px] leading-tight text-amber-800 dark:text-amber-100">
+              Set <code className="rounded bg-white px-1.5 text-[11px] font-semibold text-gray-700 dark:bg-slate-800 dark:text-gray-200">VITE_CONVEX_URL</code> in your production environment so the loyalty program and profile data can load.
+            </p>
+          </div>
+        )}
         <LoyaltyPanel userId={customerId} />
-        <LoyaltyTestHarness userId={customerId} />
+        {convexConfigured ? (
+          <LoyaltyTestHarness userId={customerId} />
+        ) : (
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Loyalty QA tools require a configured Convex backend. Configure <code className="rounded bg-slate-100 px-1 text-[11px] font-semibold dark:bg-slate-700">VITE_CONVEX_URL</code> and redeploy to re-enable these controls.
+          </p>
+        )}
       </section>
     )}
     <footer className="text-center p-4 mt-8 text-sm text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-slate-800 space-y-2">
