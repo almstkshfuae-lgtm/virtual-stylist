@@ -1,4 +1,4 @@
-import type { ApiRequest, ApiResponse } from './vercelTypes.js';
+import type { ApiRequest, ApiResponse } from './vercelTypes';
 
 // Simple health/cron endpoint that can be scheduled via Vercel Cron Jobs.
 export default async function handler(req: ApiRequest, res: ApiResponse) {

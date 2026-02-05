@@ -25,6 +25,12 @@ export default defineConfig(({ mode }) => {
   }
 
   if (!env.VITE_API_SECRET) {
+    // Helpful debug on Vercel: prints presence only (never prints values).
+    console.warn(
+      `Env check: has API_SECRET=${Boolean(env.API_SECRET)}, ` +
+      `has VERCEL_API_SECRET=${Boolean(env.VERCEL_API_SECRET)}, ` +
+      `has VITE_API_SECRET=${Boolean(env.VITE_API_SECRET)}`
+    );
     console.warn('VITE_API_SECRET is missing; client calls to /api/gemini-proxy will fail until it is set.');
   }
 
