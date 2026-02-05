@@ -1,5 +1,4 @@
-# Exclude API functions from frontend build
-api/**
+# Files/folders Vercel doesn't need to upload for builds
 *.test.ts
 *.spec.ts
 scripts/
