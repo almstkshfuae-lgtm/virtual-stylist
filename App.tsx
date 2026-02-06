@@ -159,6 +159,7 @@ const App: React.FC = () => {
   const { logInsight } = useFashionInsights(customerId);
   const [isBlocked, setIsBlocked] = useState(false);
   const [paywallMessage, setPaywallMessage] = useState<string | null>(null);
+  const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const convexConfigured = Boolean(convexUrl);
   const clearPendingReferralCode = useCallback(() => {
@@ -197,6 +198,41 @@ const App: React.FC = () => {
       /* ignore */ 
     });
   }, [customerId, ensureCustomer]);
+
+  const subscriptionPlans = useMemo(
+    () => [
+      {
+        id: 'starter',
+        price: '$9',
+        title: t('paywall.planStarterTitle'),
+        description: t('paywall.planStarterDescription'),
+      },
+      {
+        id: 'premium',
+        price: '$19',
+        title: t('paywall.planPremiumTitle'),
+        description: t('paywall.planPremiumDescription'),
+      },
+      {
+        id: 'elite',
+        price: '$49',
+        title: t('paywall.planEliteTitle'),
+        description: t('paywall.planEliteDescription'),
+      },
+    ],
+    [t]
+  );
+
+  const handleSubscribe = useCallback(() => {
+    setIsSubscribeModalOpen(true);
+  }, []);
+
+  const handleConfirmSubscription = useCallback((planLabel: string) => {
+    setIsSubscribeModalOpen(false);
+    setIsBlocked(false);
+    setPaywallMessage(null);
+    console.info('Subscription confirmed', planLabel);
+  }, []);
 
   const requireCredit = useCallback(
     async (pointsNeeded = 1) => {
@@ -1040,25 +1076,67 @@ const App: React.FC = () => {
           className={`fixed ${paywallPosition} z-40 w-auto sm:w-[24rem]`}
         >
           <div className="rounded-2xl border border-pink-200/70 bg-white/95 p-5 text-center shadow-2xl dark:border-pink-500/30 dark:bg-slate-900/95">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">انتهى رصيد النقاط</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('paywall.heading')}</h3>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              {paywallMessage || 'استهلكت كل رصيدك. اشترك لإكمال الاستخدام.'}
+              {paywallMessage || t('paywall.description')}
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
               <button
                 className="rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-pink-700"
+                onClick={handleSubscribe}
               >
-                اشترك الآن
+                {t('paywall.cta')}
               </button>
               <button
                 className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:border-pink-400 hover:text-pink-600 dark:border-gray-700 dark:text-gray-300"
                 onClick={() => setIsBlocked(false)}
               >
-                لاحقاً
+                {t('paywall.later')}
               </button>
             </div>
           </div>
         </aside>
+      )}
+
+      {isSubscribeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
+          <div className="w-full max-w-2xl rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400">
+                  {t('paywall.modalEyebrow')}
+                </p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{t('paywall.modalTitle')}</h3>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{t('paywall.modalDescription')}</p>
+              </div>
+              <button
+                onClick={() => setIsSubscribeModalOpen(false)}
+                className="rounded-full border border-gray-200 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-gray-500 hover:border-pink-500 hover:text-pink-600 dark:border-slate-700 dark:text-gray-400 dark:hover:text-pink-400"
+              >
+                {t('paywall.modalClose')}
+              </button>
+            </div>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {subscriptionPlans.map((plan) => (
+                <button
+                  key={plan.id}
+                  type="button"
+                  onClick={() => handleConfirmSubscription(plan.title)}
+                  className="flex h-full flex-col gap-3 rounded-2xl border border-pink-200/60 bg-pink-50/60 p-4 text-left transition hover:border-pink-400 hover:bg-pink-100 dark:border-pink-600/40 dark:bg-pink-900/20 dark:hover:border-pink-400"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-[0.3em] text-pink-600 dark:text-pink-300">
+                    {plan.price}
+                  </span>
+                  <span className="text-lg font-bold text-gray-900 dark:text-white">{plan.title}</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-300">{plan.description}</span>
+                  <span className="mt-auto text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-pink-700 dark:text-pink-200">
+                    {t('paywall.modalPlanHint')}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {isStoreModalOpen && (
