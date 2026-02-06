@@ -3,7 +3,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { SunIcon } from './icons/SunIcon';
 import { MoonIcon } from './icons/MoonIcon';
 import { MonitorIcon } from './icons/MonitorIcon';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 import { TranslationKey } from '../i18n/translations';
 
 export const ThemeToggle: React.FC = () => {

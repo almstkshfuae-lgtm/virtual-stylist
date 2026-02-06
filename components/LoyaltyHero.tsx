@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { toDataURL } from 'qrcode';
 import { useLoyalty } from '../hooks/useConvex';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 import { useClipboard } from '../hooks/useClipboard';
 import { buildReferralLink } from '../lib/referral';
 

@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from 'react';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 import { UploadIcon } from './icons/UploadIcon';
 import { TrashIcon } from './icons/TrashIcon';
 import type { ClothingItem } from '../types';

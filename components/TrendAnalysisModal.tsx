@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 import { TrendAnalysisResult } from '../types';
 import { GlobeIcon } from './icons/GlobeIcon';
 import { sanitizeHref, sanitizeMarkdownToHtml } from '../lib/security';

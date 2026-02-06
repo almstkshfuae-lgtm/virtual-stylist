@@ -2,7 +2,7 @@ import React, { useEffect, useState, useId } from 'react';
 import { toDataURL } from 'qrcode';
 import { Copy, Share2, ArrowLeft, LogOut } from 'lucide-react';
 import { useLoyalty } from '../hooks/useConvex';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 import type { ValidOutfit } from '../types';
 import { useClipboard } from '../hooks/useClipboard';
 import {

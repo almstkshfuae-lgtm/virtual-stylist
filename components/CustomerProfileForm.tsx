@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useId } from 'react';
 import { useLoyalty } from '../hooks/useConvex';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 
 interface CustomerProfileFormProps {
   userId: string;

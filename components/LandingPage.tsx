@@ -1,6 +1,6 @@
 
 import React, { useCallback } from 'react';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 import { LanguageSelector } from './LanguageSelector';
 import { ThemeToggle } from './ThemeToggle';
 import { TranslationKey } from '../i18n/translations';

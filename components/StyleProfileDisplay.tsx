@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 import { TrashIcon } from './icons/TrashIcon';
 import type { StyleProfile } from '../types';
 

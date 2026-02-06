@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 import type { BodyShape } from '../types';
 import { TranslationKey } from '../i18n/translations';
 import { InfoIcon } from './icons/InfoIcon';

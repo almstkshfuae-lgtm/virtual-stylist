@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { InfoIcon } from './icons/InfoIcon';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 
 const STYLE_KEYS = [
   'Casual', 'Business', 'Night Out', 'Athleisure', 'Bohemian', 

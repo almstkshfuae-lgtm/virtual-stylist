@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { ValidOutfit } from '../types';
 import { EditIcon } from './icons/EditIcon';
 import { ShareIcon } from './icons/ShareIcon';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 import { TranslationKey } from '../i18n/translations';
 import { ThumbsUpIcon } from './icons/ThumbsUpIcon';
 import { ThumbsDownIcon } from './icons/ThumbsDownIcon';
