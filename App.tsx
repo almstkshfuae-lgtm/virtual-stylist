@@ -5,7 +5,7 @@ import { Loader } from './components/Loader';
 import { SparklesIcon } from './components/icons/SparklesIcon';
 import { generateOutfits, editImage, combineItems, analyzeTrends, sendMessageToChat, findNearbyStores } from './services/geminiService';
 import type { Outfit, ClothingItem, CombinationResult, ValidOutfit, StyleProfile, TrendAnalysisResult, ChatMessage, BodyShape, Coordinates, StoreLocation } from './types';
-import { useTranslation } from './i18n/LanguageContext';
+import { useTranslation } from './i18n/useTranslation';
 import { LanguageSelector } from './components/LanguageSelector';
 import { ItemCollection } from './components/ItemCollection';
 import { CombinationCard } from './components/CombinationCard';
