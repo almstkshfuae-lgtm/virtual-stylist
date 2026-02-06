@@ -11,6 +11,7 @@ import type {
 } from '../types';
 import type { CombinationResult } from '../types';
 import type { Content } from '@google/genai';
+import { fetchWithRetry, isNetworkError } from './fetchWithRetry';
 
 // All Gemini calls go through the server-side proxy at `/api/gemini-proxy`
 // so the API key never ships to the client bundle.
@@ -55,11 +56,19 @@ const callProxy = async (model: string, payload: any) => {
         headers.Authorization = `Bearer ${apiSecret}`;
     }
 
-    const res = await fetch(proxyUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ model, payload }),
-    });
+    let res: Response;
+    try {
+        res = await fetchWithRetry(proxyUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ model, payload }),
+        });
+    } catch (error) {
+        if (isNetworkError(error)) {
+            throw new Error('Network changed during the request. Please retry once your connection is stable.');
+        }
+        throw error;
+    }
     if (!res.ok) {
         if (res.status === 401) {
             const hint = apiSecret

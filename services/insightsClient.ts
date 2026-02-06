@@ -1,3 +1,4 @@
+import { fetchWithRetry } from './fetchWithRetry';
 /**
  * Lightweight client to send developer-only fashion insights to Convex via the proxy.
  * Falls back silently if Convex is disabled or request fails.
@@ -16,7 +17,7 @@ const proxyUrl = apiBaseUrl
 
 export const logInsightClient = async (payload: InsightPayload) => {
   try {
-    const res = await fetch(proxyUrl, {
+    const res = await fetchWithRetry(proxyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
