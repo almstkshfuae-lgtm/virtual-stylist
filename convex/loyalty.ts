@@ -41,14 +41,30 @@ async function ensureProgramSettingsDoc(ctx: any) {
     .first();
 
   if (existing) {
+    const desired = {
+      monthlyPoints: 300,
+      signupBonusPoints: 0,
+      welcomePackagePoints: 0,
+      referralRewardPoints: 500,
+    };
+    const needsUpdate =
+      existing.monthlyPoints !== desired.monthlyPoints ||
+      existing.signupBonusPoints !== desired.signupBonusPoints ||
+      existing.welcomePackagePoints !== desired.welcomePackagePoints ||
+      existing.referralRewardPoints !== desired.referralRewardPoints;
+
+    if (needsUpdate) {
+      await ctx.db.patch(existing._id, { ...desired, updatedAt: Date.now() });
+      return await ctx.db.get(existing._id);
+    }
     return existing;
   }
 
   const id = await ctx.db.insert("programSettings", {
     slug: DEFAULT_PROGRAM_SLUG,
     monthlyPoints: 300,
-    signupBonusPoints: 500,
-    welcomePackagePoints: 1300,
+    signupBonusPoints: 0,
+    welcomePackagePoints: 0,
     referralRewardPoints: 500,
     adInventoryEnabled: false,
     adProductNotes: "Toggle to monetize via brand services/placements later.",
@@ -64,6 +80,10 @@ export const getOrCreateCustomer = mutation({
     userId: v.string(),
     email: v.optional(v.string()),
     name: v.optional(v.string()),
+    nationality: v.optional(v.string()),
+    age: v.optional(v.number()),
+    mobileNumber: v.optional(v.string()),
+    address: v.optional(v.string()),
     referredByCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -88,6 +108,26 @@ export const getOrCreateCustomer = mutation({
 
       if (args.email && args.email !== existing.email) {
         patch.email = args.email;
+        shouldPatch = true;
+      }
+
+      if (args.nationality && args.nationality !== existing.nationality) {
+        patch.nationality = args.nationality;
+        shouldPatch = true;
+      }
+
+      if (typeof args.age === "number" && args.age !== existing.age) {
+        patch.age = args.age;
+        shouldPatch = true;
+      }
+
+      if (args.mobileNumber && args.mobileNumber !== existing.mobileNumber) {
+        patch.mobileNumber = args.mobileNumber;
+        shouldPatch = true;
+      }
+
+      if (args.address && args.address !== existing.address) {
+        patch.address = args.address;
         shouldPatch = true;
       }
 
@@ -125,6 +165,10 @@ export const getOrCreateCustomer = mutation({
       userId: args.userId,
       email: args.email,
       name: args.name,
+      nationality: args.nationality,
+      age: args.age,
+      mobileNumber: args.mobileNumber,
+      address: args.address,
       referralCode,
       referredByCode,
       pendingReferralCode: undefined,
@@ -204,6 +248,10 @@ export const loginWithEmail = mutation({
   args: {
     email: v.string(),
     name: v.optional(v.string()),
+    nationality: v.optional(v.string()),
+    age: v.optional(v.number()),
+    mobileNumber: v.optional(v.string()),
+    address: v.optional(v.string()),
     referredByCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -219,9 +267,14 @@ export const loginWithEmail = mutation({
       .first();
 
     if (existing) {
-      // Update name if newly provided
-      if (args.name && args.name !== existing.name) {
-        await ctx.db.patch(existing._id, { name: args.name, updatedAt: Date.now() });
+      const patch: any = { updatedAt: Date.now() };
+      if (args.name && args.name !== existing.name) patch.name = args.name;
+      if (args.nationality && args.nationality !== existing.nationality) patch.nationality = args.nationality;
+      if (typeof args.age === "number" && args.age !== existing.age) patch.age = args.age;
+      if (args.mobileNumber && args.mobileNumber !== existing.mobileNumber) patch.mobileNumber = args.mobileNumber;
+      if (args.address && args.address !== existing.address) patch.address = args.address;
+      if (Object.keys(patch).length > 1) {
+        await ctx.db.patch(existing._id, patch);
       }
       // Attach referral if user adds it later and hasn't used one yet
       const needsReferral =
@@ -253,6 +306,10 @@ export const loginWithEmail = mutation({
       userId,
       email: normalizedEmail,
       name: args.name,
+      nationality: args.nationality,
+      age: args.age,
+      mobileNumber: args.mobileNumber,
+      address: args.address,
       referralCode,
       referredByCode,
       pointsBalance: 0,
@@ -538,24 +595,24 @@ async function findOrBootstrapAccount(ctx: any, userId: string, settings: any) {
 
   const referralCode = await generateUniqueReferralCode(ctx);
   const now = Date.now();
-    const accountId = await ctx.db.insert("customerAccounts", {
-      userId,
-      referralCode,
-      pendingReferralCode: undefined,
-      pointsBalance: 0,
-    lifetimePoints: 0,
-    monthlyIssuedFor: undefined,
-    trialStartAt: now,
-    trialLastIssuedFor: undefined,
-    trialDaysIssued: 0,
-    signupAwarded: false,
-    welcomeAwarded: false,
-    marketingTags: [],
-    adConsent: false,
-    segments: [],
-    createdAt: now,
-    updatedAt: now,
-  });
+  const accountId = await ctx.db.insert("customerAccounts", {
+    userId,
+    referralCode,
+    pendingReferralCode: undefined,
+    pointsBalance: 0,
+  lifetimePoints: 0,
+  monthlyIssuedFor: undefined,
+  trialStartAt: now,
+  trialLastIssuedFor: undefined,
+  trialDaysIssued: 0,
+  signupAwarded: false,
+  welcomeAwarded: false,
+  marketingTags: [],
+  adConsent: false,
+  segments: [],
+  createdAt: now,
+  updatedAt: now,
+});
 
   const account = await ctx.db.get(accountId);
   if (!account) throw new Error("Failed to create account");
@@ -659,8 +716,8 @@ async function maybeApplyPendingReferral(ctx: any, account: any, settings: any) 
 }
 
 async function maybeIssueTrial(ctx: any, account: any) {
-  const TRIAL_DAYS = 14;
-  const TRIAL_DAILY_POINTS = 300;
+  const TRIAL_DAYS = 0;
+  const TRIAL_DAILY_POINTS = 0;
   const today = dayKey();
 
   const startAt = account.trialStartAt ?? Date.now();

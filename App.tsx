@@ -30,6 +30,7 @@ import { useLoyalty, useFashionInsights } from './hooks/useConvex';
 import { convexUrl, isConvexEnabled } from './lib/convexConfig';
 import { readReferralFromSearch, loadPendingReferralCode, storePendingReferralCode } from './lib/referral';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { LogOut, UserCircle2 } from 'lucide-react';
 
 // Lazy-load the demo image from the public assets folder.
 const DEMO_IMAGE_FILENAME = 'demo-skirt.png';
@@ -740,6 +741,10 @@ const App: React.FC = () => {
     navigate('/', { replace: true });
   };
 
+  const handleOpenProfile = useCallback(() => {
+    navigate('/profile');
+  }, [navigate]);
+
   const handleStartDemo = useCallback(async () => {
     setHasStarted(true);
     setIsLoading(true);
@@ -802,11 +807,19 @@ const App: React.FC = () => {
           </div>
           <div className='flex flex-wrap items-center justify-end gap-2 sm:gap-4'>
             <button
+              onClick={handleOpenProfile}
+              className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 rounded-lg border border-transparent hover:border-pink-200 dark:hover:border-pink-700 hover:bg-white dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
+              aria-label={t('landing.header.profile')}
+            >
+              <UserCircle2 className="h-4 w-4" aria-hidden="true" />
+              <span>{t('landing.header.profile')}</span>
+            </button>
+            <button
               onClick={scrollToLoyalty}
               className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
-              aria-label="Profile & loyalty"
+              aria-label="Rewards"
             >
-              <span>{t('landing.header.profile')}</span>
+              <span>{t('landing.loyalty.panelTitle')}</span>
             </button>
             {!convexConfigured && (
               <span className="hidden rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-800 lowercase sm:inline-flex dark:border-amber-500 dark:bg-amber-900/20 dark:text-amber-200">
@@ -820,6 +833,14 @@ const App: React.FC = () => {
             >
                 <RestartIcon className="w-4 h-4"/>
                 <span>{t('header.startOver')}</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-rose-600 dark:text-rose-200 rounded-lg border border-rose-100 dark:border-rose-900/40 hover:bg-rose-50 dark:hover:bg-rose-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-400 transition-colors"
+              aria-label={t('profilePage.logout')}
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+              <span>{t('profilePage.logout')}</span>
             </button>
             <LanguageSelector />
             <ThemeToggle />

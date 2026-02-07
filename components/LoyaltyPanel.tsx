@@ -135,6 +135,7 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
   const signupPoints = settings?.signupBonusPoints ?? 500;
   const welcomePoints = settings?.welcomePackagePoints ?? 1300;
   const referralPoints = settings?.referralRewardPoints ?? 500;
+  const spendPerAction = 1;
 
   const ledgerPreview = ledger?.slice(0, 4) ?? [];
   const hasData = Boolean(account && settings);
@@ -169,6 +170,18 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
             ? t('landing.loyalty.issueLoading')
             : t('landing.loyalty.issueButton', { points: monthlyPoints })}
         </button>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700 shadow-sm dark:border-slate-800 dark:bg-slate-900/60 dark:text-gray-200">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400 mb-2">
+          {t('landing.loyalty.rulesTitle')}
+        </p>
+        <ul className="space-y-1">
+          <li>• {t('landing.loyalty.rulesBase', { points: monthlyPoints })}</li>
+          <li>• {t('landing.loyalty.rulesReferral', { points: referralPoints })}</li>
+          <li>• {t('landing.loyalty.rulesSpend', { points: spendPerAction })}</li>
+          <li>• {t('landing.loyalty.rulesConversion')}</li>
+        </ul>
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
