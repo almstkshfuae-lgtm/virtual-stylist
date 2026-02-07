@@ -112,7 +112,10 @@ export const getOrCreateCustomer = mutation({
       }
 
       await maybeIssueTrial(ctx, { ...existing, ...patch });
-      return await ctx.db.get(existing._id);
+      const refreshed = await ctx.db.get(existing._id);
+      const withReferral = await maybeApplyPendingReferral(ctx, refreshed, settings);
+      await maybeIssueTrial(ctx, withReferral);
+      return await ctx.db.get(withReferral._id);
     }
 
     const referralCode = await generateUniqueReferralCode(ctx);
@@ -404,28 +407,47 @@ export const attachPendingReferral = mutation({
     referralCode: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireUser(ctx, args.userId);
-    const code = normalizeCode(args.referralCode);
-    if (!code) {
-      return { status: "invalid_code" };
+    try {
+      const identity = await ctx.auth.getUserIdentity?.();
+      if (!identity || identity.subject !== args.userId) {
+        return { status: "unauthorized" };
+      }
+
+      const code = normalizeCode(args.referralCode);
+      if (!code) {
+        return { status: "invalid_code" };
+      }
+
+      const settings = await ensureProgramSettingsDoc(ctx);
+      const account = await findOrBootstrapAccount(ctx, args.userId, settings);
+      if (account.referredByCode || account.pendingReferralCode === code) {
+        return { status: "already_set" };
+      }
+
+      const referrer = await ctx.db
+        .query("customerAccounts")
+        .withIndex("by_referralCode", (q: any) => q.eq("referralCode", code))
+        .first();
+
+      if (!referrer || referrer.userId === account.userId) {
+        // Clear any stale pending code so we don't keep retrying.
+        await ctx.db.patch(account._id, {
+          pendingReferralCode: undefined,
+          updatedAt: Date.now(),
+        });
+        return { status: "invalid_referrer" };
+      }
+
+      await ctx.db.patch(account._id, {
+        pendingReferralCode: code,
+        updatedAt: Date.now(),
+      });
+
+      return { status: "attached" };
+    } catch (error: any) {
+      console.error("attachPendingReferral failed", error);
+      return { status: "error", message: error?.message ?? "unknown_error" };
     }
-    const settings = await ensureProgramSettingsDoc(ctx);
-    const account = await findOrBootstrapAccount(ctx, args.userId, settings);
-    if (account.referredByCode || account.pendingReferralCode === code) {
-      return { status: "already_set" };
-    }
-    const referrer = await ctx.db
-      .query("customerAccounts")
-      .withIndex("by_referralCode", (q: any) => q.eq("referralCode", code))
-      .first();
-    if (!referrer || referrer.userId === account.userId) {
-      return { status: "invalid_referrer" };
-    }
-    await ctx.db.patch(account._id, {
-      pendingReferralCode: code,
-      updatedAt: Date.now(),
-    });
-    return { status: "attached" };
   },
 });
 
@@ -561,8 +583,9 @@ async function findOrBootstrapAccount(ctx: any, userId: string, settings: any) {
 
   await maybeIssueMonthly(ctx, updatedAccount, settings);
   await maybeIssueTrial(ctx, updatedAccount);
+  const withReferral = await maybeApplyPendingReferral(ctx, updatedAccount, settings);
 
-  return (await ctx.db.get(accountId))!;
+  return (await ctx.db.get(withReferral._id))!;
 }
 
 async function maybeIssueMonthly(ctx: any, account: any, settings: any) {
@@ -587,6 +610,52 @@ async function maybeIssueMonthly(ctx: any, account: any, settings: any) {
   });
 
   return updated;
+}
+
+// Promote a stored pending referral into a rewarded referral if valid.
+async function maybeApplyPendingReferral(ctx: any, account: any, settings: any) {
+  if (!account?.pendingReferralCode) return account;
+  if (account.referredByCode) {
+    // Clear pending since a referrer is already set.
+    await ctx.db.patch(account._id, {
+      pendingReferralCode: undefined,
+      updatedAt: Date.now(),
+    });
+    return await ctx.db.get(account._id);
+  }
+
+  const code = normalizeCode(account.pendingReferralCode);
+  if (!code || code === account.referralCode) {
+    await ctx.db.patch(account._id, {
+      pendingReferralCode: undefined,
+      updatedAt: Date.now(),
+    });
+    return await ctx.db.get(account._id);
+  }
+
+  const referrer = await ctx.db
+    .query("customerAccounts")
+    .withIndex("by_referralCode", (q: any) => q.eq("referralCode", code))
+    .first();
+
+  // Invalid or self-referral: clear pending and exit.
+  if (!referrer || referrer.userId === account.userId) {
+    await ctx.db.patch(account._id, {
+      pendingReferralCode: undefined,
+      updatedAt: Date.now(),
+    });
+    return await ctx.db.get(account._id);
+  }
+
+  // Attach and reward.
+  await ctx.db.patch(account._id, {
+    referredByCode: code,
+    pendingReferralCode: undefined,
+    updatedAt: Date.now(),
+  });
+
+  await rewardReferral(ctx, { ...account, referredByCode: code }, code, settings);
+  return await ctx.db.get(account._id);
 }
 
 async function maybeIssueTrial(ctx: any, account: any) {
@@ -734,4 +803,10 @@ async function generateUniqueReferralCode(ctx: any): Promise<string> {
 }
 
 // Expose helpers for lightweight unit tests.
-export const _test = { addPoints: addPointsHelper, maybeIssueMonthly, maybeIssueTrial, rewardReferral };
+export const _test = {
+  addPoints: addPointsHelper,
+  maybeIssueMonthly,
+  maybeIssueTrial,
+  rewardReferral,
+  maybeApplyPendingReferral,
+};

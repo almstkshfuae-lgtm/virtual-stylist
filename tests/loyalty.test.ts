@@ -246,3 +246,60 @@ test("rewardReferral is idempotent per referrer/referee pair", async () => {
   assert.equal(referrer?.pointsBalance, 500);
   assert.equal(referee?.pointsBalance, 500);
 });
+
+test("maybeApplyPendingReferral attaches and rewards when referrer exists", async () => {
+  const ctx = createMockCtx({
+    customerAccounts: [
+      { _id: "customerAccounts_0", userId: "referrer-1", referralCode: "ref12345", pointsBalance: 0, lifetimePoints: 0 },
+      { _id: "customerAccounts_1", userId: "new-1", referralCode: "newcode1", pendingReferralCode: "ref12345", pointsBalance: 0, lifetimePoints: 0 },
+    ],
+  });
+
+  const settings = { referralRewardPoints: 500 };
+  const updated = await _test.maybeApplyPendingReferral(ctx as any, ctx.store.get("customerAccounts_1"), settings);
+
+  assert.equal(updated?.referredByCode, "ref12345");
+  assert.equal(updated?.pendingReferralCode, undefined);
+
+  const referrer = ctx.store.get("customerAccounts_0");
+  const referee = ctx.store.get("customerAccounts_1");
+  assert.equal(referrer?.pointsBalance, 500);
+  assert.equal(referee?.pointsBalance, 500);
+
+  const ledgerEntries = [...ctx.store.values()].filter((d) => d._id?.startsWith("pointsLedger_"));
+  assert.equal(ledgerEntries.length, 2);
+});
+
+test("maybeApplyPendingReferral clears pending when referrer missing", async () => {
+  const ctx = createMockCtx({
+    customerAccounts: [
+      { _id: "customerAccounts_0", userId: "new-1", referralCode: "newcode1", pendingReferralCode: "missing1", pointsBalance: 0, lifetimePoints: 0 },
+    ],
+  });
+
+  const settings = { referralRewardPoints: 500 };
+  const updated = await _test.maybeApplyPendingReferral(ctx as any, ctx.store.get("customerAccounts_0"), settings);
+
+  assert.equal(updated?.referredByCode, undefined);
+  assert.equal(updated?.pendingReferralCode, undefined);
+
+  const ledgerEntries = [...ctx.store.values()].filter((d) => d._id?.startsWith("pointsLedger_"));
+  assert.equal(ledgerEntries.length, 0);
+});
+
+test("maybeApplyPendingReferral clears self-referral without rewards", async () => {
+  const ctx = createMockCtx({
+    customerAccounts: [
+      { _id: "customerAccounts_0", userId: "user-1", referralCode: "self1111", pendingReferralCode: "self1111", pointsBalance: 0, lifetimePoints: 0 },
+    ],
+  });
+
+  const settings = { referralRewardPoints: 500 };
+  const updated = await _test.maybeApplyPendingReferral(ctx as any, ctx.store.get("customerAccounts_0"), settings);
+
+  assert.equal(updated?.referredByCode, undefined);
+  assert.equal(updated?.pendingReferralCode, undefined);
+
+  const ledgerEntries = [...ctx.store.values()].filter((d) => d._id?.startsWith("pointsLedger_"));
+  assert.equal(ledgerEntries.length, 0);
+});

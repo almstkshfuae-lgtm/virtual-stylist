@@ -121,20 +121,10 @@ const App: React.FC = () => {
   const [activeSearchAccessory, setActiveSearchAccessory] = useState<string | null>(null);
   const storeCache = React.useRef<Map<string, StoreLocation[]>>(new Map());
   const inFlightStoreKey = React.useRef<string | null>(null);
-  const nearMePhrase = useMemo(() => {
-    switch (language) {
-      case 'ar':
-        return 'بالقرب مني';
-      case 'fr':
-        return 'près de moi';
-      case 'ru':
-        return 'рядом со мной';
-      case 'nl':
-        return 'bij mij in de buurt';
-      default:
-        return 'near me';
-    }
-  }, [language]);
+  const nearMePhrase = useMemo(
+    () => t('storeLocator.nearMe', 'near me'),
+    [t]
+  );
 
   const [selectedStyles, setSelectedStyles] = useState<string[]>(['Casual', 'Business', 'Night Out']);
 
@@ -545,7 +535,7 @@ const App: React.FC = () => {
       throw new Error("No item selected for editing.");
     }
     if (!(await requireCredit(1))) {
-      throw new Error('لا يوجد رصيد نقاط كافٍ. اشترك للاستمرار.');
+      throw new Error(t('paywall.insufficient'));
     }
     
     const currentOutfit = outfits[outfitIndex];

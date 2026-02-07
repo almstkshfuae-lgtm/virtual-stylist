@@ -183,7 +183,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
                             {isGlobalBrand(store.title) && (
                               <span className="absolute -top-2 -left-2 inline-flex items-center gap-1 rounded-full bg-amber-500 text-white px-2 py-1 text-[10px] font-bold shadow-md">
                                 <GlobeIcon className="w-3 h-3" />
-                                {t('storeLocator.globalBrand', 'علامة عالمية')}
+                                {t('storeLocator.globalBrand')}
                               </span>
                             )}
                             <div className="flex items-center gap-3">
@@ -200,7 +200,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
                                         ? 'text-amber-700 dark:text-amber-300'
                                         : 'text-gray-800 dark:text-gray-100'
                                     }`}>{store.title}</p>
-                                    <p className="text-[11px] text-cyan-700 dark:text-cyan-300 truncate">{safeStoreUri || t('storeLocator.invalidLink', 'Invalid link')}</p>
+                                    <p className="text-[11px] text-cyan-700 dark:text-cyan-300 truncate">{safeStoreUri || t('storeLocator.invalidLink')}</p>
                                 </div>
                             </div>
                             <div className="mt-3 flex items-center gap-2">
@@ -220,7 +220,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({ isOpen, on
                                     disabled={!safeStoreUri}
                                     className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-pink-400 hover:text-pink-600 dark:border-gray-600 dark:text-gray-200 dark:hover:border-pink-400"
                                 >
-                                    <CopyIcon className="w-4 h-4" /> {copiedIndex === index ? t('storeLocator.copied', 'تم النسخ') : t('storeLocator.copy', 'نسخ الرابط')}
+                                    <CopyIcon className="w-4 h-4" /> {copiedIndex === index ? t('storeLocator.copied') : t('storeLocator.copy')}
                                 </button>
                             </div>
                         </div>
