@@ -5,6 +5,7 @@ import { UploadIcon } from './icons/UploadIcon';
 import { TrashIcon } from './icons/TrashIcon';
 import type { ClothingItem } from '../types';
 import { ModeToggle } from './ModeToggle';
+import { validateImageFiles } from '../lib/uploadValidation';
 
 interface ItemCollectionProps {
     items: ClothingItem[];
@@ -85,11 +86,24 @@ export const ItemCollection: React.FC<ItemCollectionProps> = ({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const fileInputId = 'collection-image-upload';
     const [removingItems, setRemovingItems] = useState<string[]>([]);
+    const [uploadError, setUploadError] = useState<string | null>(null);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) {
-            onAddItem(event.target.files[0]);
+        const { files, error } = validateImageFiles(event.target.files, t);
+
+        if (error) {
+            setUploadError(error);
+            if (event.target) event.target.value = '';
+            return;
         }
+
+        if (files.length === 0) {
+            return;
+        }
+
+        setUploadError(null);
+        files.forEach((file) => onAddItem(file));
+        if (event.target) event.target.value = '';
     };
     
     const handleAddClick = () => {
@@ -111,6 +125,11 @@ export const ItemCollection: React.FC<ItemCollectionProps> = ({
                 <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">{t('main.yourCollection')}</h2>
                 <ModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
             </div>
+            {uploadError && (
+                <p className="mb-2 text-xs text-red-600 dark:text-red-400" role="alert" aria-live="assertive">
+                    {uploadError}
+                </p>
+            )}
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto p-1">
                 {items.map((item, index) => (
                     <CollectionItem
@@ -140,6 +159,7 @@ export const ItemCollection: React.FC<ItemCollectionProps> = ({
                     ref={fileInputRef}
                     className="hidden"
                     accept="image/*"
+                    multiple
                     onChange={handleFileChange}
                 />
                 <label htmlFor={fileInputId} className="sr-only">

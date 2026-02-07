@@ -219,7 +219,15 @@ Format the output as a JSON array of objects.`;
       console.error('Response structure:', JSON.stringify(result).substring(0, 200));
       throw new Error("Failed to generate outfit descriptions.");
   }
-  return parseModelJson(responseText);
+  try {
+    return parseModelJson(responseText);
+  } catch (err) {
+    // Surface a user-friendly error while preserving the original snippet for debugging
+    console.error('Failed to parse outfit prompts JSON:', err);
+    throw new Error(
+      'The model response was not valid JSON for outfit suggestions. Please retry the request.'
+    );
+  }
 }
 
 // 2. Generate a flat-lay image based on a prompt and the original item
@@ -318,7 +326,13 @@ Format the output as a JSON array of objects. The values for 'title', 'descripti
         throw new Error("Failed to generate outfit combinations.");
     }
     
-    const combinationPrompts = JSON.parse(responseText.trim());
+    let combinationPrompts;
+    try {
+        combinationPrompts = parseModelJson(responseText);
+    } catch (err) {
+        console.error('Failed to parse combination JSON:', err);
+        throw new Error('The model response was not valid JSON for outfit combinations. Please retry.');
+    }
 
     if (combinationPrompts.length === 0) return [];
     
