@@ -416,7 +416,19 @@ const App: React.FC = () => {
     if (itemToRemove) {
       URL.revokeObjectURL(itemToRemove.url);
     }
-    setCollection(prev => prev.filter((_, i) => i !== index));
+    setCollection(prev => {
+      const next = prev.filter((_, i) => i !== index);
+      if (next.length === 0) {
+        setHasStarted(false);
+        setSelectedItemIndex(null);
+        setOutfits([]);
+        setRatedOutfits({});
+        setCombinationSelection([]);
+        setCombinationResults([]);
+        setTrendAnalysisResult(null);
+      }
+      return next;
+    });
     if (selectedItemIndex === index) {
       setSelectedItemIndex(null);
       setOutfits([]);
@@ -714,19 +726,27 @@ const App: React.FC = () => {
       }
   }, [userLocation, language, t]);
   
-  const resetApp = () => {
-    collection.forEach(item => URL.revokeObjectURL(item.url));
-    setCollection([]);
-    setSelectedItemIndex(null);
-    setOutfits([]);
-    setError(null);
-    setIsLoading(false);
-    setViewMode('single');
-    setCombinationSelection([]);
-    setCombinationResults([]);
-    setHasStarted(false);
-    setRatedOutfits({});
+const resetApp = () => {
+  collection.forEach(item => URL.revokeObjectURL(item.url));
+  setCollection([]);
+  setSelectedItemIndex(null);
+  setOutfits([]);
+  setError(null);
+  setIsLoading(false);
+  setViewMode('single');
+  setCombinationSelection([]);
+  setCombinationResults([]);
+  setHasStarted(false);
+  setRatedOutfits({});
+  setTrendAnalysisResult(null);
+  setSavedOutfits([]);
+  try {
+    localStorage.removeItem('savedOutfits');
+    localStorage.removeItem('styleProfile');
+  } catch (err) {
+    console.debug('localStorage reset skipped', err);
   }
+};
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
@@ -745,13 +765,11 @@ const App: React.FC = () => {
     navigate('/profile');
   }, [navigate]);
 
-  const handleStartDemo = useCallback(async () => {
+const handleStartDemo = useCallback(async () => {
+    resetApp();
     setHasStarted(true);
     setIsLoading(true);
     setError(null);
-    setCollection([]);
-    setOutfits([]);
-    setRatedOutfits({});
     try {
       const demoFile = await loadDemoImageFile();
       const demoItem = { file: demoFile, url: URL.createObjectURL(demoFile) };
