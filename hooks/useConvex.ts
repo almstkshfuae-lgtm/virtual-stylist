@@ -57,22 +57,6 @@ export function useCombinations(userId: string | null) {
 }
 
 /**
- * Hook to manage chat history
- */
-export function useChatHistory(userId: string | null) {
-  const messages = useQuery(
-    api.outfits.getChatHistory,
-    userId ? { userId } : "skip"
-  );
-  const addMessage = useMutation(api.outfits.addChatMessage);
-
-  return {
-    messages: messages || [],
-    addMessage,
-  };
-}
-
-/**
  * Hook to manage bookmarked stores
  */
 export function useBookmarkedStores(userId: string | null) {

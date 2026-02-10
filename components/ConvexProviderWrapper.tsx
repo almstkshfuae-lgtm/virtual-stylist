@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
-import { ConvexProvider, ConvexReactClient } from 'convex/react';
+import { ConvexReactClient } from 'convex/react';
+import { ConvexProviderWithClerk } from 'convex/react-clerk';
+import { useAuth } from '@clerk/clerk-react';
 import { convexUrl } from '../lib/convexConfig';
 
 const convexClient = convexUrl ? new ConvexReactClient(convexUrl) : null;
@@ -16,7 +18,11 @@ export function ConvexProviderWrapper({ children }: ConvexProviderWrapperProps) 
     return <>{children}</>;
   }
 
-  return <ConvexProvider client={convexClient}>{children}</ConvexProvider>;
+  return (
+    <ConvexProviderWithClerk client={convexClient} useAuth={useAuth}>
+      {children}
+    </ConvexProviderWithClerk>
+  );
 }
 
 export default ConvexProviderWrapper;

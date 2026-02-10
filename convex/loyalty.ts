@@ -2,6 +2,8 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server.js";
 
 const DEFAULT_PROGRAM_SLUG = "default";
+const WELCOME_BONUS_POINTS = 500;
+const EXTRA_GRANT_POINTS = 300;
 
 // Normalize codes for consistent lookups (case-insensitive comparisons).
 const normalizeCode = (code: string) => code.trim().toLowerCase();
@@ -24,15 +26,6 @@ const monthKey = () => {
   )}`;
 };
 
-// Helper to create daily key (YYYY-MM-DD)
-const dayKey = () => {
-  const now = new Date(Date.now());
-  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(
-    2,
-    "0"
-  )}-${String(now.getUTCDate()).padStart(2, "0")}`;
-};
-
 // Helper that can be safely reused inside Convex functions without nesting calls.
 async function ensureProgramSettingsDoc(ctx: any) {
   const existing = await ctx.db
@@ -43,8 +36,8 @@ async function ensureProgramSettingsDoc(ctx: any) {
   if (existing) {
     const desired = {
       monthlyPoints: 300,
-      signupBonusPoints: 0,
-      welcomePackagePoints: 0,
+      signupBonusPoints: WELCOME_BONUS_POINTS,
+      welcomePackagePoints: EXTRA_GRANT_POINTS,
       referralRewardPoints: 500,
     };
     const needsUpdate =
@@ -63,8 +56,8 @@ async function ensureProgramSettingsDoc(ctx: any) {
   const id = await ctx.db.insert("programSettings", {
     slug: DEFAULT_PROGRAM_SLUG,
     monthlyPoints: 300,
-    signupBonusPoints: 0,
-    welcomePackagePoints: 0,
+    signupBonusPoints: WELCOME_BONUS_POINTS,
+    welcomePackagePoints: EXTRA_GRANT_POINTS,
     referralRewardPoints: 500,
     adInventoryEnabled: false,
     adProductNotes: "Toggle to monetize via brand services/placements later.",
@@ -72,6 +65,22 @@ async function ensureProgramSettingsDoc(ctx: any) {
   });
 
   return await ctx.db.get(id);
+}
+
+// Idempotently grant the fixed welcome + extra points package.
+async function grantWelcomePackage(ctx: any, account: any) {
+  // Avoid double-awarding by using idempotency keys tied to user id.
+  await addPointsHelper(ctx, account._id, WELCOME_BONUS_POINTS, "welcome", {
+    description: "WELCOME_BONUS",
+    idempotencyKey: `welcome_bonus:${account.userId}`,
+  });
+
+  await addPointsHelper(ctx, account._id, EXTRA_GRANT_POINTS, "extra_grant", {
+    description: "EXTRA_GRANT",
+    idempotencyKey: `extra_grant:${account.userId}`,
+  });
+
+  return await ctx.db.get(account._id);
 }
 
 // Create or fetch a customer account, award signup + welcome, and handle referrals.
@@ -146,15 +155,15 @@ export const getOrCreateCustomer = mutation({
         await ctx.db.patch(existing._id, patch);
       }
 
+      const refreshed = await ctx.db.get(existing._id);
+      const withWelcome = await grantWelcomePackage(ctx, refreshed);
+
       // If the user just entered a referral code after signup, reward it once.
       if (needsReferral) {
-        await rewardReferral(ctx, { ...existing, ...patch }, referredByCode!, settings);
+        await rewardReferral(ctx, withWelcome, referredByCode!, settings);
       }
 
-      await maybeIssueTrial(ctx, { ...existing, ...patch });
-      const refreshed = await ctx.db.get(existing._id);
-      const withReferral = await maybeApplyPendingReferral(ctx, refreshed, settings);
-      await maybeIssueTrial(ctx, withReferral);
+      const withReferral = await maybeApplyPendingReferral(ctx, withWelcome, settings);
       return await ctx.db.get(withReferral._id);
     }
 
@@ -190,36 +199,14 @@ export const getOrCreateCustomer = mutation({
     const account = await ctx.db.get(accountId);
     if (!account) throw new Error("Failed to create account");
 
-    // Award signup bonus once.
-    let updatedAccount = await addPointsHelper(
-      ctx,
-      account._id,
-      settings.signupBonusPoints,
-      "signup",
-      {
-        description: "Signup bonus",
-        idempotencyKey: `signup:${account._id}`,
-      }
-    );
-    await ctx.db.patch(account._id, { signupAwarded: true, updatedAt: Date.now() });
-
-    // Welcome package (one-time).
-    updatedAccount = await addPointsHelper(
-      ctx,
-      account._id,
-      settings.welcomePackagePoints,
-      "welcome",
-      { description: "Welcome package", idempotencyKey: `welcome:${account._id}` }
-    );
-    await ctx.db.patch(account._id, { welcomeAwarded: true, updatedAt: Date.now() });
+    const withWelcome = await grantWelcomePackage(ctx, account);
 
     // Monthly issuance if not yet issued this month.
-    await maybeIssueMonthly(ctx, updatedAccount, settings);
-    await maybeIssueTrial(ctx, updatedAccount);
+    await maybeIssueMonthly(ctx, withWelcome, settings);
 
     // If referred, credit both parties once.
     if (referredByCode) {
-      await rewardReferral(ctx, account, referredByCode, settings);
+      await rewardReferral(ctx, withWelcome, referredByCode, settings);
     }
 
     return await ctx.db.get(accountId);
@@ -289,9 +276,9 @@ export const loginWithEmail = mutation({
         });
         await rewardReferral(ctx, { ...existing, referredByCode }, referredByCode, settings);
       }
-      await maybeIssueTrial(ctx, existing);
+      const withWelcome = await grantWelcomePackage(ctx, existing);
       return {
-        account: await ctx.db.get(existing._id),
+        account: await ctx.db.get(withWelcome._id),
         settings,
         status: "existing",
       };
@@ -331,29 +318,9 @@ export const loginWithEmail = mutation({
     if (!account) throw new Error("Failed to create account via email login");
 
     // Award signup + welcome + monthly same as new user flow
-    let updatedAccount = await addPointsHelper(
-      ctx,
-      account._id,
-      settings.signupBonusPoints,
-      "signup",
-      {
-        description: "Signup bonus",
-        idempotencyKey: `signup:${account._id}`,
-      }
-    );
-    await ctx.db.patch(account._id, { signupAwarded: true, updatedAt: Date.now() });
+    const withWelcome = await grantWelcomePackage(ctx, account);
 
-    updatedAccount = await addPointsHelper(
-      ctx,
-      account._id,
-      settings.welcomePackagePoints,
-      "welcome",
-      { description: "Welcome package", idempotencyKey: `welcome:${account._id}` }
-    );
-    await ctx.db.patch(account._id, { welcomeAwarded: true, updatedAt: Date.now() });
-
-    await maybeIssueMonthly(ctx, updatedAccount, settings);
-    await maybeIssueTrial(ctx, updatedAccount);
+    await maybeIssueMonthly(ctx, withWelcome, settings);
 
     // If referred, credit both parties once.
     if (referredByCode) {
@@ -443,12 +410,10 @@ export const issueMonthlyPoints = mutation({
 
     try {
       await maybeIssueMonthly(ctx, account, settings);
-      await maybeIssueTrial(ctx, account);
     } catch (error: any) {
       if (error?.message !== "Account not found") throw error;
       account = await findOrBootstrapAccount(ctx, args.userId, settings);
       await maybeIssueMonthly(ctx, account, settings);
-      await maybeIssueTrial(ctx, account);
     }
 
     return await ctx.db
@@ -535,6 +500,7 @@ async function addPointsHelper(
     | "signup"
     | "welcome"
     | "trial"
+    | "extra_grant"
     | "referral_referrer"
     | "referral_new_user"
     | "spend"
@@ -617,30 +583,10 @@ async function findOrBootstrapAccount(ctx: any, userId: string, settings: any) {
   const account = await ctx.db.get(accountId);
   if (!account) throw new Error("Failed to create account");
 
-  let updatedAccount = await addPointsHelper(
-    ctx,
-    account._id,
-    settings.signupBonusPoints,
-    "signup",
-    {
-      description: "Signup bonus",
-      idempotencyKey: `signup:${account._id}`,
-    }
-  );
-  await ctx.db.patch(account._id, { signupAwarded: true, updatedAt: Date.now() });
+  const withWelcome = await grantWelcomePackage(ctx, account);
 
-  updatedAccount = await addPointsHelper(
-    ctx,
-    account._id,
-    settings.welcomePackagePoints,
-    "welcome",
-    { description: "Welcome package", idempotencyKey: `welcome:${account._id}` }
-  );
-  await ctx.db.patch(account._id, { welcomeAwarded: true, updatedAt: Date.now() });
-
-  await maybeIssueMonthly(ctx, updatedAccount, settings);
-  await maybeIssueTrial(ctx, updatedAccount);
-  const withReferral = await maybeApplyPendingReferral(ctx, updatedAccount, settings);
+  await maybeIssueMonthly(ctx, withWelcome, settings);
+  const withReferral = await maybeApplyPendingReferral(ctx, withWelcome, settings);
 
   return (await ctx.db.get(withReferral._id))!;
 }
@@ -715,41 +661,9 @@ async function maybeApplyPendingReferral(ctx: any, account: any, settings: any) 
   return await ctx.db.get(account._id);
 }
 
-async function maybeIssueTrial(ctx: any, account: any) {
-  const TRIAL_DAYS = 0;
-  const TRIAL_DAILY_POINTS = 0;
-  const today = dayKey();
-
-  const startAt = account.trialStartAt ?? Date.now();
-  const daysIssued = account.trialDaysIssued ?? 0;
-  const lastIssued = account.trialLastIssuedFor;
-
-  if (daysIssued >= TRIAL_DAYS) return;
-  if (lastIssued === today) return;
-
-  // Ensure trial hasn't expired by calendar days since start
-  const daysSinceStart = Math.floor((Date.now() - startAt) / (1000 * 60 * 60 * 24));
-  if (daysSinceStart >= TRIAL_DAYS) return;
-
-  const updated = await addPointsHelper(
-    ctx,
-    account._id,
-    TRIAL_DAILY_POINTS,
-    "trial",
-    {
-      description: `Trial day ${daysIssued + 1}/${TRIAL_DAYS}`,
-      idempotencyKey: `trial:${account.userId}:${today}`,
-    }
-  );
-
-  await ctx.db.patch(account._id, {
-    trialLastIssuedFor: today,
-    trialDaysIssued: daysIssued + 1,
-    trialStartAt: startAt,
-    updatedAt: Date.now(),
-  });
-
-  return updated;
+async function maybeIssueTrial(_ctx: any, account: any) {
+  // Trial grants are now disabled; keep signature for backward compatibility.
+  return account;
 }
 
 async function rewardReferral(ctx: any, newAccount: any, referredByCodeRaw: string, settings: any) {

@@ -31,6 +31,7 @@ import { convexUrl, isConvexEnabled } from './lib/convexConfig';
 import { readReferralFromSearch, loadPendingReferralCode, storePendingReferralCode } from './lib/referral';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, UserCircle2 } from 'lucide-react';
+import { useAuth, RedirectToSignIn, SignedOut, useClerk } from '@clerk/clerk-react';
 
 // Lazy-load the demo image from the public assets folder.
 const DEMO_IMAGE_FILENAME = 'demo-skirt.png';
@@ -56,8 +57,6 @@ const loadDemoImageFile = (): Promise<File> => {
   return demoImagePromise;
 };
 
-const LOCAL_CUSTOMER_ID_KEY = 'virtual-stylist-customer-id';
-
 const cryptoRandomInt = (max: number) => {
   const cryptoObj = typeof window !== 'undefined' ? window.crypto : undefined;
   if (!cryptoObj?.getRandomValues) {
@@ -68,26 +67,9 @@ const cryptoRandomInt = (max: number) => {
   return bytes[0] % max;
 };
 
-const getLocalCustomerId = () => {
-  if (typeof window === 'undefined') {
-    return 'virtual-stylist-visitor';
-  }
-  const stored = window.localStorage.getItem(LOCAL_CUSTOMER_ID_KEY);
-  if (stored) {
-    return stored;
-  }
-
-  const browserCrypto = window.crypto;
-  const randomId =
-    typeof browserCrypto?.randomUUID === 'function'
-      ? browserCrypto.randomUUID()
-      : `visitor-${Date.now()}-${cryptoRandomInt(1_000_000)}`;
-
-  window.localStorage.setItem(LOCAL_CUSTOMER_ID_KEY, randomId);
-  return randomId;
-};
-
 const App: React.FC = () => {
+  const { isLoaded: isAuthLoaded, isSignedIn, userId } = useAuth();
+  const { signOut } = useClerk();
   const location = useLocation();
   const [collection, setCollection] = useState<ClothingItem[]>([]);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
@@ -136,7 +118,7 @@ const App: React.FC = () => {
   }, []);
 
   const [savedOutfits, setSavedOutfits] = useState<ValidOutfit[]>([]);
-  const [customerId, setCustomerId] = useState<string>(() => getLocalCustomerId());
+  const customerId = userId ?? null;
   const [pendingReferralCode, setPendingReferralCode] = useState<string | null>(() => loadPendingReferralCode());
   const isProfileRoute = location.pathname === '/profile' || location.pathname === '/profile/';
   const navigate = useNavigate();
@@ -157,6 +139,20 @@ const App: React.FC = () => {
     setPendingReferralCode(null);
     storePendingReferralCode(null);
   }, []);
+
+  if (!isAuthLoaded) {
+    return <Loader />;
+  }
+
+  if (!isSignedIn) {
+    return (
+      <>
+        <SignedOut>
+          <RedirectToSignIn />
+        </SignedOut>
+      </>
+    );
+  }
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -258,6 +254,10 @@ const App: React.FC = () => {
       setError('Account login requires a configured Convex backend (set VITE_CONVEX_URL).');
       return;
     }
+    if (!isSignedIn || !userId) {
+      setError(t('auth.loginRequired'));
+      return;
+    }
     if (!loginWithEmail || !email.trim()) return;
     setIsAuthLoading(true);
     try {
@@ -269,13 +269,7 @@ const App: React.FC = () => {
       if (referralCode) {
         clearPendingReferralCode();
       }
-      const newUserId = result?.account?.userId;
-      if (newUserId) {
-        setCustomerId(newUserId);
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(LOCAL_CUSTOMER_ID_KEY, newUserId);
-        }
-      }
+      void result;
     } catch (error) {
       console.error('Auth login failed', error);
       setError(t('auth.loginFailedEmail'));
@@ -287,6 +281,10 @@ const App: React.FC = () => {
   const handleSignUp = async (email: string, name?: string, referralCode?: string) => {
     if (!isConvexEnabled) {
       throw new Error('Account creation requires a configured Convex backend (set VITE_CONVEX_URL).');
+    }
+    if (!isSignedIn || !userId) {
+      setError(t('auth.loginRequired'));
+      return;
     }
     if (!loginWithEmail || !email.trim()) return;
     setIsAuthLoading(true);
@@ -301,13 +299,6 @@ const App: React.FC = () => {
       }
       if (result?.status === 'existing') {
         throw new Error(t('landing.signup.emailExists'));
-      }
-      const newUserId = result?.account?.userId;
-      if (newUserId) {
-        setCustomerId(newUserId);
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(LOCAL_CUSTOMER_ID_KEY, newUserId);
-        }
       }
     } finally {
       setIsAuthLoading(false);
@@ -749,15 +740,11 @@ const resetApp = () => {
 };
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(LOCAL_CUSTOMER_ID_KEY);
-    }
     clearPendingReferralCode();
     setIsBlocked(false);
     setPaywallMessage(null);
     resetApp();
-    const freshId = getLocalCustomerId();
-    setCustomerId(freshId);
+    signOut().catch((err) => console.error('Sign out failed', err));
     navigate('/', { replace: true });
   };
 

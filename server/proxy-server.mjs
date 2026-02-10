@@ -233,7 +233,7 @@ const sanitizePayload = (payload) => {
     }
     const unknownConfigKeys = rejectUnknownKeys(
       payload.config,
-      ['responseMimeType', 'maxOutputTokens', 'temperature', 'topP', 'topK'],
+      ['responseMimeType', 'maxOutputTokens', 'temperature', 'topP', 'topK', 'tools', 'toolConfig'],
       'payload.config'
     );
     if (unknownConfigKeys.error) return unknownConfigKeys;
@@ -244,6 +244,8 @@ const sanitizePayload = (payload) => {
       temperature: clampNumber(payload.config.temperature, 0.7, 0, 1),
       topP: clampNumber(payload.config.topP, 0.95, 0, 1),
       topK: Math.round(clampNumber(payload.config.topK, 40, 1, 200)),
+      tools: payload.config.tools,
+      toolConfig: payload.config.toolConfig,
     };
 
     if (responseMimeType && ['application/json', 'text/plain'].includes(responseMimeType)) {

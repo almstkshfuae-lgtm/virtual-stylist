@@ -40,6 +40,8 @@ type CleanConfig = {
   topP: number;
   topK: number;
   responseMimeType?: 'application/json' | 'text/plain';
+  tools?: unknown;
+  toolConfig?: unknown;
 };
 type RateBucket = { start: number; count: number };
 type RateLimitResult = {
@@ -204,7 +206,7 @@ const sanitizePayload = (payload: unknown): ValidationResult<{ contents: CleanCo
     if (!configObj) return { error: 'payload.config must be an object' };
     const unknownConfigKeys = rejectUnknownKeys(
       configObj,
-      ['responseMimeType', 'maxOutputTokens', 'temperature', 'topP', 'topK'],
+      ['responseMimeType', 'maxOutputTokens', 'temperature', 'topP', 'topK', 'tools', 'toolConfig'],
       'payload.config'
     );
     if ('error' in unknownConfigKeys) return unknownConfigKeys;
@@ -215,6 +217,8 @@ const sanitizePayload = (payload: unknown): ValidationResult<{ contents: CleanCo
       temperature: clampNumber(configObj.temperature, 0.7, 0, 1),
       topP: clampNumber(configObj.topP, 0.95, 0, 1),
       topK: Math.round(clampNumber(configObj.topK, 40, 1, 200)),
+      tools: configObj.tools,
+      toolConfig: configObj.toolConfig,
     };
     if (responseMimeType === 'application/json' || responseMimeType === 'text/plain') {
       config.responseMimeType = responseMimeType;

@@ -68,7 +68,7 @@ const createMockCtx = (seed: Record<string, Doc[]> = {}) => {
 // Use fixed timestamps for deterministic month/day keys.
 const fixedNow = Date.UTC(2024, 4, 15); // May 15, 2024
 
-test("cumulative signup/welcome/monthly/trial balances and ledger entries", async () => {
+test("welcome + extra grant + monthly issuance ledger entries", async () => {
   const ctx = createMockCtx({
     customerAccounts: [
       {
@@ -87,33 +87,29 @@ test("cumulative signup/welcome/monthly/trial balances and ledger entries", asyn
   });
 
   const monthlyPoints = 300;
-  const trialDailyPoints = 300;
 
   const originalNow = Date.now;
   Date.now = () => fixedNow;
 
-  const afterSignup = await addPoints(ctx as any, "customerAccounts_0", 500, "signup", {
-    description: "Signup bonus",
+  const afterWelcome = await addPoints(ctx as any, "customerAccounts_0", 500, "welcome", {
+    description: "WELCOME_BONUS",
   });
-  assert.equal(afterSignup.pointsBalance, 500);
+  assert.equal(afterWelcome.pointsBalance, 500);
 
-  const afterWelcome = await addPoints(ctx as any, "customerAccounts_0", 1300, "welcome", {
-    description: "Welcome package",
+  const afterExtra = await addPoints(ctx as any, "customerAccounts_0", 300, "extra_grant", {
+    description: "EXTRA_GRANT",
   });
-  assert.equal(afterWelcome.pointsBalance, 1800);
+  assert.equal(afterExtra.pointsBalance, 800);
 
   const afterMonthly = await _test.maybeIssueMonthly(
     ctx as any,
-    afterWelcome,
+    afterExtra,
     { monthlyPoints }
   );
-  assert.equal(afterMonthly?.pointsBalance ?? 1800 + monthlyPoints, 2100);
-
-  const afterTrial = await _test.maybeIssueTrial(ctx as any, afterMonthly ?? afterWelcome);
-  assert.equal(afterTrial?.pointsBalance ?? 2100 + trialDailyPoints, 2400);
+  assert.equal(afterMonthly?.pointsBalance ?? 800 + monthlyPoints, 1100);
 
   const ledgerEntries = [...ctx.store.values()].filter((d) => d._id?.startsWith("pointsLedger_"));
-  assert.equal(ledgerEntries.length, 4, "expected four ledger entries");
+  assert.equal(ledgerEntries.length, 3, "expected three ledger entries");
 
   Date.now = originalNow;
 });
