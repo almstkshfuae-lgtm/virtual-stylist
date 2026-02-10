@@ -22,6 +22,18 @@ if (fs.existsSync(envPath)) {
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
+// Optional Clerk auth middleware: if @clerk/express is missing, continue without blocking startup.
+let clerkReady = false;
+await (async () => {
+  try {
+    const { clerkMiddleware } = await import('@clerk/express');
+    app.use(clerkMiddleware());
+    clerkReady = true;
+  } catch (err) {
+    console.warn('⚠️  @clerk/express not installed; skipping Clerk auth middleware. Error code:', err?.code || err?.message);
+  }
+})();
+
 app.use((req, res, next) => {
   const allowOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
   res.header('Access-Control-Allow-Origin', allowOrigin);
@@ -284,6 +296,11 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/gemini-proxy', async (req, res) => {
+  // Enforce auth when Clerk is present; otherwise rely on API_SECRET header as before.
+  const auth = req.auth;
+  if (clerkReady && !auth?.userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   const start = Date.now();
   const requestId = typeof req.headers['x-request-id'] === 'string'
     ? req.headers['x-request-id']

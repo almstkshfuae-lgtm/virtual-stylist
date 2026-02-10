@@ -31,7 +31,16 @@ import { convexUrl, isConvexEnabled } from './lib/convexConfig';
 import { readReferralFromSearch, loadPendingReferralCode, storePendingReferralCode } from './lib/referral';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, UserCircle2 } from 'lucide-react';
-import { useAuth, RedirectToSignIn, SignedOut, useClerk } from '@clerk/clerk-react';
+import {
+  useAuth,
+  RedirectToSignIn,
+  SignedOut,
+  SignedIn,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+  useClerk,
+} from '@clerk/clerk-react';
 
 // Lazy-load the demo image from the public assets folder.
 const DEMO_IMAGE_FILENAME = 'demo-skirt.png';
@@ -839,14 +848,33 @@ const handleStartDemo = useCallback(async () => {
                 <RestartIcon className="w-4 h-4"/>
                 <span>{t('header.startOver')}</span>
             </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-rose-600 dark:text-rose-200 rounded-lg border border-rose-100 dark:border-rose-900/40 hover:bg-rose-50 dark:hover:bg-rose-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-400 transition-colors"
-              aria-label={t('profilePage.logout')}
-            >
-              <LogOut className="h-4 w-4" aria-hidden="true" />
-              <span>{t('profilePage.logout')}</span>
-            </button>
+            <SignedOut>
+              <div className="flex items-center gap-2">
+                <SignInButton>
+                  <button className="rounded-full border border-gray-300 px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 hover:border-pink-400 hover:text-pink-600 dark:border-slate-600 dark:text-gray-200 dark:hover:border-pink-400">
+                    {t('auth.signIn', 'Sign in')}
+                  </button>
+                </SignInButton>
+                <SignUpButton>
+                  <button className="rounded-full bg-pink-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-pink-700">
+                    {t('auth.signUp', 'Sign up')}
+                  </button>
+                </SignUpButton>
+              </div>
+            </SignedOut>
+            <SignedIn>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-medium text-rose-600 dark:text-rose-200 rounded-lg border border-rose-100 dark:border-rose-900/40 hover:bg-rose-50 dark:hover:bg-rose-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-400 transition-colors"
+                  aria-label={t('profilePage.logout')}
+                >
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
+                  <span>{t('profilePage.logout')}</span>
+                </button>
+                <UserButton afterSignOutUrl="/" />
+              </div>
+            </SignedIn>
             <LanguageSelector />
             <ThemeToggle />
           </div>
