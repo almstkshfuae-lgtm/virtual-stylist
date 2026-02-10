@@ -149,20 +149,6 @@ const App: React.FC = () => {
     storePendingReferralCode(null);
   }, []);
 
-  if (!isAuthLoaded) {
-    return <Loader />;
-  }
-
-  if (!isSignedIn) {
-    return (
-      <>
-        <SignedOut>
-          <RedirectToSignIn />
-        </SignedOut>
-      </>
-    );
-  }
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const referral = readReferralFromSearch(window.location.search);
@@ -791,6 +777,18 @@ const handleStartDemo = useCallback(async () => {
   const paywallPosition = isRtl
     ? 'inset-x-3 bottom-3 sm:inset-x-auto sm:left-6 sm:bottom-6'
     : 'inset-x-3 bottom-3 sm:inset-x-auto sm:right-6 sm:bottom-6';
+
+  if (!isAuthLoaded) {
+    return <Loader />;
+  }
+
+  if (!isSignedIn) {
+    return (
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+    );
+  }
 
   if (!hasStarted && collection.length === 0) {
     return (

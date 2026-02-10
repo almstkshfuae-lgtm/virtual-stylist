@@ -1,8 +1,4 @@
-const defaultDevConvexUrl = 'http://127.0.0.1:3210';
 const envConvexUrl = import.meta.env.VITE_CONVEX_URL?.trim() ?? '';
-const isProd = import.meta.env.PROD;
-
-// In production, only use the URL provided in VITE_CONVEX_URL.
-// In development, fall back to localhost for convenience.
-export const convexUrl = envConvexUrl || (!isProd ? defaultDevConvexUrl : undefined);
+// Require an explicit VITE_CONVEX_URL; no localhost fallback to avoid accidental client auth calls.
+export const convexUrl = envConvexUrl || undefined;
 export const isConvexEnabled = Boolean(convexUrl);
