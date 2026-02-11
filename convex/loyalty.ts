@@ -69,15 +69,11 @@ async function ensureProgramSettingsDoc(ctx: any) {
 
 // Idempotently grant the fixed welcome + extra points package.
 async function grantWelcomePackage(ctx: any, account: any) {
-  // Avoid double-awarding by using idempotency keys tied to user id.
-  await addPointsHelper(ctx, account._id, WELCOME_BONUS_POINTS, "welcome", {
-    description: "WELCOME_BONUS",
-    idempotencyKey: `welcome_bonus:${account.userId}`,
-  });
-
-  await addPointsHelper(ctx, account._id, EXTRA_GRANT_POINTS, "extra_grant", {
-    description: "EXTRA_GRANT",
-    idempotencyKey: `extra_grant:${account.userId}`,
+  // Single idempotent ledger entry for total 800 points (500 welcome + 300 extra).
+  const total = WELCOME_BONUS_POINTS + EXTRA_GRANT_POINTS;
+  await addPointsHelper(ctx, account._id, total, "welcome", {
+    description: "Initial welcome + extra grant",
+    idempotencyKey: `initial_total:${account.userId}`,
   });
 
   return await ctx.db.get(account._id);
@@ -87,6 +83,12 @@ async function grantWelcomePackage(ctx: any, account: any) {
 export const getOrCreateCustomer = mutation({
   args: {
     userId: v.optional(v.string()),
+    email: v.optional(v.string()),
+    name: v.optional(v.string()),
+    nationality: v.optional(v.string()),
+    age: v.optional(v.number()),
+    mobileNumber: v.optional(v.string()),
+    address: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity?.();
@@ -435,7 +437,6 @@ async function addPointsHelper(
     | "signup"
     | "welcome"
     | "trial"
-    | "extra_grant"
     | "referral_referrer"
     | "referral_new_user"
     | "spend"
