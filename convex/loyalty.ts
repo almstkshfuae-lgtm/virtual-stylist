@@ -86,109 +86,47 @@ async function grantWelcomePackage(ctx: any, account: any) {
 // Create or fetch a customer account, award signup + welcome, and handle referrals.
 export const getOrCreateCustomer = mutation({
   args: {
-    userId: v.string(),
-    email: v.optional(v.string()),
-    name: v.optional(v.string()),
-    nationality: v.optional(v.string()),
-    age: v.optional(v.number()),
-    mobileNumber: v.optional(v.string()),
-    address: v.optional(v.string()),
-    referredByCode: v.optional(v.string()),
+    userId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireUser(ctx, args.userId);
-    const settings = await ensureProgramSettingsDoc(ctx);
-    const referredByCode = args.referredByCode
-      ? normalizeCode(args.referredByCode)
-      : undefined;
+    const identity = await ctx.auth.getUserIdentity?.();
+    if (!identity?.subject) {
+      throw new Error("Unauthorized");
+    }
+    const userId = identity.subject;
+    const email = identity.email;
+
+    // Idempotent fetch
     const existing = await ctx.db
       .query("customerAccounts")
-      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
       .first();
-
     if (existing) {
-      const patch: any = { updatedAt: Date.now() };
-      let shouldPatch = false;
-
-      if (args.name && args.name !== existing.name) {
-        patch.name = args.name;
-        shouldPatch = true;
-      }
-
-      if (args.email && args.email !== existing.email) {
-        patch.email = args.email;
-        shouldPatch = true;
-      }
-
-      if (args.nationality && args.nationality !== existing.nationality) {
-        patch.nationality = args.nationality;
-        shouldPatch = true;
-      }
-
-      if (typeof args.age === "number" && args.age !== existing.age) {
-        patch.age = args.age;
-        shouldPatch = true;
-      }
-
-      if (args.mobileNumber && args.mobileNumber !== existing.mobileNumber) {
-        patch.mobileNumber = args.mobileNumber;
-        shouldPatch = true;
-      }
-
-      if (args.address && args.address !== existing.address) {
-        patch.address = args.address;
-        shouldPatch = true;
-      }
-
-      const needsReferral =
-        referredByCode &&
-        !existing.referredByCode &&
-        referredByCode !== existing.referralCode;
-
-      if (needsReferral) {
-        patch.referredByCode = referredByCode;
-        patch.pendingReferralCode = undefined;
-        shouldPatch = true;
-      }
-
-      if (shouldPatch) {
-        await ctx.db.patch(existing._id, patch);
-      }
-
-      const refreshed = await ctx.db.get(existing._id);
-      const withWelcome = await grantWelcomePackage(ctx, refreshed);
-
-      // If the user just entered a referral code after signup, reward it once.
-      if (needsReferral) {
-        await rewardReferral(ctx, withWelcome, referredByCode!, settings);
-      }
-
-      const withReferral = await maybeApplyPendingReferral(ctx, withWelcome, settings);
-      return await ctx.db.get(withReferral._id);
+      return existing;
     }
 
-    const referralCode = await generateUniqueReferralCode(ctx);
     const now = Date.now();
+    const referralCode = await generateUniqueReferralCode(ctx);
 
     const accountId = await ctx.db.insert("customerAccounts", {
-      userId: args.userId,
-      email: args.email,
-      name: args.name,
-      nationality: args.nationality,
-      age: args.age,
-      mobileNumber: args.mobileNumber,
-      address: args.address,
+      userId,
+      email,
+      name: identity.name,
+      nationality: undefined,
+      age: undefined,
+      mobileNumber: undefined,
+      address: undefined,
       referralCode,
-      referredByCode,
+      referredByCode: undefined,
       pendingReferralCode: undefined,
       pointsBalance: 0,
       lifetimePoints: 0,
       monthlyIssuedFor: undefined,
-      trialStartAt: now,
+      trialStartAt: undefined,
       trialLastIssuedFor: undefined,
       trialDaysIssued: 0,
-      signupAwarded: false,
-      welcomeAwarded: false,
+      signupAwarded: true,
+      welcomeAwarded: true,
       marketingTags: [],
       adConsent: false,
       segments: [],
@@ -199,15 +137,12 @@ export const getOrCreateCustomer = mutation({
     const account = await ctx.db.get(accountId);
     if (!account) throw new Error("Failed to create account");
 
-    const withWelcome = await grantWelcomePackage(ctx, account);
-
-    // Monthly issuance if not yet issued this month.
-    await maybeIssueMonthly(ctx, withWelcome, settings);
-
-    // If referred, credit both parties once.
-    if (referredByCode) {
-      await rewardReferral(ctx, withWelcome, referredByCode, settings);
-    }
+    // Grant initial 800 points (500 welcome + 300 extra) with idempotency.
+    const grantKey = `initial:${userId}`;
+    await addPointsHelper(ctx, accountId, 800, "adjustment", {
+      description: "Initial welcome + extra grant",
+      idempotencyKey: grantKey,
+    });
 
     return await ctx.db.get(accountId);
   },

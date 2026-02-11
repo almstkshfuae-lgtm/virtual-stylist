@@ -9,6 +9,9 @@ import { ConvexProviderWrapper } from './components/ConvexProviderWrapper';
 import { BrowserRouter } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ClerkProvider } from '@clerk/clerk-react';
+import { Authenticated, AuthLoading, Unauthenticated } from 'convex/react';
+import { RedirectToSignIn } from '@clerk/clerk-react';
+import { Loader } from './components/Loader';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -24,17 +27,27 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ClerkProvider publishableKey={publishableKey}>
-      <ErrorBoundary>
-        <BrowserRouter>
-          <ConvexProviderWrapper>
-            <ThemeProvider>
-              <LanguageProvider>
-                <App />
-              </LanguageProvider>
-            </ThemeProvider>
-          </ConvexProviderWrapper>
-        </BrowserRouter>
-      </ErrorBoundary>
+      <AuthLoading>
+        <div className="flex min-h-screen items-center justify-center">
+          <Loader />
+        </div>
+      </AuthLoading>
+      <Unauthenticated>
+        <RedirectToSignIn />
+      </Unauthenticated>
+      <Authenticated>
+        <ErrorBoundary>
+          <BrowserRouter>
+            <ConvexProviderWrapper>
+              <ThemeProvider>
+                <LanguageProvider>
+                  <App />
+                </LanguageProvider>
+              </ThemeProvider>
+            </ConvexProviderWrapper>
+          </BrowserRouter>
+        </ErrorBoundary>
+      </Authenticated>
     </ClerkProvider>
   </React.StrictMode>
 );

@@ -33,7 +33,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, UserCircle2 } from 'lucide-react';
 import {
   useAuth,
-  RedirectToSignIn,
+  useUser,
   SignedOut,
   SignedIn,
   SignInButton,
@@ -77,7 +77,8 @@ const cryptoRandomInt = (max: number) => {
 };
 
 const App: React.FC = () => {
-  const { isLoaded: isAuthLoaded, isSignedIn, userId } = useAuth();
+  const { isSignedIn, userId } = useAuth();
+  const { user } = useUser();
   const { signOut } = useClerk();
   const location = useLocation();
   const [collection, setCollection] = useState<ClothingItem[]>([]);
@@ -127,7 +128,7 @@ const App: React.FC = () => {
   }, []);
 
   const [savedOutfits, setSavedOutfits] = useState<ValidOutfit[]>([]);
-  const customerId = userId ?? null;
+  const customerId = user?.id ?? null;
   const [pendingReferralCode, setPendingReferralCode] = useState<string | null>(() => loadPendingReferralCode());
   const isProfileRoute = location.pathname === '/profile' || location.pathname === '/profile/';
   const navigate = useNavigate();
@@ -777,18 +778,6 @@ const handleStartDemo = useCallback(async () => {
   const paywallPosition = isRtl
     ? 'inset-x-3 bottom-3 sm:inset-x-auto sm:left-6 sm:bottom-6'
     : 'inset-x-3 bottom-3 sm:inset-x-auto sm:right-6 sm:bottom-6';
-
-  if (!isAuthLoaded) {
-    return <Loader />;
-  }
-
-  if (!isSignedIn) {
-    return (
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
-    );
-  }
 
   if (!hasStarted && collection.length === 0) {
     return (

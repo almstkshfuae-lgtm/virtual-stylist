@@ -487,10 +487,14 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     logEvent('proxy.request.start', { requestId, clientIp, model, ...payloadStats });
     const ai = new GoogleGenAI({ apiKey });
     const { config, ...restPayload } = safePayload.value;
+    const { tools, toolConfig, ...generationConfig } = config ?? {};
+
     const result = await ai.models.generateContent({
       model,
       ...restPayload,
-      ...(config ? { generationConfig: config } : null),
+      ...(tools ? { tools } : null),
+      ...(toolConfig ? { toolConfig } : null),
+      ...(Object.keys(generationConfig).length ? { generationConfig } : null),
     });
     if (isDev) {
       console.log(`Success: ${model}`);
