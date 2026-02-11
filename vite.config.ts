@@ -47,15 +47,13 @@ export default defineConfig(({ mode }) => {
           main: './index.html',
         },
         output: {
-          manualChunks(id) {
-            if (!id.includes('node_modules')) return;
-            if (id.includes('react')) return 'react';
-            if (id.includes('framer-motion')) return 'motion';
-            if (id.includes('lucide-react')) return 'icons';
-            // Avoid Rollup "Generated an empty chunk: 'convex'" when Convex is tree-shaken (e.g., no VITE_CONVEX_URL at build time)
-            if (convexEnabled && id.includes('convex')) return 'convex';
-            if (id.includes('dompurify') || id.includes('marked')) return 'markdown';
-            return 'vendor';
+          manualChunks: {
+            // Keep React stack together to avoid circular vendor/react chunking.
+            react: ['react', 'react-dom', 'react-dom/client', 'react-router-dom'],
+            motion: ['framer-motion'],
+            icons: ['lucide-react'],
+            markdown: ['dompurify', 'marked'],
+            ...(convexEnabled ? { convex: ['convex', 'convex/react', 'convex/react-clerk'] } : {}),
           },
         },
       },

@@ -219,30 +219,37 @@ const App: React.FC = () => {
 
   const requireCredit = useCallback(
     async (pointsNeeded = 1) => {
-      if (!isConvexEnabled) return true;
+      if (!isConvexEnabled) return true; // paywall off when Convex disabled
+      if (!customerId || !spendPoints) {
+        setIsBlocked(true);
+        setPaywallMessage(t('paywall.authRequired'));
+        return false;
+      }
+
       const balance = loyaltyAccount?.pointsBalance ?? 0;
       if (balance < pointsNeeded) {
         setIsBlocked(true);
-        setPaywallMessage(t('paywall.insufficient'));
+        setPaywallMessage(
+          t('paywall.insufficient', 'You need more points to continue.'),
+        );
         return false;
       }
-      if (spendPoints) {
-        try {
-          await spendPoints({
-            userId: customerId,
-            amount: pointsNeeded,
-            description: 'Gemini usage',
-          });
-        } catch (error) {
-          console.error('Failed to spend points', error);
-          setIsBlocked(true);
-          setPaywallMessage(t('paywall.spendFailed'));
-          return false;
-        }
+
+      try {
+        await spendPoints({
+          userId: customerId,
+          amount: pointsNeeded,
+          description: 'Gemini usage',
+        });
+        return true;
+      } catch (error) {
+        console.error('Failed to spend points', error);
+        setIsBlocked(true);
+        setPaywallMessage(t('paywall.spendFailed'));
+        return false;
       }
-      return true;
     },
-    [customerId, loyaltyAccount?.pointsBalance, spendPoints]
+    [customerId, loyaltyAccount?.pointsBalance, spendPoints, t]
   );
 
   const handleRestoreAccount = async (email: string, name?: string, referralCode?: string) => {

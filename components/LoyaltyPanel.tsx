@@ -280,14 +280,21 @@ export const LoyaltyPanel: React.FC<LoyaltyPanelProps> = ({ userId }) => {
             </p>
           )}
           {referralLink && (
-            <a
-              href={`mailto:?subject=${encodeURIComponent(
-                t('landing.loyalty.shareSubject')
-              )}&body=${encodeURIComponent(t('landing.loyalty.shareEmailBody', { referralLink }))}`}
+            <button
+              type="button"
+              onClick={async (e) => {
+                e.preventDefault();
+                const ok = await copyTextToClipboard(referralLink);
+                if (!ok) {
+                  setClipboardHintMessage(t('landing.loyalty.copyFailed', 'لم نتمكن من نسخ الرابط، جرّب يدوياً.'));
+                } else {
+                  setClipboardHintMessage(t('landing.loyalty.copySuccess', 'تم نسخ رابط الإحالة!'));
+                }
+              }}
               className="mt-3 inline-flex text-xs font-semibold text-pink-700 underline hover:text-pink-900"
             >
               {t('landing.loyalty.shareViaEmail')}
-            </a>
+            </button>
           )}
           <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-pink-100 bg-white/70 p-3 shadow-sm dark:border-pink-700/30 dark:bg-slate-900/60">
             <label htmlFor={inviteEmailId} className="text-xs font-semibold uppercase text-pink-700 dark:text-pink-200">

@@ -25,12 +25,17 @@ app.use(express.json({ limit: '10mb' }));
 // Optional Clerk auth middleware: if @clerk/express is missing, continue without blocking startup.
 let clerkReady = false;
 await (async () => {
+  const hasClerkEnv = Boolean(process.env.CLERK_SECRET_KEY && process.env.CLERK_PUBLISHABLE_KEY);
+  if (!hasClerkEnv) {
+    console.warn('ℹ️  Clerk middleware skipped: CLERK_SECRET_KEY or CLERK_PUBLISHABLE_KEY missing.');
+    return;
+  }
   try {
     const { clerkMiddleware } = await import('@clerk/express');
     app.use(clerkMiddleware());
     clerkReady = true;
   } catch (err) {
-    console.warn('⚠️  @clerk/express not installed; skipping Clerk auth middleware. Error code:', err?.code || err?.message);
+    console.warn('⚠️  Clerk middleware not loaded; continuing without it. Reason:', err?.message || err?.code || err);
   }
 })();
 
